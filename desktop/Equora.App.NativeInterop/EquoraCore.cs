@@ -6,7 +6,7 @@ namespace Equora.App.NativeInterop;
 /// 原生核心(EqCore)的安全封装:负责句柄生命周期、DTO 转换与错误翻译。
 /// 同一实例非线程安全 —— 与 UI 线程绑定使用;跨线程场景由上层排队。
 /// </summary>
-public sealed class EquoraCore : IDisposable
+public sealed partial class EquoraCore : IDisposable
 {
     private IntPtr _core;
 

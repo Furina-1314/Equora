@@ -38,9 +38,9 @@ public class NativeInteropTests : IDisposable
     }
 
     [Fact]
-    public void SchemaIsMigratedToV1()
+    public void SchemaIsMigratedToLatest()
     {
-        Assert.Equal(1, _service.SchemaVersion);
+        Assert.Equal(2, _service.SchemaVersion); // capi v2 schema
     }
 
     [Fact]

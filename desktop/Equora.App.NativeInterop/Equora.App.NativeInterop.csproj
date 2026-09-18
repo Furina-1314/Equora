@@ -9,4 +9,8 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Equora.App.Tests" />
+  </ItemGroup>
+
 </Project>

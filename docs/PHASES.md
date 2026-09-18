@@ -13,7 +13,7 @@
 | P2 | Schedule.CApi 稳定 C ABI(不透明句柄、UTF-8、错误对象、显式释放)+ 架构文档 architecture.md、数据模型文档 data-model.md | M0 | 🔨 |
 | P3 | WinUI 3 应用外壳:Schedule.App / ViewModels / Services / NativeInterop 四工程,窗口、导航、深浅色主题、P/Invoke 打通 C++ 测试接口 | M0 | 🔨 |
 | P4 | 单机任务核心:Task/Project/Tag/ChecklistItem 存储与仓库、软删除、修订号、智能清单查询(今天/近期/逾期/已完成)、一致性备份 | M1 | 🔨 |
-| P5 | 任务管理界面:三栏布局、任务列表与详情栏、搜索、撤销栈、JSON/CSV 导入导出;M1 验收 | M1 | ⬜ |
+| P5 | 任务管理界面:三栏布局、任务列表与详情栏、搜索、撤销栈、JSON/CSV 导入导出;M1 验收 | M1 | 🔨 |
 | P6 | 日历与时间块核心:TimeBlock/Event 存储、重复规则(RRULE 子集)展开与例外、冲突检测、空闲搜索、ICS 导入导出 | M2 | ⬜ |
 | P7 | 日历界面:自定义高性能周视图(虚拟化)、拖拽创建/移动/缩放、当前时间线、工作时间与过载警告;M2 验收 | M2 | ⬜ |
 | P8 | 四象限与快速收集:矩阵视图、今日三件要事、全局快捷输入窗口、自然语言日期解析(可预览可编辑)、命令面板;M3 验收 | M3 | ⬜ |

@@ -5,9 +5,9 @@
 
 ## 当前状态
 
-- **当前阶段**:P4 — 单机任务核心(M1)
-- **已完成**:P0、P1、P2、P3 —— **M0 工程骨架与架构验证达成**
-- **最新提交**:P3 WinUI 3 应用外壳
+- **当前阶段**:P5 — 任务管理界面(M1 收尾)
+- **已完成**:P0–P4(M0 达成;M1 核心+服务层完成)
+- **最新提交**:P4 单机任务核心
 
 ---
 
@@ -155,3 +155,55 @@
 ### 下一步
 
 - P1:CMake 超级构建 + vcpkg 清单 + Domain 基础类型 + SQLite 迁移框架 + GoogleTest。
+
+---
+
+## P4 — 单机任务核心(M1)✅(2026-09-18)
+
+### 已完成(P4a 原生层 + P4b 互操作/服务层)
+
+- **Schedule.Common**:SHA-256(FIPS 180-4,流式;修复过一处 finish 填充死循环缺陷)、
+  文件日志(级别过滤、按大小轮转、未初始化安全)。修复过程中发现并解决:`finish()`
+  先置位 `finished_` 再调 `update()` 导致填充永不写入 → 重写为直接缓冲操作。
+- **迁移 v2**:app_meta(键值)、projects、tags(名称 NOCASE 唯一含墓碑)、
+  task_tags(联合主键 + 级联)、checklist_items、tasks.project_id 部分索引;
+  v1→v2 升级保留旧数据(MigrationV2Tests 验证)。
+- **仓库**:ProjectRepository(归档/软删除/乐观并发)、TagRepository(唯一名/关系维护/
+  任务标签视图,修复 JOIN 列名歧义)、ChecklistRepository(追加排序/勾选/重排)、
+  TaskRepository 新增 `query(TaskFilter)`(due/updated 区间、项目、标签 EXISTS、
+  子串搜索 instr+lower、状态 IN/NOT IN、6 种排序、分页)与 `importTask`(保留字段幂等导入)。
+- **SmartLists**:收件箱/今天/近期/逾期/无日期/已安排/等待/已完成/当日完成 ——
+  语义在核心层,日界由调用方传 UTC 偏移(本地日界换算 `localDayIndex/localDayStartUtc`)。
+- **备份**:sqlite3_backup 在线快照 + SHA-256 伴生校验 + quick_check + 恢复前自动保护现场
+  + 保留策略;`Database::reopen` 支持底层文件替换。
+- **导入导出**:JSON(nlohmann-json,幂等导入、单条非法跳过)与 CSV(BOM、引号转义)。
+- **C ABI(v2 追加,无破坏)**:查询 EqTaskFilter、项目/标签/检查项全套句柄、
+  EqStringHandle、设备 ID(app_meta 持久化)、日志初始化、备份/导出/导入;
+  实现拆分 CApi/CApiEntities/CApiSystem + 共享 CApiInternal.h(不透明类型必须在全局作用域补全)。
+- **C#**:NativeInterop 新增结构与方法(含 QueryScope 过滤器封送与原生缓冲作用域)、
+  IWorkspaceService + AppDataService 实现、App 启动接原生日志。
+- **AppPaths.EnsureCreated** 建 logs/backups 目录。
+
+### 构建与测试结果(本机实测)
+
+- 原生:`ctest` 90/90(84 core + 6 capi;新增 43+6 例);/W4 零警告。
+- C#:`dotnet test` 16/16;`dotnet build` 5 工程 0 警告。
+
+### 修复的缺陷
+
+- SHA-256 finish 死循环(见上);TagRepository.forTask JOIN `created_at` 列名歧义;
+  C ABI 不透明类型命名空间二义性(定义必须补全全局声明);
+  一处测试期发现的真实语义问题:「今天中午截止」的任务在午后确实属于逾期,
+  实现正确、测试假设错误(改为边界无关断言)。
+
+### 已知问题 / 假设
+
+- JSON 导入仅覆盖任务字段(项目/标签展开导出留待 P5+);CSV 为单向导出。
+- EqTaskFilter 的 due/updated 边界以 0 表示「未设置」(纪元 0 不会出现在真实过滤中)。
+- 智能清单的「已委派」清单尚无数据字段支撑(委派字段在 P6+ 引入)。
+
+### 下一步
+
+- P5(M1 收尾):三栏布局任务界面、智能清单侧栏、详情编辑(状态/优先级/截止/标签/
+  检查项)、搜索框、简单撤销栈、备份/导入导出入口;M1 验收(长期真实使用、
+  异常退出数据完整、迁移可升级回滚——迁移部分已具备)。

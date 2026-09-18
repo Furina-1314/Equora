@@ -3,6 +3,7 @@ find_package(GTest CONFIG REQUIRED)
 
 add_executable(equora_capi_tests
     src/CApiTests.cpp
+    src/CApiP4Tests.cpp
 )
 
 target_link_libraries(equora_capi_tests PRIVATE

@@ -14,6 +14,10 @@ public partial class App : Application
 
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
+        // 原生日志:文件位于数据目录 logs(未初始化时为空操作)。
+        NativeInterop.EquoraCore.InitLog(
+            System.IO.Path.Combine(Services.AppPaths.DataDirectory, "logs", "equora.log"));
+
         MainWindow = new MainWindow();
         MainWindow.Activate();
     }
