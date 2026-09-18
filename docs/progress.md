@@ -5,11 +5,43 @@
 
 ## 当前状态
 
-- **当前阶段**:P2 — C ABI 互操作层
-- **已完成**:P0、P1
-- **最新提交**:P1 C++ 原生核心骨架
+- **当前阶段**:P3 — WinUI 3 应用外壳
+- **已完成**:P0、P1、P2
+- **最新提交**:P2 C ABI 互操作层
 
 ---
+
+## P2 — 稳定 C ABI 互操作层 ✅(2026-09-18)
+
+### 已完成
+
+- **Schedule.CApi**(`equora_capi.dll`,capi v1):
+  - 头文件 `equora_capi.h`:不透明句柄(EqCore/EqTaskHandle/EqTaskList)、
+    固定布局 DTO(EqError/EqTaskInput/EqTaskView)、UTF-8 字符串、显式 destroy。
+  - 全部导出函数经 `guard` 边界捕获异常 → 错误码 + EqError;NULL 参数安全;
+    批量接口 `eq_task_list_all` 避免逐条跨 ABI。
+  - `eq_core_create` 打开数据库并自动应用迁移;`eq_ping` 冒烟接口。
+- **Schedule.CApi.Tests**:12 例(版本/冒烟、NULL 安全、句柄生命周期、
+  创建/读取/更新/软删除、乐观并发 Conflict、批量列表、中文 UTF-8 往返、
+  空参数拒绝、错误消息填充)。
+- **文档**:`docs/architecture.md`(分层、依赖方向、ABI 规则、线程/错误/安全策略)、
+  `docs/data-model.md`(公共同步列约定、v1 模式、P4–P13 实体路线、备份恢复策略)。
+
+### 构建与测试结果(本机实测)
+
+- 构建零错误零警告;`ctest`:41/41 通过(29 core + 12 capi,1.09s)。
+- 已知 MSVC 约束:含指针返回类型的导出函数必须把 `EQUORA_API` 放行首
+  (`__declspec` 不允许出现在指针返回类型之后),已在头文件统一。
+
+### 已知问题 / 假设
+
+- DLL 依赖 vcpkg 动态 sqlite3.dll;桌面端集成时统一布局分发(P3 处理)。
+- `eq_task_get` 找不到任务时置空 `*out_handle` 并返回 NotFound——调用方必须检查返回码。
+
+### 下一步
+
+- P3:WinUI 3 外壳(Schedule.App/ViewModels/Services/NativeInterop),
+  通过 P/Invoke 调用 `eq_ping` 与任务 CRUD,M0 验收。
 
 ## P1 — C++ 原生核心骨架 ✅(2026-09-18)
 

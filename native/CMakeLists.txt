@@ -16,12 +16,14 @@ endif()
 option(EQUORA_BUILD_TESTS "Build Equora unit tests" ON)
 
 # 模块依赖方向(禁止循环):
-# Domain <- Storage <- Core <- (CApi / Sync / Scheduling / Focus / Analytics)
+# Domain <- Storage <- Core <- CApi <- (tests)
 add_subdirectory(Schedule.Domain)
 add_subdirectory(Schedule.Storage)
 add_subdirectory(Schedule.Core)
+add_subdirectory(Schedule.CApi)
 
 if(EQUORA_BUILD_TESTS)
     enable_testing()
     add_subdirectory(Schedule.Core.Tests)
+    add_subdirectory(Schedule.CApi.Tests)
 endif()
