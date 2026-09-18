@@ -8,6 +8,10 @@ on:
     paths: ['native/**', '.github/workflows/native-ci.yml']
   workflow_dispatch:
 
+env:
+  # 与 native/vcpkg.json 的 builtin-baseline 保持一致。
+  EQUORA_VCPKG_BASELINE: e6f9e70a29a3e80a1fc510d8503304315447112f
+
 jobs:
   windows-msvc:
     name: Windows x64 (MSVC + vcpkg)
@@ -15,15 +19,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # job 级 env 不能引用 env 上下文;vcpkg 路径在步骤内运行时解析。
+      # runner 预装 vcpkg 快照可能缺少锁定 baseline:fetch + checkout + 重引导。
       - name: Configure
         working-directory: native
         shell: pwsh
         run: |
-          if (-not $env:VCPKG_ROOT) {
-            $env:VCPKG_ROOT = if ($env:VCPKG_INSTALLATION_ROOT) { $env:VCPKG_INSTALLATION_ROOT } else { 'C:\vcpkg' }
-          }
+          if (-not $env:VCPKG_ROOT) { $env:VCPKG_ROOT = 'C:\vcpkg' }
           Write-Host "VCPKG_ROOT=$env:VCPKG_ROOT"
+          git -C $env:VCPKG_ROOT fetch origin
+          git -C $env:VCPKG_ROOT checkout --detach $env:EQUORA_VCPKG_BASELINE
+          & "$env:VCPKG_ROOT\bootstrap-vcpkg.bat" -disableMetrics
           cmake --preset win-x64-release
 
       - name: Build

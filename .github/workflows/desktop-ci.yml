@@ -8,6 +8,9 @@ on:
     paths: ['desktop/**', '.github/workflows/desktop-ci.yml']
   workflow_dispatch:
 
+env:
+  EQUORA_VCPKG_BASELINE: e6f9e70a29a3e80a1fc510d8503304315447112f
+
 jobs:
   windows-dotnet:
     name: Windows (dotnet build + tests)
@@ -20,10 +23,11 @@ jobs:
         working-directory: native
         shell: pwsh
         run: |
-          if (-not $env:VCPKG_ROOT) {
-            $env:VCPKG_ROOT = if ($env:VCPKG_INSTALLATION_ROOT) { $env:VCPKG_INSTALLATION_ROOT } else { 'C:\vcpkg' }
-          }
+          if (-not $env:VCPKG_ROOT) { $env:VCPKG_ROOT = 'C:\vcpkg' }
           Write-Host "VCPKG_ROOT=$env:VCPKG_ROOT"
+          git -C $env:VCPKG_ROOT fetch origin
+          git -C $env:VCPKG_ROOT checkout --detach $env:EQUORA_VCPKG_BASELINE
+          & "$env:VCPKG_ROOT\bootstrap-vcpkg.bat" -disableMetrics
           cmake --preset win-x64-release
           cmake --build --preset win-x64-release --target equora_capi
 
