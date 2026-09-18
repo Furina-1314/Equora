@@ -7,6 +7,11 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# $<TARGET_RUNTIME_DLLS> 需要 CMP0139(递归收集 DLL 依赖)。
+if(POLICY CMP0139)
+    cmake_policy(SET CMP0139 NEW)
+endif()
+
 if(MSVC)
     add_compile_options(/utf-8 /W4 /permissive-)
 else()
