@@ -1,0 +1,30 @@
+name: native-ci
+
+on:
+  push:
+    branches: [main]
+    paths: ['native/**', '.github/workflows/native-ci.yml']
+  pull_request:
+    paths: ['native/**', '.github/workflows/native-ci.yml']
+  workflow_dispatch:
+
+jobs:
+  windows-msvc:
+    name: Windows x64 (MSVC + vcpkg)
+    runs-on: windows-latest
+    env:
+      VCPKG_ROOT: ${{ env.VCPKG_INSTALLATION_ROOT }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure
+        working-directory: native
+        run: cmake --preset win-x64-release
+
+      - name: Build
+        working-directory: native
+        run: cmake --build --preset win-x64-release
+
+      - name: Test
+        working-directory: native
+        run: ctest --preset win-x64-release

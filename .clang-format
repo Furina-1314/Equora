@@ -1,0 +1,14 @@
+# C++ 代码格式(clang-format)。
+BasedOnStyle: LLVM
+IndentWidth: 4
+ColumnLimit: 100
+Language: Cpp
+Standard: c++20
+AccessModifierOffset: -4
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortIfStatementsOnASingleLine: Never
+AlwaysBreakTemplateDeclarations: Yes
+DerivePointerAlignment: false
+PointerAlignment: Left
+SortIncludes: CaseSensitive
+IncludeBlocks: Preserve

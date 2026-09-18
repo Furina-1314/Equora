@@ -61,10 +61,13 @@ tests/      应用层测试与测试数据
 git clone https://github.com/Furina-1314/Equora.git
 cd Equora
 
-# 假设 vcpkg 位于 C:\dev\vcpkg(VCPKG_ROOT 已设置)
-cmake -S native -B native/build --preset win-x64-release
-cmake --build native/build --config Release
-ctest --test-dir native/build --build-config Release --output-on-failure
+# 依赖由 vcpkg 清单(native/vcpkg.json)管理。
+# 设置 VCPKG_ROOT 指向你的 vcpkg 克隆(如 E:\code\vcpkg)。
+
+cd native
+cmake --preset win-x64-release
+cmake --build --preset win-x64-release
+ctest --preset win-x64-release
 ```
 
 ### 构建 WinUI 3 应用(后续阶段提供)
