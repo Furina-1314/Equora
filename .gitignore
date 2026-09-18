@@ -1,0 +1,90 @@
+# ---- Build output ----
+build/
+out/
+bin/
+obj/
+x64/
+x86/
+Debug/
+Release/
+Debug-*
+Release-*
+Releases/
+cmake-build-*/
+[Bb]uild/
+
+# ---- Visual Studio ----
+.vs/
+.vscode/
+*.user
+*.suo
+*.rsuser
+*.aps
+*.vcxproj.filters
+launchSettings.json
+
+# ---- Rider / JetBrains ----
+.idea/
+*.DotSettings.user
+
+# ---- CMake / C++ ----
+CMakeFiles/
+CMakeUserPresets.json
+cmake_install.cmake
+Makefile
+install_manifest.txt
+*.ninja
+.ninja_deps
+.ninja_log
+compile_commands.json
+CMakeCache.txt
+
+# ---- vcpkg ----
+vcpkg_installed/
+buildtrees/
+downloads/
+packages/
+installed/
+
+# ---- .NET / NuGet ----
+*.nupkg
+packages/
+project.lock.json
+artifacts/
+nuget.exe
+
+# ---- Node (browser extension) ----
+node_modules/
+dist-extension/
+*.crx
+*.pem
+
+# ---- Test / coverage ----
+TestResults/
+[Ll]ogs/
+coverage/
+*.coverage
+*.trx
+
+# ---- Local data / databases (never commit user data) ----
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+*.bak
+backups/
+
+# ---- OS ----
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+
+# ---- Secrets / local config ----
+*.env
+.env.*
+secrets/
+*.pfx
+*.key
