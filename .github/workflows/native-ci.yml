@@ -12,14 +12,19 @@ jobs:
   windows-msvc:
     name: Windows x64 (MSVC + vcpkg)
     runs-on: windows-latest
-    env:
-      VCPKG_ROOT: ${{ env.VCPKG_INSTALLATION_ROOT }}
     steps:
       - uses: actions/checkout@v4
 
+      # job 级 env 不能引用 env 上下文;vcpkg 路径在步骤内运行时解析。
       - name: Configure
         working-directory: native
-        run: cmake --preset win-x64-release
+        shell: pwsh
+        run: |
+          if (-not $env:VCPKG_ROOT) {
+            $env:VCPKG_ROOT = if ($env:VCPKG_INSTALLATION_ROOT) { $env:VCPKG_INSTALLATION_ROOT } else { 'C:\vcpkg' }
+          }
+          Write-Host "VCPKG_ROOT=$env:VCPKG_ROOT"
+          cmake --preset win-x64-release
 
       - name: Build
         working-directory: native

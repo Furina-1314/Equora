@@ -15,12 +15,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # C# 测试需要 equora_capi.dll:先以最小方式构建原生层。
+      # C# 互操作测试需要 equora_capi.dll:先构建原生层。
       - name: Build native CApi (Release)
         working-directory: native
-        env:
-          VCPKG_ROOT: ${{ env.VCPKG_INSTALLATION_ROOT }}
+        shell: pwsh
         run: |
+          if (-not $env:VCPKG_ROOT) {
+            $env:VCPKG_ROOT = if ($env:VCPKG_INSTALLATION_ROOT) { $env:VCPKG_INSTALLATION_ROOT } else { 'C:\vcpkg' }
+          }
+          Write-Host "VCPKG_ROOT=$env:VCPKG_ROOT"
           cmake --preset win-x64-release
           cmake --build --preset win-x64-release --target equora_capi
 
