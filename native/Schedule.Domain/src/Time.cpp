@@ -170,4 +170,15 @@ std::optional<UtcMillis> parseIso8601(std::string_view text) {
     return millisFromCivil(dt);
 }
 
+std::int64_t localDayIndex(UtcMillis t, int offsetMinutes) noexcept {
+    const std::int64_t shifted = t + static_cast<std::int64_t>(offsetMinutes) * 60'000;
+    auto [day, msOfDay] = divMod(shifted, 86'400'000);
+    (void)msOfDay;
+    return day;
+}
+
+UtcMillis localDayStartUtc(std::int64_t localDay, int offsetMinutes) noexcept {
+    return localDay * 86'400'000 - static_cast<std::int64_t>(offsetMinutes) * 60'000;
+}
+
 } // namespace equora::domain::utc

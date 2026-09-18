@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include <equora/core/TaskQuery.h>
 #include <equora/domain/Task.h>
 #include <equora/storage/Database.h>
 
@@ -32,6 +33,13 @@ public:
 
     // 列出任务(默认排除软删除,按创建时间升序)。
     [[nodiscard]] std::vector<domain::Task> listAll(bool includeDeleted = false) const;
+
+    // 按过滤条件查询:智能清单/搜索/分页的统一入口。
+    [[nodiscard]] std::vector<domain::Task> query(const TaskFilter& filter) const;
+
+    // 导入用插入:保留调用方提供的 id/时间戳/revision(校验合法后原样落库)。
+    // 幂等性由调用方先查 id 是否存在;重复 id 触发唯一约束 -> Conflict。
+    [[nodiscard]] domain::Task importTask(domain::Task preserved) const;
 
 private:
     [[nodiscard]] static domain::Task rowToTask(const storage::Statement& st);

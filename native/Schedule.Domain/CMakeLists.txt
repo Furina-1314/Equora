@@ -4,6 +4,8 @@ add_library(equora_domain STATIC
     src/Uuid.cpp
     src/Time.cpp
     src/Task.cpp
+    src/Project.cpp
+    src/Tag.cpp
 )
 
 add_library(Equora::Domain ALIAS equora_domain)

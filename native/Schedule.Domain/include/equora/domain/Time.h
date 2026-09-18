@@ -51,5 +51,15 @@ namespace utc {
 [[nodiscard]] bool isLeapYear(int year) noexcept;
 [[nodiscard]] unsigned daysInMonth(int year, unsigned month) noexcept;
 
+// ---- 本地日期与 UTC 换算 ----
+// offsetMinutes 为用户时区相对 UTC 的偏移(东八区 = +480)。
+// 「今天」等智能清单的日界由调用方传入当前偏移,业务规则保留在核心层。
+
+// 时刻所属的本地日序号(自 1970-01-01 起,floor 除法)。
+[[nodiscard]] std::int64_t localDayIndex(UtcMillis t, int offsetMinutes) noexcept;
+
+// 本地日序号当天 00:00 对应的 UTC 时刻(区间左端,含)。
+[[nodiscard]] UtcMillis localDayStartUtc(std::int64_t localDay, int offsetMinutes) noexcept;
+
 } // namespace utc
 } // namespace equora::domain

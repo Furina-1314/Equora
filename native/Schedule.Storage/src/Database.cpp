@@ -107,7 +107,12 @@ void Database::close() noexcept {
         sqlite3_close_v2(db_);
         db_ = nullptr;
     }
-    path_.clear();
+}
+
+void Database::reopen(const std::filesystem::path& newPath) {
+    const std::filesystem::path target = newPath.empty() ? path_ : newPath;
+    if (target.empty()) return;
+    *this = Database::open(target);
 }
 
 // ---------- Statement ----------

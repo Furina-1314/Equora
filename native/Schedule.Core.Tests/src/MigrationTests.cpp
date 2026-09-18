@@ -45,7 +45,7 @@ TEST(MigrationTest, FreshDatabaseReachesLatestVersion) {
         const Database db = Database::open(tmp.path());
         EXPECT_EQ(currentSchemaVersion(db), 0);
         applyMigrations(db);
-        EXPECT_EQ(currentSchemaVersion(db), 1);
+        EXPECT_EQ(currentSchemaVersion(db), builtInMigrations().back().version);
     }
 }
 
@@ -55,7 +55,7 @@ TEST(MigrationTest, ReapplyIsIdempotent) {
         const Database db = Database::open(tmp.path());
         applyMigrations(db);
         applyMigrations(db); // 重复调用不得报错或重复建表
-        EXPECT_EQ(currentSchemaVersion(db), 1);
+        EXPECT_EQ(currentSchemaVersion(db), builtInMigrations().back().version);
 
         auto st = db.prepare("SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' "
                              "AND name = 'tasks'");
@@ -76,10 +76,7 @@ TEST(MigrationTest, FailedMigrationRollsBackCompletely) {
     TempFile tmp;
     {
         const Database db = Database::open(tmp.path());
-        applyMigrations(db); // 先应用内置 v1
-        ASSERT_EQ(currentSchemaVersion(db), 1);
-
-        // v1 已应用(跳过),v2 失败必须整体回滚,库停留在 v1 且可继续使用。
+        // 全新库直接注入:v1 应用成功,v2 中途失败必须整体回滚。
         EXPECT_THROW(applyMigrations(db, custom), equora::storage::MigrationError);
         EXPECT_EQ(currentSchemaVersion(db), 1);
 
@@ -91,6 +88,10 @@ TEST(MigrationTest, FailedMigrationRollsBackCompletely) {
 
         db.exec("INSERT INTO tasks (id, title, created_at, updated_at, revision) "
                 "VALUES ('x', 'still usable', 1, 1, 1)");
+
+        // 恢复路径:转用正式迁移列表后可继续升级。
+        applyMigrations(db);
+        EXPECT_EQ(currentSchemaVersion(db), builtInMigrations().back().version);
     }
 }
 

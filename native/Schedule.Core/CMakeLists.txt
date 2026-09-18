@@ -1,6 +1,13 @@
-# 核心用例层:仓库与业务规则。仅依赖 Domain 与 Storage 抽象。
+# 核心用例层:仓库、查询与业务规则。
+find_package(nlohmann_json CONFIG REQUIRED)
+
 add_library(equora_core STATIC
     src/TaskRepository.cpp
+    src/ProjectRepository.cpp
+    src/TagRepository.cpp
+    src/ChecklistRepository.cpp
+    src/SmartLists.cpp
+    src/Transfer.cpp
 )
 
 add_library(Equora::Core ALIAS equora_core)
@@ -12,4 +19,6 @@ target_include_directories(equora_core PUBLIC
 target_link_libraries(equora_core
     PUBLIC Equora::Domain
            Equora::Storage
+           Equora::Common
+    PRIVATE nlohmann_json::nlohmann_json
 )

@@ -1,15 +1,25 @@
-# 单元测试:GoogleTest,覆盖 Domain / Storage / Core。
+# 单元测试:GoogleTest,覆盖 Common / Domain / Storage / Core。
 find_package(GTest CONFIG REQUIRED)
 
 add_executable(equora_core_tests
     src/UuidTests.cpp
     src/TimeTests.cpp
+    src/Sha256Tests.cpp
+    src/LoggerTests.cpp
     src/MigrationTests.cpp
+    src/MigrationV2Tests.cpp
     src/TaskRepositoryTests.cpp
+    src/ProjectRepositoryTests.cpp
+    src/TagRepositoryTests.cpp
+    src/ChecklistRepositoryTests.cpp
+    src/TaskQueryTests.cpp
+    src/BackupTests.cpp
+    src/TransferTests.cpp
 )
 
 target_link_libraries(equora_core_tests PRIVATE
     Equora::Core
+    Equora::Common
     GTest::gtest_main
 )
 

@@ -3,6 +3,8 @@
 #include <gtest/gtest.h>
 
 #include <random>
+#include <utility>
+#include <vector>
 
 namespace {
 
@@ -112,6 +114,28 @@ TEST(TimeTest, NowIsPlausible) {
     const UtcMillis t = utc::now();
     EXPECT_GT(t, 1'600'000'000'000); // 2020-09 后
     EXPECT_LT(t, 2'100'000'000'000); // 2036-08 前
+}
+
+TEST(TimeTest, LocalDayIndexAndStartRoundtrip) {
+    // 东八区:UTC 2026-09-18T04:00 属于当地 9 月 18 日。
+    EXPECT_EQ(utc::localDayIndex(1'789'790'400'000, 480), utc::localDayIndex(1'789'790'400'000, 0));
+    // 当地午夜边界:UTC 前一天 16:00 是当地当天 00:00。
+    const auto day = utc::localDayIndex(1'789'790'400'000, 480);
+    EXPECT_EQ(utc::localDayStartUtc(day, 480), 1'789'790'400'000 - 12 * 3'600'000);
+    EXPECT_EQ(utc::toIso8601(utc::localDayStartUtc(day, 480)), "2026-09-18T16:00:00.000Z");
+
+    // 负偏移(西五区 UTC-300):2026-09-18T02:00Z 是当地 9 月 17 日 21:00。
+    EXPECT_EQ(utc::localDayIndex(1'789'783'200'000, -300),
+              utc::localDayIndex(1'789'790'400'000, 480) - 1);
+
+    // 对称性:日界 <= t < 日界+24h。
+    for (const auto& [t, off] : std::vector<std::pair<UtcMillis, int>>{
+             {1'789'790'400'000, 480}, {0, 0}, {0, 480}, {-1, -300}, {1'789'790'399'999, 480}}) {
+        const auto idx = utc::localDayIndex(t, off);
+        const auto start = utc::localDayStartUtc(idx, off);
+        EXPECT_LE(start, t);
+        EXPECT_LT(t, start + 86'400'000);
+    }
 }
 
 } // namespace

@@ -1,8 +1,9 @@
 {
   "name": "equora-native",
-  "version-string": "0.1.0",
+  "version-string": "0.2.0",
   "dependencies": [
     "sqlite3",
+    "nlohmann-json",
     {
       "name": "gtest",
       "host": false

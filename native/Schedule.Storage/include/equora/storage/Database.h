@@ -43,6 +43,10 @@ public:
 
     void close() noexcept;
 
+    // 关闭后按指定路径(为空则沿用原路径)重新打开并应用连接级设置。
+    // 供备份恢复等需要替换底层文件的流程使用。
+    void reopen(const std::filesystem::path& newPath = {});
+
 private:
     Database(sqlite3* db, std::filesystem::path path);
 
