@@ -49,9 +49,17 @@
 - 本会话为无头环境,未实际启动 UI 窗口;XAML 编译验证通过,
   首次真机运行若有布局问题在 P4 修正。
 - 日志系统尚未建立(当前 Debug.WriteLine),P4 与备份一起补齐。
-- CI runner 是否提供 `Visual Studio 18 2026` 生成器待推送后观察;若失败,
-  增加面向 CI 的 VS17 preset。
 - 主题选择当前不持久化,P4 随配置系统落地。
+
+### CI 修复记录(P3 收尾)
+
+- job 级 `env:` 不能引用 `env` 上下文 → vcpkg 路径改为步骤内运行时解析。
+- runner 预装 vcpkg 快照缺少锁定 baseline → 配置前 `git fetch + checkout + 重新 bootstrap`。
+- **CI 崩溃根因**:测试输出目录缺 `sqlite3.dll`(vcpkg applocal 未递归复制
+  equora_capi.dll 的间接依赖),runner 从 PATH 加载了 `C:\Program Files\Amazon\AWSCLIV2\sqlite3.dll`
+  导致访问冲突。用 cdb 抓栈定位后,以 `$<TARGET_RUNTIME_DLLS>` 确定性复制全部
+  运行时 DLL 修复。**native-ci 与 desktop-ci 现已全绿**(runner 镜像 windows-2025-vs2026,
+  含 VS 2026 与 `Visual Studio 18 2026` 生成器,与本地一致)。
 
 ### 下一步
 
