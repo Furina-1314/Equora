@@ -124,7 +124,7 @@ Task inputToTask(const EqTaskInput& in) {
 
 int32_t eq_api_version() { return EQUORA_CAPI_VERSION; }
 
-const char* eq_version_string() { return "Equora native core 0.1.0 (capi v1)"; }
+const char* eq_version_string() { return "Equora native core 0.1.0 (capi v2)"; }
 
 int32_t eq_ping(int32_t value) { return value + 1; }
 
@@ -151,13 +151,15 @@ EqCore* eq_core_create(const char* db_path_utf8, const char* device_id_utf8,
 
 void eq_core_destroy(EqCore* core) { delete core; }
 
-int32_t eq_core_schema_version(const EqCore* core, EqError* out_error) {
+int32_t eq_core_schema_version(const EqCore* core, int32_t* out_version,
+                               EqError* out_error) {
     return guard(out_error, [&]() -> int32_t {
-        if (core == nullptr) {
+        if (core == nullptr || out_version == nullptr) {
             return fillError(out_error, static_cast<int32_t>(ErrorCode::InvalidArgument),
-                             "core handle is null");
+                             "core/out_version must not be null");
         }
-        return equora::storage::currentSchemaVersion(core->db);
+        *out_version = equora::storage::currentSchemaVersion(core->db);
+        return 0;
     });
 }
 

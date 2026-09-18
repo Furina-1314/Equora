@@ -1,0 +1,33 @@
+name: desktop-ci
+
+on:
+  push:
+    branches: [main]
+    paths: ['desktop/**', '.github/workflows/desktop-ci.yml']
+  pull_request:
+    paths: ['desktop/**', '.github/workflows/desktop-ci.yml']
+  workflow_dispatch:
+
+jobs:
+  windows-dotnet:
+    name: Windows (dotnet build + tests)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # C# 测试需要 equora_capi.dll:先以最小方式构建原生层。
+      - name: Build native CApi (Release)
+        working-directory: native
+        env:
+          VCPKG_ROOT: ${{ env.VCPKG_INSTALLATION_ROOT }}
+        run: |
+          cmake --preset win-x64-release
+          cmake --build --preset win-x64-release --target equora_capi
+
+      - name: Build desktop solution
+        working-directory: desktop
+        run: dotnet build Equora.slnx -c Release
+
+      - name: Run interop tests
+        working-directory: desktop
+        run: dotnet test Equora.App.Tests/Equora.App.Tests.csproj -c Release --no-build

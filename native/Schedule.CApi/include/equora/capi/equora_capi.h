@@ -25,7 +25,7 @@ extern "C" {
 #define EQUORA_API __attribute__((visibility("default")))
 #endif
 
-#define EQUORA_CAPI_VERSION 1
+#define EQUORA_CAPI_VERSION 2
 
 // 错误对象:调用方栈分配;code 与 domain::ErrorCode 取值一致。
 typedef struct EqError {
@@ -89,7 +89,7 @@ typedef struct EqCore EqCore;
 EQUORA_API EqCore* eq_core_create(const char* db_path_utf8, const char* device_id_utf8,
                                   EqError* out_error);
 void EQUORA_API eq_core_destroy(EqCore* core); // NULL 安全
-int32_t EQUORA_API eq_core_schema_version(const EqCore* core, EqError* out_error);
+int32_t EQUORA_API eq_core_schema_version(const EqCore* core, int32_t* out_version, EqError* out_error);
 
 // ---- 任务句柄与视图 ----
 

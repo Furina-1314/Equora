@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
+    <RootNamespace>Equora.App</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Platforms>x64</Platforms>
+    <PlatformTarget>x64</PlatformTarget>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <UseWinUI>true</UseWinUI>
+    <EnableMsixTooling>true</EnableMsixTooling>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- 开发期以非打包方式运行;MSIX 打包在发布阶段(P16)启用。 -->
+    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSdkSelfContained>true</WindowsAppSdkSelfContained>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="Assets\**\*" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.*" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Equora.App.Services\Equora.App.Services.csproj" />
+    <ProjectReference Include="..\Equora.App.ViewModels\Equora.App.ViewModels.csproj" />
+  </ItemGroup>
+
+  <!-- 从本地 C++ 构建输出复制原生 DLL;目录不存在时跳过。 -->
+  <Target Name="CopyNativeBinaries" AfterTargets="Build"
+          Condition="Exists('..\..\native\build\win-x64-release\Schedule.CApi\Release\equora_capi.dll')">
+    <ItemGroup>
+      <NativeBin Include="..\..\native\build\win-x64-release\Schedule.CApi\Release\*.dll" />
+    </ItemGroup>
+    <Copy SourceFiles="@(NativeBin)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
+  </Target>
+
+</Project>

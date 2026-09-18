@@ -1,0 +1,12 @@
+<Page
+    x:Class="Equora.App.Pages.TasksPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <StackPanel Padding="24,16" Spacing="8">
+        <TextBlock Text="任务" Style="{StaticResource TitleTextBlockStyle}" />
+        <TextBlock Text="完整任务列表、项目、标签与智能清单将在 M1(P4–P5)提供。"
+                   Opacity="0.7" />
+        <HyperlinkButton Content="先到首页运行自检 →" Click="OnGoHome" />
+    </StackPanel>
+</Page>

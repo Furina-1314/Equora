@@ -1,0 +1,21 @@
+<Window
+    x:Class="Equora.App.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:pages="using:Equora.App.Pages">
+
+    <Grid>
+        <NavigationView
+            x:Name="Nav"
+            IsBackButtonVisible="Auto"
+            IsSettingsVisible="False"
+            SelectionChanged="OnNavSelectionChanged">
+            <NavigationView.MenuItems>
+                <NavigationViewItem Content="首页" Tag="home" Icon="Home" />
+                <NavigationViewItem Content="任务" Tag="tasks" Icon="List" />
+                <NavigationViewItem Content="设置" Tag="settings" Icon="Setting" />
+            </NavigationView.MenuItems>
+            <Frame x:Name="ContentFrame" />
+        </NavigationView>
+    </Grid>
+</Window>

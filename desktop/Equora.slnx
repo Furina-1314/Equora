@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="Equora.App.NativeInterop/Equora.App.NativeInterop.csproj" />
+  <Project Path="Equora.App.Services/Equora.App.Services.csproj" />
+  <Project Path="Equora.App.Tests/Equora.App.Tests.csproj" />
+  <Project Path="Equora.App.ViewModels/Equora.App.ViewModels.csproj" />
+  <Project Path="Equora.App/Equora.App.csproj" />
+</Solution>

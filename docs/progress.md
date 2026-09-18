@@ -5,11 +5,58 @@
 
 ## 当前状态
 
-- **当前阶段**:P3 — WinUI 3 应用外壳
-- **已完成**:P0、P1、P2
-- **最新提交**:P2 C ABI 互操作层
+- **当前阶段**:P4 — 单机任务核心(M1)
+- **已完成**:P0、P1、P2、P3 —— **M0 工程骨架与架构验证达成**
+- **最新提交**:P3 WinUI 3 应用外壳
 
 ---
+
+## P3 — WinUI 3 应用外壳 ✅(2026-09-18)
+
+### 已完成
+
+- **解决方案** `desktop/Equora.slnx`(SDK 10 新格式),五工程:
+  - `Equora.App`:WinUI 3 入口(WindowsAppSDK 1.8,net10.0-windows10.0.19041.0,
+    非打包运行 + 自包含 WASDK;MSIX 留待 P16)。NavigationView 三页外壳
+    (首页/任务/设置)、PerMonitorV2 清单、深浅色主题切换(设置页,默认跟随系统)、
+    未处理异常兜底。
+  - `Equora.App.NativeInterop`:`LibraryImport`(UTF-8)P/Invoke 封装,
+    结构体布局与 C ABI 严格对应;`EquoraCore : IDisposable` 安全句柄;
+    `NativeInputScope` 保证 UTF-8 缓冲跨原生调用存活;错误 → `EquoraException`。
+  - `Equora.App.Services`:`AppPaths`(LocalAppData\Equora)、`AppDataService`
+    (持有原生上下文,实现 `ITaskService`)。
+  - `Equora.App.ViewModels`:`HomeViewModel`(CommunityToolkit.Mvvm 8.4,
+    诊断/建任务/完成/删除命令)。
+  - `Equora.App.Tests`:xunit 8 例。
+- **首页冒烟界面**:运行自检(eq_ping/版本/schema/任务数)、真实任务增删改查列表
+  —— UI → C# → C ABI → C++ → SQLite 纵向打通。
+- **CI**:`desktop-ci.yml`(构建原生 CApi → dotnet build → dotnet test)。
+
+### 修复的缺陷
+
+- **C ABI v1 设计缺陷**:`eq_core_schema_version` 原返回值混淆「版本号」与「错误码」
+  (版本 2 无法与 InvalidArgument=2 区分)。改为错误码返回 + `out_version` 出参,
+  **ABI 版本提升为 v2**(未发布前的库内修复,规则照常执行)。
+
+### 构建与测试结果(本机实测)
+
+- `dotnet build Equora.slnx -c Release`:5 工程全部成功,0 警告 0 错误。
+- 原生:`ctest` 41/41;C#:`dotnet test` 8/8(P/Invoke CRUD、UTF-8 中文往返、
+  乐观并发 Conflict、空白标题 InvalidArgument、VM 自检)。
+
+### 已知问题 / 假设
+
+- 本会话为无头环境,未实际启动 UI 窗口;XAML 编译验证通过,
+  首次真机运行若有布局问题在 P4 修正。
+- 日志系统尚未建立(当前 Debug.WriteLine),P4 与备份一起补齐。
+- CI runner 是否提供 `Visual Studio 18 2026` 生成器待推送后观察;若失败,
+  增加面向 CI 的 VS17 preset。
+- 主题选择当前不持久化,P4 随配置系统落地。
+
+### 下一步
+
+- P4(M1):Project/Tag/ChecklistItem 存储与迁移 v2、智能清单查询、
+  一致性备份 + 校验、日志、JSON/CSV 导出;C# 服务层同步扩展。
 
 ## P2 — 稳定 C ABI 互操作层 ✅(2026-09-18)
 

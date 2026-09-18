@@ -45,7 +45,7 @@ protected:
 };
 
 TEST(CApiBasics, VersionAndPing) {
-    EXPECT_EQ(eq_api_version(), 1);
+    EXPECT_EQ(eq_api_version(), 2); // capi v2
     EXPECT_EQ(eq_ping(0), 1);
     EXPECT_EQ(eq_ping(41), 42);
     EXPECT_EQ(eq_ping(-2), -1);
@@ -63,14 +63,16 @@ TEST(CApiBasics, NullSafety) {
 
 TEST_F(CApiTest, SchemaVersionAfterCreate) {
     EqError err{};
-    EXPECT_EQ(eq_core_schema_version(core_, &err), 1);
-    EXPECT_EQ(err.code, kOk);
+    int32_t version = 0;
+    ASSERT_EQ(eq_core_schema_version(core_, &version, &err), kOk);
+    EXPECT_EQ(version, 1);
 }
 
 TEST_F(CApiTest, SchemaVersionNullCoreFillsError) {
     EqError err{};
     err.code = 999;
-    const int32_t rc = eq_core_schema_version(nullptr, &err);
+    int32_t version = 0;
+    const int32_t rc = eq_core_schema_version(nullptr, &version, &err);
     EXPECT_NE(rc, kOk);
     EXPECT_EQ(err.code, static_cast<int32_t>(2)); // InvalidArgument
     EXPECT_GT(std::strlen(err.message), 0);
