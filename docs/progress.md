@@ -690,3 +690,41 @@
 - P14b:C# HTTP 传输(HttpClient + Bearer + 指数退避调度)、
   Push 集成(Outbox→/api/v1/sync→markResult/冲突登记)、
   Pull 应用(变更流→本地表 + cursor 推进)、docker-compose 双客户端联调。
+
+---
+
+## P14b — 同步客户端 C ABI 与 C# 端到端(M7-M8)(2026-09-19)
+
+### 已完成
+
+- **C ABI(v2 追加)**:eq_outbox_*(enqueue/due_pending/mark_sending/mark_result/
+  reset_stuck/pending_count)、eq_sync_state/save_cursor/save_url、
+  eq_sync_conflict_*(add/open/resolve;命名空间化解与日历 EqConflictView 的冲突)、
+  eq_sync_backoff_delay。EqCore 增挂 SyncClientRepository。
+- **C# 传输层**:`ISyncTransport` 抽象 + `HttpSyncTransport`(HttpClient + Bearer +
+  JSON 线格式与服务器协议 v1 严格一致)。
+- **C# 编排**:`SyncOrchestrator.RunOnceAsync` —— 崩溃恢复(resetStuck)→
+  出队(duePending)→ 标记 Sending → 传输 → 结果分派(accepted/duplicate 清队;
+  conflict 登记冲突中心;invalid 计数)→ Pull 变更计数 + 游标推进;
+  **传输失败时条目自动回退待重试**(指数退避由 NextRetryDelayMs 提供,随机抖动)。
+- **端到端测试(进程内传输,忠实实现服务端协议语义)**:
+  - InProcessSyncServer:幂等/base_revision 冲突/墓碑/游标(与 C++ 服务端同规则);
+  - 两设备离线各自创建 → 双向收敛(推送、拉取、游标一致);
+  - 同基线并发编辑 → 败者冲突登记(双版本可见)→ 冲突中心解决;
+  - 网络重试幂等(同 opId 重放不产生重复效果);
+  - 传输失败 → 条目保留 + 退避递增有界(1000ms~600s)。
+
+### 修复的缺陷
+
+- 传输失败后条目停留在 Sending 状态导致 pendingCount=0:编排器 catch 传输异常,
+  统一 markResult(false) 回退(退避由下次调度吸收)。
+
+### 构建与测试结果(本机实测)
+
+- 原生 127/127;C# 86/86(新增 4);docker-compose 真·双客户端联调(需 Docker
+  环境)归 P15 验证。
+
+### 下一步
+
+- P15(M9):Windows 深度集成(通知操作、Widgets、开机启动、Service 与命名管道、
+  严格应用限制安全白名单)与 M8 剩余(HTTPS、令牌刷新、限流)。

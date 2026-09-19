@@ -881,6 +881,99 @@ int32_t EQUORA_API eq_id_list_count(const EqIdList* list);
 EQUORA_API const char* eq_id_list_get(const EqIdList* list, int32_t index);
 void EQUORA_API eq_id_list_destroy(EqIdList* list);
 
+
+// ---- 同步客户端(P14):Outbox、状态、冲突、退避与合并 ----
+
+typedef struct EqOutboxInput {
+    const char* operation_id; // UUID(幂等键)
+    const char* entity_type;
+    const char* entity_id;
+    int64_t base_revision;
+    int32_t kind; // 0 create / 1 update / 2 delete
+    const char* payload; // JSON 文本
+} EqOutboxInput;
+
+typedef struct EqOutboxView {
+    int64_t row_id;
+    const char* operation_id;
+    const char* entity_type;
+    const char* entity_id;
+    int64_t base_revision;
+    int32_t kind;
+    const char* payload;
+    int32_t status;   // 0 待上传 1 上传中 2 失败(超限)
+    int32_t attempts;
+    int64_t next_attempt_at;
+} EqOutboxView;
+
+typedef struct EqOutboxList EqOutboxList;
+
+int32_t EQUORA_API eq_outbox_enqueue(EqCore* core, const EqOutboxInput* input,
+                                     EqError* out_error);
+int32_t EQUORA_API eq_outbox_due_pending(EqCore* core, int64_t now_ms, int32_t limit,
+                                         EqOutboxList** out_list, EqError* out_error);
+int32_t EQUORA_API eq_outbox_mark_sending(EqCore* core, int64_t row_id,
+                                          EqError* out_error);
+int32_t EQUORA_API eq_outbox_mark_result(EqCore* core, int64_t row_id,
+                                         int32_t accepted, int64_t now_ms,
+                                         int32_t max_attempts, EqError* out_error);
+int32_t EQUORA_API eq_outbox_reset_stuck(EqCore* core, EqError* out_error);
+int32_t EQUORA_API eq_outbox_pending_count(EqCore* core, int32_t* out_count,
+                                           EqError* out_error);
+int32_t EQUORA_API eq_outbox_list_count(const EqOutboxList* list);
+EQUORA_API const EqOutboxView* eq_outbox_list_get(const EqOutboxList* list, int32_t index);
+void EQUORA_API eq_outbox_list_destroy(EqOutboxList* list);
+
+typedef struct EqSyncStateView {
+    int64_t cursor;
+    const char* server_url;
+    const char* device_id;
+    int64_t last_success_at;
+} EqSyncStateView;
+
+int32_t EQUORA_API eq_sync_state(EqCore* core, EqSyncStateView* out, EqError* out_error);
+int32_t EQUORA_API eq_sync_save_cursor(EqCore* core, int64_t cursor, int64_t now_ms,
+                                       EqError* out_error);
+int32_t EQUORA_API eq_sync_save_url(EqCore* core, const char* url_utf8,
+                                    EqError* out_error);
+
+// 同步冲突(与日历重叠冲突 EqConflictView 区分,前缀 Sync)。
+typedef struct EqSyncConflictView {
+    int64_t row_id;
+    const char* operation_id;
+    const char* entity_type;
+    const char* entity_id;
+    const char* local_payload;
+    const char* server_payload;
+    int64_t server_revision;
+    int32_t server_deleted;
+    int64_t created_at;
+    int32_t resolution;
+} EqSyncConflictView;
+
+typedef struct EqSyncConflictList EqSyncConflictList;
+
+int32_t EQUORA_API eq_sync_conflict_add(EqCore* core, const char* operation_id_utf8,
+                                        const char* entity_type_utf8,
+                                        const char* entity_id_utf8,
+                                        const char* local_payload_utf8,
+                                        const char* server_payload_utf8,
+                                        int64_t server_revision, int32_t server_deleted,
+                                        int64_t now_ms, EqError* out_error);
+int32_t EQUORA_API eq_sync_conflict_open(EqCore* core, EqSyncConflictList** out_list,
+                                         EqError* out_error);
+int32_t EQUORA_API eq_sync_conflict_resolve(EqCore* core, int64_t row_id,
+                                            int32_t resolution, EqError* out_error);
+int32_t EQUORA_API eq_sync_conflict_list_count(const EqSyncConflictList* list);
+EQUORA_API const EqSyncConflictView* eq_sync_conflict_list_get(
+    const EqSyncConflictList* list, int32_t index);
+void EQUORA_API eq_sync_conflict_list_destroy(EqSyncConflictList* list);
+
+// 退避(纯):attempts 次失败后的下次延迟毫秒;jitter∈[0,1)。
+int32_t EQUORA_API eq_sync_backoff_delay(int32_t attempts, int64_t base_ms,
+                                         int64_t max_ms, double jitter,
+                                         int64_t* out_ms);
+
 #ifdef __cplusplus
 } // extern "C"
 #endif

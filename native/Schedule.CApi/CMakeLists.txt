@@ -6,6 +6,7 @@ add_library(equora_capi SHARED
     src/CApiCalendar.cpp
     src/CApiFocus.cpp
     src/CApiPlanning.cpp
+    src/CApiSyncClient.cpp
 )
 
 add_library(Equora::CApi ALIAS equora_capi)
@@ -20,6 +21,7 @@ target_compile_definitions(equora_capi PRIVATE EQUORA_CAPI_BUILD)
 target_link_libraries(equora_capi
     PUBLIC Equora::Core
     PRIVATE Equora::Common
+           Equora::SyncClient
 )
 
 set_target_properties(equora_capi PROPERTIES

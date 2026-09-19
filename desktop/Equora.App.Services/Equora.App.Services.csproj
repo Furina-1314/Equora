@@ -9,6 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Equora.App.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Equora.App.NativeInterop\Equora.App.NativeInterop.csproj" />
   </ItemGroup>
 
