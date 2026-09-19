@@ -14,8 +14,19 @@
                 <NavigationViewItem Content="首页" Tag="home" Icon="Home" />
                 <NavigationViewItem Content="任务" Tag="tasks" Icon="List" />
                 <NavigationViewItem Content="日历" Tag="calendar" Icon="Calendar" />
-                <NavigationViewItem Content="四象限" Tag="matrix" Icon="Bullets" />
-                <NavigationViewItem Content="专注" Tag="focus" Icon="Timer" />
+                <!-- Icon 特性只接受 Symbol 枚举成员名;WinAppSDK 的 Symbol 枚举没有
+                     Bullets/Timer,写名字会在运行期抛 XamlParseException,必须用
+                     FontIcon 直接给 Segoe Fluent glyph。 -->
+                <NavigationViewItem Content="四象限" Tag="matrix">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE8FD;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem Content="专注" Tag="focus">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE916;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
                 <NavigationViewItem Content="设置" Tag="settings" Icon="Setting" />
             </NavigationView.MenuItems>
             <Frame x:Name="ContentFrame" />
