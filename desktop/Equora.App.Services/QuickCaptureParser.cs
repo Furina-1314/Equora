@@ -90,7 +90,8 @@ public static partial class QuickCaptureParser
         var tags = new List<string>();
         string? project = null;
 
-        var localNow = now.ToLocalTime();
+        // 用户视角壁钟:直接使用注入时刻(不经 ToLocalTime 换算系统时区)。
+        var localNow = now;
 
         // ---- 日期(先行,时间稍后叠加) ----
         var day = localNow.Date;
