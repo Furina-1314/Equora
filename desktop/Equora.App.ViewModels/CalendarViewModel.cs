@@ -30,13 +30,15 @@ public static class SlotMath
             ? local
             : new DateTime(local.Ticks - local.Ticks % (TimeSpan.TicksPerMinute * SnapMinutes),
                            local.Kind);
-        return new DateTimeOffset(snapped, t.Offset);
+        // 显式偏移构造要求 Unspecified,否则在偏移与系统时区不一致的机器上抛异常。
+        return new DateTimeOffset(DateTime.SpecifyKind(snapped, DateTimeKind.Unspecified),
+                                 t.Offset);
     }
 
     public static DateTimeOffset LocalDayStart(DateTimeOffset t)
     {
-        var local = t.LocalDateTime;
-        return new DateTimeOffset(local.Date, t.Offset);
+        var unspecified = DateTime.SpecifyKind(t.LocalDateTime.Date, DateTimeKind.Unspecified);
+        return new DateTimeOffset(unspecified, t.Offset);
     }
 
     /// <summary>锚定日内的偏移像素(y 向下为正)。</summary>
