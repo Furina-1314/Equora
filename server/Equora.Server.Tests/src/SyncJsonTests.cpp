@@ -36,8 +36,10 @@ TEST(SyncJsonTest, ParsesValidRequest) {
 TEST(SyncJsonTest, RejectsBadVersionAndMalformed) {
     EXPECT_FALSE(parseSyncRequest("{\"protocolVersion\":2}").has_value());
     EXPECT_FALSE(parseSyncRequest("{ not json").has_value());
-    EXPECT_FALSE(parseSyncRequest(R"({"protocolVersion":1,"operations":[{}]})")
-                     .has_value()); // 缺 deviceId
+    // 缺 deviceId:操作条目缺 id 在协议层不拒绝,由服务层按 InvalidEntity 处理。
+    const auto partial = parseSyncRequest(R"({"protocolVersion":1,"deviceId":"d","operations":[{}]})");
+    ASSERT_TRUE(partial.has_value());
+    EXPECT_EQ(partial->operations[0].operationId, "");
 }
 
 TEST(SyncJsonTest, EmptyOperationsAllowed) {

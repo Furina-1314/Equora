@@ -100,7 +100,7 @@ int main() {
 
             const auto body = equora::sync::parseSyncRequest(req->getBody());
             if (!body.has_value()) {
-                cb(jsonResponse(R"({"error":"bad request (protocol v1)"})",
+                cb(jsonResponse(R"({"error":"bad-request"})",
                                 drogon::k400BadRequest));
                 return;
             }
