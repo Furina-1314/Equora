@@ -193,7 +193,7 @@ TEST(MigrationV3Test, UpgradesV2Database) {
     {
         auto db = equora::storage::Database::open(path);
         equora::storage::applyMigrations(db);
-        EXPECT_EQ(equora::storage::currentSchemaVersion(db), 3);
+        EXPECT_EQ(equora::storage::currentSchemaVersion(db), equora::storage::builtInMigrations().back().version);
 
         equora::core::CalendarRepository cal(db, "device-new");
         (void)cal.createCalendar(equora::domain::Calendar::draft("默认"));

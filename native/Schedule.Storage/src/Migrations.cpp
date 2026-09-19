@@ -182,6 +182,77 @@ constexpr std::string_view kV2Statements[] = {
     R"SQL(CREATE INDEX idx_tasks_project ON tasks (project_id) WHERE deleted_at IS NULL;)SQL",
 };
 
+// ---- v4:专注会话、中断、分心捕获与专注预设 ----
+constexpr std::string_view kV4Name = "focus_sessions interruptions distraction_inbox focus_profiles";
+
+constexpr std::string_view kV4Statements[] = {
+    R"SQL(CREATE TABLE focus_sessions (
+    id              TEXT PRIMARY KEY,
+    task_id         TEXT REFERENCES tasks (id) ON DELETE SET NULL,
+    block_id        TEXT,
+    mode            INTEGER NOT NULL,
+    planned_start   INTEGER NOT NULL,
+    planned_end     INTEGER,
+    actual_start    INTEGER NOT NULL,
+    actual_end      INTEGER,
+    paused_ms       INTEGER NOT NULL DEFAULT 0,
+    state           INTEGER NOT NULL DEFAULT 0,
+    goal            TEXT    NOT NULL DEFAULT '',
+    completion_note TEXT    NOT NULL DEFAULT '',
+    completion_level INTEGER NOT NULL DEFAULT -1,
+    created_at      INTEGER NOT NULL,
+    updated_at      INTEGER NOT NULL,
+    revision        INTEGER NOT NULL,
+    deleted_at      INTEGER,
+    last_device_id  TEXT    NOT NULL DEFAULT ''
+);)SQL",
+    R"SQL(CREATE INDEX idx_focus_open ON focus_sessions (actual_start) WHERE actual_end IS NULL;)SQL",
+    R"SQL(CREATE INDEX idx_focus_time ON focus_sessions (actual_start, actual_end);)SQL",
+    R"SQL(CREATE TABLE interruptions (
+    id          TEXT PRIMARY KEY,
+    session_id  TEXT NOT NULL REFERENCES focus_sessions (id) ON DELETE CASCADE,
+    occurred_at INTEGER NOT NULL,
+    duration_ms INTEGER NOT NULL DEFAULT 0,
+    reason      TEXT    NOT NULL DEFAULT '',
+    source      TEXT    NOT NULL DEFAULT 'manual',
+    handling    TEXT    NOT NULL DEFAULT ''
+);)SQL",
+    R"SQL(CREATE INDEX idx_interruptions_session ON interruptions (session_id);)SQL",
+    R"SQL(CREATE TABLE distraction_inbox_items (
+    id             TEXT PRIMARY KEY,
+    session_id     TEXT REFERENCES focus_sessions (id) ON DELETE SET NULL,
+    content        TEXT    NOT NULL,
+    captured_at    INTEGER NOT NULL,
+    resolution     INTEGER NOT NULL DEFAULT 0,
+    resolved_ref   TEXT    NOT NULL DEFAULT '',
+    created_at     INTEGER NOT NULL,
+    updated_at     INTEGER NOT NULL,
+    revision       INTEGER NOT NULL,
+    deleted_at     INTEGER,
+    last_device_id TEXT    NOT NULL DEFAULT ''
+);)SQL",
+    R"SQL(CREATE INDEX idx_distraction_pending ON distraction_inbox_items (captured_at)
+    WHERE resolution = 0 AND deleted_at IS NULL;)SQL",
+    R"SQL(CREATE TABLE focus_profiles (
+    id             TEXT PRIMARY KEY,
+    name           TEXT NOT NULL COLLATE NOCASE UNIQUE,
+    mode           INTEGER NOT NULL DEFAULT 0,
+    planned_minutes INTEGER NOT NULL DEFAULT 25,
+    break_minutes  INTEGER NOT NULL DEFAULT 5,
+    allowed_apps   TEXT    NOT NULL DEFAULT '[]',
+    blocked_apps   TEXT    NOT NULL DEFAULT '[]',
+    allowed_sites  TEXT    NOT NULL DEFAULT '[]',
+    blocked_sites  TEXT    NOT NULL DEFAULT '[]',
+    notify_policy  INTEGER NOT NULL DEFAULT 0,
+    is_default     INTEGER NOT NULL DEFAULT 0,
+    created_at     INTEGER NOT NULL,
+    updated_at     INTEGER NOT NULL,
+    revision       INTEGER NOT NULL,
+    deleted_at     INTEGER,
+    last_device_id TEXT    NOT NULL DEFAULT ''
+);)SQL",
+};
+
 constexpr std::string_view kInsertRegistrySql =
     "INSERT INTO schema_migrations (version, name, applied_at) VALUES (?, ?, ?)";
 
@@ -198,6 +269,9 @@ const std::vector<Migration>& builtInMigrations() {
         Migration{3, kV3Name,
                   std::vector<std::string_view>(std::begin(kV3Statements),
                                                 std::end(kV3Statements))},
+        Migration{4, kV4Name,
+                  std::vector<std::string_view>(std::begin(kV4Statements),
+                                                std::end(kV4Statements))},
     };
     return kMigrations;
 }

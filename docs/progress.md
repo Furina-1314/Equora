@@ -5,7 +5,7 @@
 
 ## 当前状态
 
-- **当前阶段**:P9 — 专注会话核心(M4)
+- **当前阶段**:P9b — 专注会话 ABI 与服务层(M4)
 - **已完成**:P0–P6(M2 核心与服务层完成)
 - **最新提交**:P8 四象限与快速收集
 
@@ -392,3 +392,39 @@
   distraction_inbox_items/focus_profiles)、计时状态机(番茄/深度/Flowtime/
   正计时/无计时)、暂停/恢复/完成/放弃、崩溃恢复(启动时收尾未闭合会话)、
   分心捕获即时落库。
+
+---
+
+## P9a — 专注会话核心(原生层)✅(2026-09-19)
+
+### 已完成
+
+- **迁移 v4**:focus_sessions(计划/实际起止、paused_ms、state、goal/完成记录/自评,
+  开放会话部分索引)、interruptions(级联会话)、distraction_inbox_items(待整理
+  部分索引)、focus_profiles(名称唯一含墓碑,应用/站点 JSON 列)。
+- **Domain**:FocusMode(番茄/深度/Flowtime/正计时/无计时)、SessionState、
+  FocusSession(effectiveMs 扣除暂停)、Interruption、DistractionItem、FocusProfile。
+- **FocusRepository**:
+  - 状态机:start(唯一开放会话约束)、pause/resume(状态不符 Conflict;
+    暂停时长按 updated_at 差累积)、complete(可携带备注与 0-100 自评)、
+    abandon;乐观并发;计时滴答不落库,状态转换才写。
+  - **崩溃恢复**:recoverInterrupted 把未闭合会话以 updated_at(最后活动,
+    由中断记录推进)收尾为 Abandoned —— "崩溃后会话和分心记录可恢复"。
+  - 中断记录(手动/应用切换来源)、分心捕获(即时落库,先持久化后整理,
+    resolution 1-5 + 去向引用,重复整理拒绝)、专注预设 CRUD。
+- 测试 7 例:生命周期(暂停累计/有效时长/闭合后拒绝)、Flowtime 无计划端、
+  任务关联与历史、中断记录、分心捕获与整理、崩溃恢复、预设 CRUD。
+
+### 构建与测试结果(本机实测)
+
+- 原生 111/111(新增 7 例);C# 54/54(schema 断言同步 v4)。
+
+### 已知问题 / 假设
+
+- 会话状态机的时间参数由调用方注入(测试确定性);UI 时钟在 P10 接。
+- focus_profiles 的应用/站点 JSON 为透传文本(P10 校验与执行)。
+
+### 下一步
+
+- P9b:C ABI(focus 面会话状态机/中断/捕获/预设)+ C# IFocusService
+  + 启动时 recoverInterrupted 接线。

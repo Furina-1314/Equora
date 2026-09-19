@@ -17,6 +17,7 @@ add_executable(equora_core_tests
     src/TransferTests.cpp
     src/RecurrenceTests.cpp
     src/CalendarRepoTests.cpp
+    src/FocusSessionTests.cpp
 )
 
 target_link_libraries(equora_core_tests PRIVATE

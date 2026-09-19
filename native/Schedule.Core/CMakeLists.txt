@@ -4,6 +4,7 @@ find_package(nlohmann_json CONFIG REQUIRED)
 add_library(equora_core STATIC
     src/TaskRepository.cpp
     src/CalendarRepository.cpp
+    src/FocusRepository.cpp
     src/TransferIcs.cpp
     src/ProjectRepository.cpp
     src/TagRepository.cpp

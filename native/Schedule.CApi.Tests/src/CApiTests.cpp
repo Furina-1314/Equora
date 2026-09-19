@@ -65,7 +65,7 @@ TEST_F(CApiTest, SchemaVersionAfterCreate) {
     EqError err{};
     int32_t version = 0;
     ASSERT_EQ(eq_core_schema_version(core_, &version, &err), kOk);
-    EXPECT_EQ(version, 3);
+    EXPECT_EQ(version, 4);
 }
 
 TEST_F(CApiTest, SchemaVersionNullCoreFillsError) {

@@ -8,6 +8,7 @@ add_library(equora_domain STATIC
     src/Tag.cpp
     src/Calendar.cpp
     src/CalendarEvent.cpp
+    src/Focus.cpp
     src/RecurrenceRule.cpp
 )
 

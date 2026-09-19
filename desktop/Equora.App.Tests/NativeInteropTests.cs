@@ -40,7 +40,7 @@ public class NativeInteropTests : IDisposable
     [Fact]
     public void SchemaIsMigratedToLatest()
     {
-        Assert.Equal(3, _service.SchemaVersion); // schema v3
+        Assert.Equal(4, _service.SchemaVersion); // schema v4(动态来自原生)
     }
 
     [Fact]
