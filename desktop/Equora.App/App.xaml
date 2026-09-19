@@ -16,6 +16,9 @@
             <local:FalseToVisibleConverter x:Key="FalseToVisibleConverter" />
             <local:BoolToVisibleConverter x:Key="BoolToVisibleConverter" />
             <local:BoolToInvisibleConverter x:Key="BoolToInvisibleConverter" />
+            <local:NonEmptyToVisibleConverter x:Key="NonEmptyToVisibleConverter" />
+            <local:FalseToVisibleXConverter x:Key="FalseToVisibleXConverter" />
+            <local:TrueToVisibleConverter2 x:Key="TrueToVisibleConverter2" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

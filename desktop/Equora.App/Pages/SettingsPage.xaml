@@ -25,7 +25,15 @@
             <TextBlock x:Name="BackupStatus" Opacity="0.7" TextWrapping="Wrap"
                        Style="{StaticResource CaptionTextBlockStyle}" />
 
-            <TextBlock Text="导入与导出" Style="{StaticResource SubtitleTextBlockStyle}" Margin="0,12,0,0" />
+            <TextBlock Text="隐私与活动监测" Style="{StaticResource SubtitleTextBlockStyle}" Margin="0,12,0,0" />
+            <ToggleSwitch x:Name="ActivityToggle" Header="启用前台应用监测(温和提醒)"
+                          OffContent="关闭:不检测任何应用(默认)"
+                          OnContent="开启:仅识别进程名,不采集窗口内容"
+                          Toggled="OnActivityToggled" />
+            <TextBlock x:Name="PrivacyNote" Opacity="0.65" TextWrapping="Wrap" FontSize="12"
+                       Text="说明:监测只在专注页激活,仅读取进程名(如 xxx.exe)用于匹配限制名单;不记录窗口标题、键盘与任何内容。关闭后立即停止检测。受限名单存于本地,可在下方编辑。" />
+            <TextBox x:Name="BlockedAppsBox" Header="受限应用(逗号分隔进程名)" MinWidth="280"
+                     LostFocus="OnBlockedAppsChanged" PlaceholderText="game.exe,steam.exe" />
             <StackPanel Orientation="Horizontal" Spacing="8">
                 <Button Content="导出 JSON" Click="OnExportJson" />
                 <Button Content="导出 CSV" Click="OnExportCsv" />

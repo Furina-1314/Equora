@@ -20,5 +20,7 @@ internal static class AppServices
 
     public static MatrixViewModel Matrix { get; } = new(Data, Data, Undo);
 
+    public static FocusViewModel FocusVm { get; } = new(Data, Data);
+
     public static HomeViewModel Home { get; } = new(Data);
 }

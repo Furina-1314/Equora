@@ -11,6 +11,9 @@ public sealed partial class SettingsPage : Page
     public SettingsPage()
     {
         InitializeComponent();
+        var settings = Windows.Storage.ApplicationData.Current.LocalSettings;
+        ActivityToggle.IsOn = settings.Values["ActivityMonitoring"] is true;
+        BlockedAppsBox.Text = settings.Values["BlockedApps"] as string ?? "game.exe,steam.exe";
         AboutText.Text = $"衡序 Equora 0.2.0(M1)\n数据目录:{AppPaths.DataDirectory}\n" +
                          $"数据库模式:v{AppServices.Data.SchemaVersion}\n" +
                          $"设备 ID:{AppServices.Data.DeviceId}";
@@ -94,5 +97,16 @@ public sealed partial class SettingsPage : Page
         {
             TransferStatus.Text = $"导入失败:{ex.Message}";
         }
+    }
+    private void OnActivityToggled(object sender, RoutedEventArgs e)
+    {
+        Windows.Storage.ApplicationData.Current.LocalSettings.Values["ActivityMonitoring"] =
+            ActivityToggle.IsOn;
+    }
+
+    private void OnBlockedAppsChanged(object sender, RoutedEventArgs e)
+    {
+        Windows.Storage.ApplicationData.Current.LocalSettings.Values["BlockedApps"] =
+            BlockedAppsBox.Text;
     }
 }

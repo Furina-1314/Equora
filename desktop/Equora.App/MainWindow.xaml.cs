@@ -53,6 +53,7 @@ public sealed partial class MainWindow : Window
             "tasks" => typeof(TasksPage),
             "calendar" => typeof(CalendarPage),
             "matrix" => typeof(MatrixPage),
+            "focus" => typeof(FocusPage),
             "settings" => typeof(SettingsPage),
             _ => typeof(HomePage),
         };
