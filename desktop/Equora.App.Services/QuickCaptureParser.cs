@@ -151,8 +151,12 @@ public static partial class QuickCaptureParser
 
             if (!dayMatched)
             {
-                var candidate = localNow.Date.AddHours(hour).AddMinutes(minute);
-                day = candidate <= localNow ? localNow.Date.AddDays(1) : localNow.Date;
+                // 纯壁钟比较:DateTime 隐式转 DateTimeOffset 会带上系统时区偏移,
+                // 在非本地时区机器上把"已过点"误判为"未到"。
+                var candidateWall = localNow.Date.AddHours(hour).AddMinutes(minute);
+                day = candidateWall <= localNow.DateTime
+                    ? localNow.Date.AddDays(1)
+                    : localNow.Date;
                 dayMatched = true;
             }
             due = new DateTimeOffset(day.AddHours(hour).AddMinutes(minute),
