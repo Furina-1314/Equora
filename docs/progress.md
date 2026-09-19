@@ -618,3 +618,45 @@
 
 - P13b:Drogon HTTP 层(/api/v1/sync + 健康检查 + Bearer 认证)、
   PostgresSyncStore(libpq)、SQL 迁移、Docker 编排;server 纳入 CI。
+
+---
+
+## P13b — Drogon 服务器 + PostgreSQL + Docker(M7)✅(2026-09-19)—— M7 服务端完成
+
+### 已完成(1/2 已提交 + 构建验证中)
+
+- **SyncCore 扩展(轻量可测,15/15)**:`SyncJson`(请求/响应编解码,
+  protocolVersion 校验、操作/结果/变更的小写串表示、冲突携带服务端版本)、
+  `Sha256`(与桌面端共享的纯算法副本;官方向量验证)。
+- **PostgresSyncStore(libpq)**:实体镜像 UPSERT + 变更流同事务写入
+  (BEGIN/COMMIT/异常回滚)、`ON CONFLICT DO NOTHING` 幂等登记(影响行数判首次)、
+  令牌→用户(SHA-256 哈希查询,不存明文)、引导用户/设备注册/撤销检查/心跳。
+- **Drogon 主程序**:`GET /api/v1/health`(含 DB 探活降级 503)、
+  `POST /api/v1/sync`(Bearer → 用户 → 设备校验 → SyncService → JSON 响应;
+  401/403/400/500 完整错误路径);环境变量配置(端口/DB URL/引导令牌)。
+- **SQL 迁移 001**:users/devices/sync_entities/change_log(BIGSERIAL 全局单调=
+  用户内单调游标)/processed_ops;JSONB 载荷、TIMESTAMPTZ。
+- **Docker**:多阶段 Dockerfile(ubuntu24.04 + vcpkg 锁定基线,非 root 运行,
+  healthcheck)+ docker-compose(PostgreSQL 仅绑 127.0.0.1、迁移自动执行、
+  引导令牌即开即用)。
+- server README(API 文档/开发流程/已知限制)、重型 preset(win-x64-server,
+  独立 vcpkg 清单隔离 drogon/libpq 重依赖)。
+
+### 构建与测试结果(本机实测)
+
+- 轻量 preset:15/15(新增 SyncJson 5 + Sha256 2)。
+- 重型 preset(drogon+libpq):vcpkg 依赖安装完成;配置因 vcpkg 内置下载器经
+  代理下载 meson 失败(SSL 35,与 P1 同类环境问题),已带代理重试中;
+  Dockerfile 构建路径未在本机验证(无 Docker),CI 未纳入(README 已注明)。
+
+### 已知问题 / 假设
+
+- PostgresSyncStore 单连接+互斥(M7 单机规模;连接池随 M8)。
+- 首次重型构建需网络(vcpkg 基线+依赖);Docker Hub 拉取在国内网络可能需镜像加速。
+- 服务器二进制尚未冒烟(依赖 PostgreSQL 实例;P14 双客户端联调时在
+  docker-compose 环境完成端到端)。
+
+### 下一步
+
+- P14(M7-M8):客户端 SyncOutbox(与业务写同事务)、Push/Pull 客户端、
+  指数退避+随机抖动、字段级合并、冲突中心;docker-compose 端到端联调。
