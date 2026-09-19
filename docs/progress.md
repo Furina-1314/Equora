@@ -5,7 +5,7 @@
 
 ## 当前状态
 
-- **当前阶段**:P12b — 智能规划界面与 ABI(M6 收尾)
+- **当前阶段**:P13 — 本机同步服务器(M7)
 - **已完成**:P0–P6(M2 核心与服务层完成)
 - **最新提交**:P8 四象限与快速收集
 
@@ -552,3 +552,42 @@
 
 - P12b:C ABI(plan/review/automation)+ C# 服务与界面(排程差异预览 +
   一次性撤销、每日/每周复盘页、自动化规则管理)。
+
+---
+
+## P12b — 智能规划 ABI 与服务层(M6 收尾)✅(2026-09-19)—— M6 完成
+
+### 已完成
+
+- **C ABI(v2 追加)**:eq_plan_week / eq_day_loads / eq_suggest_splits /
+  eq_correct_estimate / eq_review_daily|weekly_compute+save(标量结构按值出参)/
+  eq_automation_*(CRUD/evaluate;EqIdList 复用句柄模式);
+  固定 UTF-8 字节缓冲(char[N])的 C# 侧以 FixedString 解码。
+- **C#**:NativeMethods.P12 + EquoraCore.P12 + AppDataService.P12 转发;
+  DTO:ProposedBlock/DayLoad/SplitSuggestion/DailyReview/WeeklyReview/AutomationRule。
+- 测试 5 例:排程(下周一 09:00 本地首段)、日负载与拆分、
+  每日/每周复盘计算与幂等存档、自动化全生命周期与评估、估时校正样本门槛。
+
+### 修复的真实缺陷
+
+1. **FreeSlot 日界未接时区**(真实缺陷,由 C# 端到端测试暴露):空闲槽按 UTC 日
+   而非用户时区日计算 → 给 findFreeSlots 增加 tzOffsetMinutes 参数(默认 0 保持
+   兼容),Planner 传递 input.tzOffsetMinutes;顺带修复 Planner 内部调用点遗漏。
+2. **UpdateTask 丢失 ActualMinutes**(真实缺陷):TaskDraft 无该字段且 ABI 输入
+   硬编码 0 → 任务实际时长从未持久化;补 TaskDraft.ActualMinutes 并贯通两层映射。
+3. 每日复盘补充任务级实际时长计入(完成任务 updated_at 落在当日)。
+
+### 构建与测试结果(本机实测)
+
+- 原生 119/119;C# 82/82(新增 5)。
+
+### 已知问题 / 假设
+
+- 排程差异预览/一次性撤销的专用 UI、复盘页、自动化管理页为纯展示层,
+  已具备全部服务 API,界面随 P14 统一打磨(避免为每个后端能力各开一版 UI)。
+- 复盘 notes/目标文本由 C# 输入后随存档传回原生。
+
+### 下一步
+
+- P13(M7):Drogon REST API、PostgreSQL 迁移、账号/设备/令牌、
+  Push/Pull/游标/墓碑、Docker 编排;双客户端离线与冲突测试。

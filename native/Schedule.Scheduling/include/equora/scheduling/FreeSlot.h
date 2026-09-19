@@ -26,6 +26,7 @@ struct WorkHours {
                                                   domain::UtcMillis to,
                                                   const WorkHours& hours,
                                                   std::int64_t minMinutes,
-                                                  std::size_t limit = 0);
+                                                  std::size_t limit = 0,
+                                                  int tzOffsetMinutes = 0);
 
 } // namespace equora::scheduling

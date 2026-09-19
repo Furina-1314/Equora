@@ -19,7 +19,8 @@ int weekdayOfLocalDay(std::int64_t localDay) noexcept {
 
 std::vector<FreeSlot> findFreeSlots(const std::vector<Span>& busy, domain::UtcMillis from,
                                     domain::UtcMillis to, const WorkHours& hours,
-                                    std::int64_t minMinutes, std::size_t limit) {
+                                    std::int64_t minMinutes, std::size_t limit,
+                                    int tzOffsetMinutes) {
     std::vector<FreeSlot> out;
     if (to <= from || minMinutes <= 0 || hours.endMinute <= hours.startMinute) return out;
 
@@ -29,8 +30,8 @@ std::vector<FreeSlot> findFreeSlots(const std::vector<Span>& busy, domain::UtcMi
                               std::min<std::int64_t>(s.end, b));
     };
 
-    for (std::int64_t day = localDayIndex(from, 0);; ++day) {
-        const std::int64_t dayStart = localDayStartUtc(day, 0);
+    for (std::int64_t day = localDayIndex(from, tzOffsetMinutes);; ++day) {
+        const std::int64_t dayStart = localDayStartUtc(day, tzOffsetMinutes);
         if (dayStart >= to) break;
 
         if (std::find(hours.workdays.begin(), hours.workdays.end(),

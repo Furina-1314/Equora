@@ -43,7 +43,10 @@ DailyReviewData ReviewRepository::computeDaily(domain::UtcMillis dayStartUtc,
     // 任务侧:状态变更以 updated_at 当日落在本日的为准(简化:当日完成的/取消的)。
     for (const auto& t : tasks.query({})) {
         if (t.updatedAt < dayStartUtc || t.updatedAt >= dayEnd) continue;
-        if (t.status == TaskStatus::Done) ++data.completedCount;
+        if (t.status == TaskStatus::Done) {
+            ++data.completedCount;
+            data.actualMinutes += t.actualMinutes; // 任务级实际时长计入
+        }
         if (t.status == TaskStatus::Cancelled) ++data.cancelledCount;
     }
     // 延期 = 截止在本日之前且仍未完成。

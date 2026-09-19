@@ -76,6 +76,7 @@ public sealed partial class EquoraCore : IDisposable
             DueAt = task.DueAt,
             EstimateMinutes = task.EstimateMinutes,
             ProjectId = task.ProjectId,
+            ActualMinutes = task.ActualMinutes,
         };
         var input = new NativeInputScope(draft, revision: task.Revision, id: task.Id);
         using (input)
@@ -182,7 +183,7 @@ public sealed partial class EquoraCore : IDisposable
                 HasDue = d.DueAt is not null ? 1 : 0,
                 EstimateMinutes = d.EstimateMinutes ?? 0,
                 HasEstimate = d.EstimateMinutes is not null ? 1 : 0,
-                ActualMinutes = 0,
+                ActualMinutes = d.ActualMinutes,
                 ProjectId = Pin(d.ProjectId),
                 HasProject = d.ProjectId is not null ? 1 : 0,
                 Revision = revision,

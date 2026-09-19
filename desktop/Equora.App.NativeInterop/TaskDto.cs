@@ -49,6 +49,7 @@ public sealed record TaskDraft
     public DateTimeOffset? DueAt { get; set; }
     public int? EstimateMinutes { get; set; }
     public string? ProjectId { get; set; }
+    public int ActualMinutes { get; set; } // 仅更新路径使用
 }
 
 public enum TaskStatus

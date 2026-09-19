@@ -5,6 +5,7 @@ add_library(equora_capi SHARED
     src/CApiSystem.cpp
     src/CApiCalendar.cpp
     src/CApiFocus.cpp
+    src/CApiPlanning.cpp
 )
 
 add_library(Equora::CApi ALIAS equora_capi)

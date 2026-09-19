@@ -735,6 +735,152 @@ EQUORA_API const EqFocusProfileView* eq_focus_profile_list_get(
     const EqFocusProfileList* list, int32_t index);
 void EQUORA_API eq_focus_profile_list_destroy(EqFocusProfileList* list);
 
+
+// ---- 智能规划 / 复盘 / 自动化(P12) ----
+
+typedef struct EqProposedView {
+    const char* task_id;
+    int64_t start;
+    int64_t end;
+    const char* reason;
+} EqProposedView;
+
+typedef struct EqProposedList EqProposedList;
+// 自动排程:候选=未完成且有估时的任务;忙碌=当前窗口物化。
+int32_t EQUORA_API eq_plan_week(EqCore* core, int64_t from, int64_t to,
+                                int32_t work_start_minute, int32_t work_end_minute,
+                                int32_t workday_mask, int32_t max_block_minutes,
+                                int32_t tz_offset_minutes, EqProposedList** out_list,
+                                EqError* out_error);
+int32_t EQUORA_API eq_proposed_count(const EqProposedList* list);
+EQUORA_API const EqProposedView* eq_proposed_get(const EqProposedList* list, int32_t index);
+void EQUORA_API eq_proposed_list_destroy(EqProposedList* list);
+
+typedef struct EqDayLoadView {
+    char local_date[11]; // YYYY-MM-DD
+    int64_t planned_minutes;
+    int64_t capacity_minutes;
+    int32_t overloaded;
+} EqDayLoadView;
+
+typedef struct EqLoadList EqLoadList;
+int32_t EQUORA_API eq_day_loads(EqCore* core, int64_t from, int64_t to,
+                                int32_t work_start_minute, int32_t work_end_minute,
+                                int32_t workday_mask, int32_t tz_offset_minutes,
+                                EqLoadList** out_list, EqError* out_error);
+int32_t EQUORA_API eq_load_count(const EqLoadList* list);
+EQUORA_API const EqDayLoadView* eq_load_get(const EqLoadList* list, int32_t index);
+void EQUORA_API eq_load_list_destroy(EqLoadList* list);
+
+typedef struct EqSplitView {
+    char task_id[64];
+    char title[128];
+    int32_t total_minutes;
+    int32_t blocks;
+    int32_t block_minutes;
+} EqSplitView;
+
+typedef struct EqSplitList EqSplitList;
+int32_t EQUORA_API eq_suggest_splits(EqCore* core, int64_t from, int64_t to,
+                                     int32_t max_block_minutes,
+                                     EqSplitList** out_list, EqError* out_error);
+int32_t EQUORA_API eq_split_count(const EqSplitList* list);
+EQUORA_API const EqSplitView* eq_split_get(const EqSplitList* list, int32_t index);
+void EQUORA_API eq_split_list_destroy(EqSplitList* list);
+
+// 估时校正:返回建议分钟数;样本 <2 时 has_suggestion=0。
+int32_t EQUORA_API eq_correct_estimate(EqCore* core, const char* task_id_utf8,
+                                       int32_t* out_suggested, int32_t* out_samples,
+                                       int32_t* out_has, EqError* out_error);
+
+// 复盘:计算返回标量结构;notes 等文本由调用方保存时传入。
+typedef struct EqDailyOut {
+    int32_t completed;
+    int32_t deferred;
+    int32_t cancelled;
+    int32_t big_three_done;
+    int32_t distraction_count;
+    int64_t planned_minutes;
+    int64_t actual_minutes;
+} EqDailyOut;
+
+int32_t EQUORA_API eq_review_daily_compute(EqCore* core, int64_t day_start_utc,
+                                           int32_t tz_offset_minutes, EqDailyOut* out,
+                                           EqError* out_error);
+int32_t EQUORA_API eq_review_daily_save(EqCore* core, int64_t day_start_utc,
+                                        int32_t tz_offset_minutes,
+                                        const char* notes_utf8,
+                                        const char* focus_tomorrow_utf8,
+                                        EqError* out_error);
+
+typedef struct EqWeeklyOut {
+    int64_t deep_work_minutes;
+    double focus_ratio;
+    double estimate_accuracy;
+    int32_t best_focus_hour;
+} EqWeeklyOut;
+
+int32_t EQUORA_API eq_review_weekly_compute(EqCore* core, int64_t week_start_utc,
+                                            int32_t tz_offset_minutes, EqWeeklyOut* out,
+                                            EqError* out_error);
+int32_t EQUORA_API eq_review_weekly_save(EqCore* core, int64_t week_start_utc,
+                                         int32_t tz_offset_minutes,
+                                         const char* notes_utf8,
+                                         const char* next_week_goals_utf8,
+                                         EqError* out_error);
+
+// ---- 自动化 ----
+
+typedef struct EqAutomationInput {
+    const char* id; // 更新必填
+    const char* name;
+    const char* trigger;
+    const char* conditions;
+    const char* actions;
+    int32_t enabled;
+    int64_t revision;
+} EqAutomationInput;
+
+typedef struct EqAutomationView {
+    const char* id;
+    const char* name;
+    const char* trigger;
+    const char* conditions;
+    const char* actions;
+    int32_t enabled;
+    int64_t revision;
+} EqAutomationView;
+
+typedef struct EqAutomationHandle EqAutomationHandle;
+typedef struct EqAutomationList EqAutomationList;
+
+EQUORA_API const EqAutomationView* eq_automation_view(const EqAutomationHandle* handle);
+void EQUORA_API eq_automation_handle_destroy(EqAutomationHandle* handle);
+int32_t EQUORA_API eq_automation_create(EqCore* core, const EqAutomationInput* input,
+                                        EqAutomationHandle** out_handle, EqError* out_error);
+int32_t EQUORA_API eq_automation_find(EqCore* core, const char* id_utf8,
+                                      EqAutomationHandle** out_handle, EqError* out_error);
+int32_t EQUORA_API eq_automation_update(EqCore* core, const EqAutomationInput* input,
+                                        EqAutomationHandle** out_handle, EqError* out_error);
+int32_t EQUORA_API eq_automation_set_enabled(EqCore* core, const char* id_utf8,
+                                             int32_t enabled, EqError* out_error);
+int32_t EQUORA_API eq_automation_delete(EqCore* core, const char* id_utf8,
+                                        EqError* out_error);
+int32_t EQUORA_API eq_automation_list(EqCore* core, EqAutomationList** out_list,
+                                      EqError* out_error);
+int32_t EQUORA_API eq_automation_list_count(const EqAutomationList* list);
+EQUORA_API const EqAutomationView* eq_automation_list_get(const EqAutomationList* list,
+                                                          int32_t index);
+void EQUORA_API eq_automation_list_destroy(EqAutomationList* list);
+typedef struct EqIdList EqIdList;
+int32_t EQUORA_API eq_automation_evaluate(EqCore* core, const char* trigger_utf8,
+                                          const char* task_id_utf8,
+                                          EqIdList** out_list,
+                                          EqError* out_error);
+int32_t EQUORA_API eq_id_list_count(const EqIdList* list);
+EQUORA_API const char* eq_id_list_get(const EqIdList* list, int32_t index);
+void EQUORA_API eq_id_list_destroy(EqIdList* list);
+
 #ifdef __cplusplus
 } // extern "C"
 #endif

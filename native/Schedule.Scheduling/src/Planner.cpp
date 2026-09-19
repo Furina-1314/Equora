@@ -53,7 +53,8 @@ std::vector<ProposedBlock> planWeek(const PlannerInput& input) {
         int piecesThisTask = 0;
         while (left > 0) {
             const auto slots = findFreeSlots(input.busy, input.windowFrom, input.windowTo,
-                                             input.hours, input.minBlockMinutes, 0);
+                                             input.hours, input.minBlockMinutes, 0,
+                                             input.tzOffsetMinutes);
             const Span* best = nullptr;
             for (const auto& s : slots) {
                 // 起点不早于现在窗口内、且避开深夜(工作时段已由 findFreeSlots 保证)。
