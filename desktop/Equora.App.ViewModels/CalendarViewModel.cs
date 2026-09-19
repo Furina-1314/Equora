@@ -25,20 +25,17 @@ public static class SlotMath
 
     public static DateTimeOffset Snap(DateTimeOffset t)
     {
-        var local = t.LocalDateTime;
+        // 按时刻自身偏移的壁钟吸附(LocalDateTime 会换算到系统时区,语义不对)。
+        var wall = t.DateTime; // DateTimeOffset.DateTime 保留自身壁钟,Kind=Unspecified
         var snapped = SnapMinutes <= 0
-            ? local
-            : new DateTime(local.Ticks - local.Ticks % (TimeSpan.TicksPerMinute * SnapMinutes),
-                           local.Kind);
-        // 显式偏移构造要求 Unspecified,否则在偏移与系统时区不一致的机器上抛异常。
-        return new DateTimeOffset(DateTime.SpecifyKind(snapped, DateTimeKind.Unspecified),
-                                 t.Offset);
+            ? wall
+            : wall.AddTicks(-(wall.Ticks % (TimeSpan.TicksPerMinute * SnapMinutes)));
+        return new DateTimeOffset(snapped, t.Offset);
     }
 
     public static DateTimeOffset LocalDayStart(DateTimeOffset t)
     {
-        var unspecified = DateTime.SpecifyKind(t.LocalDateTime.Date, DateTimeKind.Unspecified);
-        return new DateTimeOffset(unspecified, t.Offset);
+        return new DateTimeOffset(t.DateTime.Date, t.Offset);
     }
 
     /// <summary>锚定日内的偏移像素(y 向下为正)。</summary>
