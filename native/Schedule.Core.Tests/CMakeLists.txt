@@ -21,6 +21,8 @@ add_executable(equora_core_tests
     src/PlannerTests.cpp
     src/ReviewTests.cpp
     src/SyncClientTests.cpp
+    src/PerfTests.cpp
+    src/FaultInjectionTests.cpp
 )
 
 target_link_libraries(equora_core_tests PRIVATE
