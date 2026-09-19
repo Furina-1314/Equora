@@ -315,6 +315,44 @@ constexpr std::string_view kV5Statements[] = {
     R"SQL(CREATE INDEX idx_automation_logs_rule ON automation_logs (rule_id, triggered_at);)SQL",
 };
 
+// ---- v6:同步客户端(Outbox、状态、冲突中心) ----
+constexpr std::string_view kV6Name = "sync_outbox sync_state sync_conflicts";
+
+constexpr std::string_view kV6Statements[] = {
+    R"SQL(CREATE TABLE sync_outbox (
+    rowid            INTEGER PRIMARY KEY AUTOINCREMENT,
+    operation_id     TEXT    NOT NULL UNIQUE,
+    entity_type      TEXT    NOT NULL,
+    entity_id        TEXT    NOT NULL,
+    base_revision    INTEGER NOT NULL DEFAULT 0,
+    kind             INTEGER NOT NULL DEFAULT 1,
+    payload          TEXT    NOT NULL DEFAULT '{}',
+    status           INTEGER NOT NULL DEFAULT 0,
+    attempts         INTEGER NOT NULL DEFAULT 0,
+    next_attempt_at  INTEGER NOT NULL DEFAULT 0,
+    created_at       INTEGER NOT NULL
+);)SQL",
+    R"SQL(CREATE INDEX idx_outbox_due ON sync_outbox (status, next_attempt_at);)SQL",
+    R"SQL(CREATE TABLE sync_state (
+    key   TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+);)SQL",
+    R"SQL(CREATE TABLE sync_conflicts (
+    rowid           INTEGER PRIMARY KEY AUTOINCREMENT,
+    operation_id    TEXT    NOT NULL,
+    entity_type     TEXT    NOT NULL,
+    entity_id       TEXT    NOT NULL,
+    local_payload   TEXT    NOT NULL DEFAULT '{}',
+    server_payload  TEXT    NOT NULL DEFAULT '{}',
+    server_revision INTEGER NOT NULL DEFAULT 0,
+    server_deleted  INTEGER NOT NULL DEFAULT 0,
+    created_at      INTEGER NOT NULL,
+    resolved        INTEGER NOT NULL DEFAULT 0,
+    resolution      INTEGER NOT NULL DEFAULT 0
+);)SQL",
+    R"SQL(CREATE INDEX idx_conflicts_open ON sync_conflicts (resolved, created_at);)SQL",
+};
+
 constexpr std::string_view kInsertRegistrySql =
     "INSERT INTO schema_migrations (version, name, applied_at) VALUES (?, ?, ?)";
 
@@ -337,6 +375,9 @@ const std::vector<Migration>& builtInMigrations() {
         Migration{5, kV5Name,
                   std::vector<std::string_view>(std::begin(kV5Statements),
                                                 std::end(kV5Statements))},
+        Migration{6, kV6Name,
+                  std::vector<std::string_view>(std::begin(kV6Statements),
+                                                std::end(kV6Statements))},
     };
     return kMigrations;
 }

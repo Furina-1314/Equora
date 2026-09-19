@@ -27,6 +27,7 @@ add_subdirectory(Schedule.Common)
 add_subdirectory(Schedule.Storage)
 add_subdirectory(Schedule.Scheduling)
 add_subdirectory(Schedule.Core)
+add_subdirectory(Schedule.Sync)
 add_subdirectory(Schedule.CApi)
 
 if(EQUORA_BUILD_TESTS)

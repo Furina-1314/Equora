@@ -20,11 +20,13 @@ add_executable(equora_core_tests
     src/FocusSessionTests.cpp
     src/PlannerTests.cpp
     src/ReviewTests.cpp
+    src/SyncClientTests.cpp
 )
 
 target_link_libraries(equora_core_tests PRIVATE
     Equora::Core
     Equora::Common
+    Equora::SyncClient
     GTest::gtest_main
 )
 

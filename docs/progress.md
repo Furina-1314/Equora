@@ -660,3 +660,33 @@
 
 - P14(M7-M8):客户端 SyncOutbox(与业务写同事务)、Push/Pull 客户端、
   指数退避+随机抖动、字段级合并、冲突中心;docker-compose 端到端联调。
+
+---
+
+## P14a — 同步客户端核心(原生层)(2026-09-19)
+
+### 已完成
+
+- **迁移 v6**:sync_outbox(operation_id 唯一、状态/尝试/退避时刻、AUTOINCREMENT 保 FIFO)、
+  sync_state(键值:cursor/server_url/device_id/last_success_at)、
+  sync_conflicts(双版本对照、解决状态与方式)。
+- **Schedule.Sync 模块**:
+  - `SyncClientRepository`:Outbox 入队(与业务写共用连接即同事务)、
+    duePending(退避到期过滤)、markSending/markResult(接受即删;失败计数,
+    达上限转 Failed 不再自动重试)、resetStuck(崩溃恢复 Sending→Pending);
+    状态读写;冲突登记/列表/解决(重复解决拒绝)。
+  - `backoffDelayMs`(纯函数):指数 base×2^(n-1)、[1,2) 抖动、封顶、越界钳制。
+  - `mergeJsonFields`(纯函数):字段级合并(胜方全覆盖、败方独有字段并入,
+    preferOurs 可选),非对象/非法输入返回 nullopt。
+- 测试 8 例:FIFO 出队与退避到期、达上限转 Failed、崩溃恢复、状态往返、
+  冲突生命周期、退避数学(含抖动/封顶/钳制)、合并双向与非对象拒绝。
+
+### 构建与测试结果(本机实测)
+
+- 原生 127/127(新增 8);C# 82/82(schema 断言同步 v6)。
+
+### 下一步
+
+- P14b:C# HTTP 传输(HttpClient + Bearer + 指数退避调度)、
+  Push 集成(Outbox→/api/v1/sync→markResult/冲突登记)、
+  Pull 应用(变更流→本地表 + cursor 推进)、docker-compose 双客户端联调。
