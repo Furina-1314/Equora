@@ -32,7 +32,7 @@ public class QuickCaptureParserTests
         var draft = Parse("明天下午3点开会一小时");
         Assert.Equal("开会", draft.Title);
         Assert.NotNull(draft.DueAt);
-        Assert.Equal(new DateTimeOffset(2026, 9, 20, 15, 0, 0, TimeSpan.FromHours(8)),
+        Assert.Equal(new DateTimeOffset(2026, 9, 20, 15, 0, 0, Now.Offset),
             draft.DueAt);
         Assert.True(draft.HasExplicitTime);
         Assert.Equal(60, draft.EstimateMinutes);
@@ -55,7 +55,7 @@ public class QuickCaptureParserTests
         Assert.Equal("安排复习电路", draft.Title);
         Assert.Equal(45, draft.EstimateMinutes);
         Assert.NotNull(draft.DueAt);
-        Assert.Equal(new DateTimeOffset(2026, 9, 19, 0, 0, 0, TimeSpan.FromHours(8)),
+        Assert.Equal(new DateTimeOffset(2026, 9, 19, 0, 0, 0, Now.Offset),
             draft.DueAt); // 今晚 = 今天
     }
 
@@ -66,7 +66,7 @@ public class QuickCaptureParserTests
         Assert.Equal("前完成设计稿", draft.Title);
         Assert.Equal(new[] { "产品", "评审" }, draft.Tags);
         Assert.Equal(3, draft.PriorityValue);
-        Assert.Equal(new DateTimeOffset(2026, 9, 23, 0, 0, 0, TimeSpan.FromHours(8)),
+        Assert.Equal(new DateTimeOffset(2026, 9, 23, 0, 0, 0, Now.Offset),
             draft.DueAt); // 周六的下周三 = 9-23
     }
 
@@ -74,7 +74,7 @@ public class QuickCaptureParserTests
     public void HalfPastAndHalfHourForms()
     {
         var draft = Parse("明晚8点半跑步半小时");
-        Assert.Equal(new DateTimeOffset(2026, 9, 20, 20, 30, 0, TimeSpan.FromHours(8)),
+        Assert.Equal(new DateTimeOffset(2026, 9, 20, 20, 30, 0, Now.Offset),
             draft.DueAt);
         Assert.Equal(30, draft.EstimateMinutes);
         Assert.Equal("跑步", draft.Title);
@@ -85,7 +85,7 @@ public class QuickCaptureParserTests
     {
         var draft = Parse("和 @设计 组对齐 14:30 讨论方案");
         Assert.Equal("设计", draft.ProjectName);
-        Assert.Equal(new DateTimeOffset(2026, 9, 19, 14, 30, 0, TimeSpan.FromHours(8)),
+        Assert.Equal(new DateTimeOffset(2026, 9, 19, 14, 30, 0, Now.Offset),
             draft.DueAt);
     }
 
@@ -94,7 +94,7 @@ public class QuickCaptureParserTests
     {
         // now=10:00,说"9点"(已过)→ 明天 9 点。
         var draft = Parse("9点站会");
-        Assert.Equal(new DateTimeOffset(2026, 9, 20, 9, 0, 0, TimeSpan.FromHours(8)),
+        Assert.Equal(new DateTimeOffset(2026, 9, 20, 9, 0, 0, Now.Offset),
             draft.DueAt);
     }
 
