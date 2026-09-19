@@ -52,6 +52,81 @@ constexpr std::string_view kV1Statements[] = {
     R"SQL(CREATE INDEX idx_tasks_active_due ON tasks (due_at) WHERE deleted_at IS NULL;)SQL",
 };
 
+// ---- v3:日历、时间块、日程与重复规则 ----
+constexpr std::string_view kV3Name = "calendars time_blocks events recurrence_rules";
+
+constexpr std::string_view kV3Statements[] = {
+    R"SQL(CREATE TABLE calendars (
+    id             TEXT PRIMARY KEY,
+    name           TEXT    NOT NULL,
+    color          TEXT    NOT NULL DEFAULT '',
+    source         TEXT    NOT NULL DEFAULT 'local',
+    is_visible     INTEGER NOT NULL DEFAULT 1,
+    created_at     INTEGER NOT NULL,
+    updated_at     INTEGER NOT NULL,
+    revision       INTEGER NOT NULL,
+    deleted_at     INTEGER,
+    last_device_id TEXT    NOT NULL DEFAULT ''
+);)SQL",
+    R"SQL(CREATE TABLE time_blocks (
+    id              TEXT PRIMARY KEY,
+    task_id         TEXT REFERENCES tasks (id) ON DELETE CASCADE,
+    calendar_id     TEXT    NOT NULL DEFAULT '',
+    start_at        INTEGER NOT NULL,
+    end_at          INTEGER NOT NULL,
+    prepare_minutes INTEGER NOT NULL DEFAULT 0,
+    buffer_minutes  INTEGER NOT NULL DEFAULT 0,
+    actual_minutes  INTEGER NOT NULL DEFAULT 0,
+    note            TEXT    NOT NULL DEFAULT '',
+    created_at      INTEGER NOT NULL,
+    updated_at      INTEGER NOT NULL,
+    revision        INTEGER NOT NULL,
+    deleted_at      INTEGER,
+    last_device_id  TEXT    NOT NULL DEFAULT '',
+    CHECK (end_at > start_at)
+);)SQL",
+    R"SQL(CREATE INDEX idx_time_blocks_window ON time_blocks (start_at, end_at) WHERE deleted_at IS NULL;)SQL",
+    R"SQL(CREATE INDEX idx_time_blocks_task ON time_blocks (task_id) WHERE deleted_at IS NULL;)SQL",
+    R"SQL(CREATE TABLE events (
+    id          TEXT PRIMARY KEY,
+    title       TEXT    NOT NULL,
+    location    TEXT    NOT NULL DEFAULT '',
+    note        TEXT    NOT NULL DEFAULT '',
+    calendar_id TEXT    NOT NULL DEFAULT '',
+    start_at    INTEGER NOT NULL,
+    end_at      INTEGER NOT NULL,
+    is_all_day  INTEGER NOT NULL DEFAULT 0,
+    created_at  INTEGER NOT NULL,
+    updated_at  INTEGER NOT NULL,
+    revision    INTEGER NOT NULL,
+    deleted_at  INTEGER,
+    last_device_id TEXT NOT NULL DEFAULT '',
+    CHECK (end_at > start_at)
+);)SQL",
+    R"SQL(CREATE INDEX idx_events_window ON events (start_at, end_at) WHERE deleted_at IS NULL;)SQL",
+    R"SQL(CREATE TABLE recurrence_rules (
+    id                  TEXT PRIMARY KEY,
+    host_type           TEXT    NOT NULL CHECK (host_type IN ('task','event')),
+    host_id             TEXT    NOT NULL,
+    freq                INTEGER NOT NULL,
+    interval            INTEGER NOT NULL DEFAULT 1,
+    by_weekday          TEXT    NOT NULL DEFAULT '',
+    month_mode          INTEGER NOT NULL DEFAULT 0,
+    month_nth           INTEGER NOT NULL DEFAULT 1,
+    month_weekday       INTEGER NOT NULL DEFAULT 0,
+    until_utc           INTEGER,
+    max_count           INTEGER,
+    complete_recur_days INTEGER NOT NULL DEFAULT 0,
+    excluded_dates      TEXT    NOT NULL DEFAULT '',
+    created_at          INTEGER NOT NULL,
+    updated_at          INTEGER NOT NULL,
+    revision            INTEGER NOT NULL,
+    deleted_at          INTEGER,
+    last_device_id      TEXT    NOT NULL DEFAULT ''
+);)SQL",
+    R"SQL(CREATE INDEX idx_recurrence_host ON recurrence_rules (host_type, host_id);)SQL",
+};
+
 // ---- v2:项目、标签、任务-标签关系、检查项与应用元数据 ----
 constexpr std::string_view kV2Name = "projects tags checklists app_meta";
 
@@ -120,6 +195,9 @@ const std::vector<Migration>& builtInMigrations() {
         Migration{2, kV2Name,
                   std::vector<std::string_view>(std::begin(kV2Statements),
                                                 std::end(kV2Statements))},
+        Migration{3, kV3Name,
+                  std::vector<std::string_view>(std::begin(kV3Statements),
+                                                std::end(kV3Statements))},
     };
     return kMigrations;
 }

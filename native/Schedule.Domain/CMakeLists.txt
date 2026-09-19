@@ -6,6 +6,9 @@ add_library(equora_domain STATIC
     src/Task.cpp
     src/Project.cpp
     src/Tag.cpp
+    src/Calendar.cpp
+    src/CalendarEvent.cpp
+    src/RecurrenceRule.cpp
 )
 
 add_library(Equora::Domain ALIAS equora_domain)

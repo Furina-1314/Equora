@@ -3,6 +3,8 @@ find_package(nlohmann_json CONFIG REQUIRED)
 
 add_library(equora_core STATIC
     src/TaskRepository.cpp
+    src/CalendarRepository.cpp
+    src/TransferIcs.cpp
     src/ProjectRepository.cpp
     src/TagRepository.cpp
     src/ChecklistRepository.cpp
@@ -20,5 +22,6 @@ target_link_libraries(equora_core
     PUBLIC Equora::Domain
            Equora::Storage
            Equora::Common
+           Equora::Scheduling
     PRIVATE nlohmann_json::nlohmann_json
 )

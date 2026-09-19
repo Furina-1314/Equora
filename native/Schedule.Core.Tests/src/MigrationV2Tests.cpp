@@ -38,7 +38,7 @@ TEST(MigrationV2Test, UpgradesV1DatabaseWithData) {
         // 新版本打开:自动升级到 v2,旧数据可用,新表可写。
         Database db = Database::open(path);
         applyMigrations(db);
-        EXPECT_EQ(currentSchemaVersion(db), 2);
+        EXPECT_EQ(currentSchemaVersion(db), builtInMigrations().back().version);
 
         equora::core::TaskRepository repo(db, "new-device");
         ASSERT_EQ(repo.listAll().size(), 1U);
