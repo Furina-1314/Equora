@@ -1,0 +1,34 @@
+name: server-ci
+
+on:
+  push:
+    branches: [main]
+    paths: ['server/**', '.github/workflows/server-ci.yml']
+  pull_request:
+    paths: ['server/**', '.github/workflows/server-ci.yml']
+  workflow_dispatch:
+
+jobs:
+  windows-msvc:
+    name: Windows (sync core tests)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure
+        working-directory: server
+        shell: pwsh
+        run: |
+          if (-not $env:VCPKG_ROOT) { $env:VCPKG_ROOT = 'C:\vcpkg' }
+          git -C $env:VCPKG_ROOT fetch origin
+          git -C $env:VCPKG_ROOT checkout --detach e6f9e70a29a3e80a1fc510d8503304315447112f
+          & "$env:VCPKG_ROOT\bootstrap-vcpkg.bat" -disableMetrics
+          cmake --preset win-x64-release
+
+      - name: Build
+        working-directory: server
+        run: cmake --build --preset win-x64-release
+
+      - name: Test
+        working-directory: server
+        run: ctest --preset win-x64-release
