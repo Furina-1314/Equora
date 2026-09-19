@@ -18,6 +18,14 @@ public partial class App : Application
         NativeInterop.EquoraCore.InitLog(
             System.IO.Path.Combine(Services.AppPaths.DataDirectory, "logs", "equora.log"));
 
+        // 崩溃恢复:收尾上次未闭合的专注会话(以最后活动时刻计)。
+        var recovered = AppServices.Data.RecoverFocusSessions();
+        if (recovered > 0)
+        {
+            System.Diagnostics.Debug.WriteLine(
+                $"[app.recovery] 收尾 {recovered} 个遗留专注会话");
+        }
+
         MainWindow = new MainWindow();
         MainWindow.Activate();
     }

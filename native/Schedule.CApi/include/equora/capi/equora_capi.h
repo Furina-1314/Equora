@@ -567,6 +567,174 @@ int32_t EQUORA_API eq_import_ics(EqCore* core, const char* path_utf8, int32_t* o
                                  int32_t* out_skipped, int32_t* out_failed,
                                  EqError* out_error);
 
+
+// ---- 专注会话(P9) ----
+
+typedef struct EqFocusSessionView {
+    const char* id;
+    const char* task_id;   // NULL = 独立
+    const char* block_id;
+    int32_t mode;          // 0 番茄 1 深度 2 Flowtime 3 正计时 4 无计时
+    int64_t planned_start;
+    int64_t planned_end;
+    int32_t has_planned_end;
+    int64_t actual_start;
+    int64_t actual_end;
+    int32_t has_actual_end; // 0 = 未闭合
+    int64_t paused_ms;
+    int32_t state;          // 0 运行 1 暂停 2 完成 3 放弃
+    const char* goal;
+    const char* completion_note;
+    int32_t completion_level;
+    int64_t created_at;
+    int64_t updated_at;
+    int64_t revision;
+} EqFocusSessionView;
+
+typedef struct EqFocusSessionHandle EqFocusSessionHandle;
+typedef struct EqFocusSessionList EqFocusSessionList;
+
+EQUORA_API const EqFocusSessionView* eq_focus_view(const EqFocusSessionHandle* handle);
+void EQUORA_API eq_focus_handle_destroy(EqFocusSessionHandle* handle);
+int32_t EQUORA_API eq_focus_start(EqCore* core, int32_t mode, int32_t planned_minutes,
+                                  const char* goal_utf8, const char* task_id_utf8,
+                                  const char* block_id_utf8, int64_t now,
+                                  EqFocusSessionHandle** out_handle, EqError* out_error);
+int32_t EQUORA_API eq_focus_find(EqCore* core, const char* id_utf8,
+                                 EqFocusSessionHandle** out_handle, EqError* out_error);
+int32_t EQUORA_API eq_focus_open(EqCore* core, EqFocusSessionHandle** out_handle,
+                                 EqError* out_error); // 无开放会话 → NotFound
+int32_t EQUORA_API eq_focus_pause(EqCore* core, const char* id_utf8, int64_t now,
+                                  EqFocusSessionHandle** out_handle, EqError* out_error);
+int32_t EQUORA_API eq_focus_resume(EqCore* core, const char* id_utf8, int64_t now,
+                                   EqFocusSessionHandle** out_handle, EqError* out_error);
+int32_t EQUORA_API eq_focus_complete(EqCore* core, const char* id_utf8, int64_t now,
+                                     const char* note_utf8, int32_t completion_level,
+                                     EqFocusSessionHandle** out_handle, EqError* out_error);
+int32_t EQUORA_API eq_focus_abandon(EqCore* core, const char* id_utf8, int64_t now,
+                                    EqFocusSessionHandle** out_handle, EqError* out_error);
+int32_t EQUORA_API eq_focus_history(EqCore* core, int64_t from, int64_t to, int32_t limit,
+                                    EqFocusSessionList** out_list, EqError* out_error);
+int32_t EQUORA_API eq_focus_list_count(const EqFocusSessionList* list);
+EQUORA_API const EqFocusSessionView* eq_focus_list_get(const EqFocusSessionList* list,
+                                                       int32_t index);
+void EQUORA_API eq_focus_list_destroy(EqFocusSessionList* list);
+// 崩溃恢复:收尾未闭合会话,条数存于 *out_recovered。
+int32_t EQUORA_API eq_focus_recover_interrupted(EqCore* core, int64_t now,
+                                                int32_t* out_recovered, EqError* out_error);
+
+typedef struct EqInterruptionView {
+    const char* id;
+    const char* session_id;
+    int64_t occurred_at;
+    int64_t duration_ms;
+    const char* reason;
+    const char* source;
+    const char* handling;
+} EqInterruptionView;
+
+typedef struct EqInterruptionHandle EqInterruptionHandle;
+typedef struct EqInterruptionList EqInterruptionList;
+
+EQUORA_API const EqInterruptionView* eq_interruption_view(const EqInterruptionHandle* handle);
+void EQUORA_API eq_interruption_handle_destroy(EqInterruptionHandle* handle);
+int32_t EQUORA_API eq_focus_add_interruption(EqCore* core, const char* session_id_utf8,
+                                             int64_t occurred_at, int64_t duration_ms,
+                                             const char* reason_utf8, const char* source_utf8,
+                                             const char* handling_utf8,
+                                             EqInterruptionHandle** out_handle,
+                                             EqError* out_error);
+int32_t EQUORA_API eq_focus_interruptions(EqCore* core, const char* session_id_utf8,
+                                          EqInterruptionList** out_list, EqError* out_error);
+int32_t EQUORA_API eq_interruption_list_count(const EqInterruptionList* list);
+EQUORA_API const EqInterruptionView* eq_interruption_list_get(const EqInterruptionList* list,
+                                                              int32_t index);
+void EQUORA_API eq_interruption_list_destroy(EqInterruptionList* list);
+
+typedef struct EqDistractionView {
+    const char* id;
+    const char* session_id; // NULL = 非会话期捕获
+    const char* content;
+    int64_t captured_at;
+    int32_t resolution;
+    const char* resolved_ref;
+} EqDistractionView;
+
+typedef struct EqDistractionHandle EqDistractionHandle;
+typedef struct EqDistractionList EqDistractionList;
+
+EQUORA_API const EqDistractionView* eq_distraction_view(const EqDistractionHandle* handle);
+void EQUORA_API eq_distraction_handle_destroy(EqDistractionHandle* handle);
+int32_t EQUORA_API eq_focus_capture(EqCore* core, const char* content_utf8,
+                                    const char* session_id_utf8, int64_t now,
+                                    EqDistractionHandle** out_handle, EqError* out_error);
+int32_t EQUORA_API eq_focus_pending_distractions(EqCore* core, int32_t limit,
+                                                 EqDistractionList** out_list,
+                                                 EqError* out_error);
+int32_t EQUORA_API eq_focus_resolve_distraction(EqCore* core, const char* id_utf8,
+                                                int32_t resolution,
+                                                const char* resolved_ref_utf8,
+                                                EqDistractionHandle** out_handle,
+                                                EqError* out_error);
+int32_t EQUORA_API eq_distraction_list_count(const EqDistractionList* list);
+EQUORA_API const EqDistractionView* eq_distraction_list_get(const EqDistractionList* list,
+                                                             int32_t index);
+void EQUORA_API eq_distraction_list_destroy(EqDistractionList* list);
+
+typedef struct EqFocusProfileInput {
+    const char* id; // 更新必填
+    const char* name;
+    int32_t mode;
+    int32_t planned_minutes;
+    int32_t break_minutes;
+    const char* allowed_apps;
+    const char* blocked_apps;
+    const char* allowed_sites;
+    const char* blocked_sites;
+    int32_t notify_policy;
+    int32_t is_default;
+    int64_t revision;
+} EqFocusProfileInput;
+
+typedef struct EqFocusProfileView {
+    const char* id;
+    const char* name;
+    int32_t mode;
+    int32_t planned_minutes;
+    int32_t break_minutes;
+    const char* allowed_apps;
+    const char* blocked_apps;
+    const char* allowed_sites;
+    const char* blocked_sites;
+    int32_t notify_policy;
+    int32_t is_default;
+    int64_t revision;
+} EqFocusProfileView;
+
+typedef struct EqFocusProfileHandle EqFocusProfileHandle;
+typedef struct EqFocusProfileList EqFocusProfileList;
+
+EQUORA_API const EqFocusProfileView* eq_focus_profile_view(
+    const EqFocusProfileHandle* handle);
+void EQUORA_API eq_focus_profile_handle_destroy(EqFocusProfileHandle* handle);
+int32_t EQUORA_API eq_focus_profile_create(EqCore* core, const EqFocusProfileInput* input,
+                                           EqFocusProfileHandle** out_handle,
+                                           EqError* out_error);
+int32_t EQUORA_API eq_focus_profile_find(EqCore* core, const char* id_utf8,
+                                         EqFocusProfileHandle** out_handle,
+                                         EqError* out_error);
+int32_t EQUORA_API eq_focus_profile_update(EqCore* core, const EqFocusProfileInput* input,
+                                           EqFocusProfileHandle** out_handle,
+                                           EqError* out_error);
+int32_t EQUORA_API eq_focus_profile_delete(EqCore* core, const char* id_utf8,
+                                           EqError* out_error);
+int32_t EQUORA_API eq_focus_profile_list(EqCore* core, EqFocusProfileList** out_list,
+                                         EqError* out_error);
+int32_t EQUORA_API eq_focus_profile_list_count(const EqFocusProfileList* list);
+EQUORA_API const EqFocusProfileView* eq_focus_profile_list_get(
+    const EqFocusProfileList* list, int32_t index);
+void EQUORA_API eq_focus_profile_list_destroy(EqFocusProfileList* list);
+
 #ifdef __cplusplus
 } // extern "C"
 #endif
