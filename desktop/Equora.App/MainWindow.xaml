@@ -13,6 +13,7 @@
             <NavigationView.MenuItems>
                 <NavigationViewItem Content="首页" Tag="home" Icon="Home" />
                 <NavigationViewItem Content="任务" Tag="tasks" Icon="List" />
+                <NavigationViewItem Content="日历" Tag="calendar" Icon="Calendar" />
                 <NavigationViewItem Content="设置" Tag="settings" Icon="Setting" />
             </NavigationView.MenuItems>
             <Frame x:Name="ContentFrame" />

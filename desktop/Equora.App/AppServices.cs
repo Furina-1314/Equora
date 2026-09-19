@@ -16,5 +16,7 @@ internal static class AppServices
 
     public static TasksViewModel Tasks { get; } = new(Data, Data, Undo);
 
+    public static CalendarViewModel Calendar { get; } = new(Data, Data, Undo);
+
     public static HomeViewModel Home { get; } = new(Data);
 }

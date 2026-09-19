@@ -24,6 +24,7 @@ public sealed partial class MainWindow : Window
         {
             "home" => typeof(HomePage),
             "tasks" => typeof(TasksPage),
+            "calendar" => typeof(CalendarPage),
             "settings" => typeof(SettingsPage),
             _ => typeof(HomePage),
         };

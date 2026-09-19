@@ -1,0 +1,82 @@
+<UserControl
+    x:Class="Equora.App.Controls.WeekView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid x:Name="RootGrid">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- 星期标题 -->
+        <Grid x:Name="HeaderGrid" Grid.Row="0" Background="#11000000">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="48" />
+                <ColumnDefinition x:Name="FirstDayColumn" Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+        </Grid>
+
+        <!-- 主体:左刻度 + 7 日画布 + 时间线覆盖层 -->
+        <ScrollViewer Grid.Row="1" x:Name="Scroller">
+            <Grid x:Name="BodyGrid" SizeChanged="OnBodySizeChanged">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="48" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" x:Name="HourAxis" />
+
+                <Canvas Grid.Column="1" x:Name="Day0" Background="#05000000"
+                        PointerPressed="OnCanvasPointerPressed" PointerMoved="OnCanvasPointerMoved"
+                        PointerReleased="OnCanvasPointerReleased"
+                        AllowDrop="True" DragOver="OnCanvasDragOver" Drop="OnCanvasDrop" />
+                <Canvas Grid.Column="2" x:Name="Day1" Background="#08000000"
+                        PointerPressed="OnCanvasPointerPressed" PointerMoved="OnCanvasPointerMoved"
+                        PointerReleased="OnCanvasPointerReleased"
+                        AllowDrop="True" DragOver="OnCanvasDragOver" Drop="OnCanvasDrop" />
+                <Canvas Grid.Column="3" x:Name="Day2" Background="#05000000"
+                        PointerPressed="OnCanvasPointerPressed" PointerMoved="OnCanvasPointerMoved"
+                        PointerReleased="OnCanvasPointerReleased"
+                        AllowDrop="True" DragOver="OnCanvasDragOver" Drop="OnCanvasDrop" />
+                <Canvas Grid.Column="4" x:Name="Day3" Background="#08000000"
+                        PointerPressed="OnCanvasPointerPressed" PointerMoved="OnCanvasPointerMoved"
+                        PointerReleased="OnCanvasPointerReleased"
+                        AllowDrop="True" DragOver="OnCanvasDragOver" Drop="OnCanvasDrop" />
+                <Canvas Grid.Column="5" x:Name="Day4" Background="#05000000"
+                        PointerPressed="OnCanvasPointerPressed" PointerMoved="OnCanvasPointerMoved"
+                        PointerReleased="OnCanvasPointerReleased"
+                        AllowDrop="True" DragOver="OnCanvasDragOver" Drop="OnCanvasDrop" />
+                <Canvas Grid.Column="6" x:Name="Day5" Background="#08000000"
+                        PointerPressed="OnCanvasPointerPressed" PointerMoved="OnCanvasPointerMoved"
+                        PointerReleased="OnCanvasPointerReleased"
+                        AllowDrop="True" DragOver="OnCanvasDragOver" Drop="OnCanvasDrop" />
+                <Canvas Grid.Column="7" x:Name="Day6" Background="#05000000"
+                        PointerPressed="OnCanvasPointerPressed" PointerMoved="OnCanvasPointerMoved"
+                        PointerReleased="OnCanvasPointerReleased"
+                        AllowDrop="True" DragOver="OnCanvasDragOver" Drop="OnCanvasDrop" />
+
+                <!-- 当前时间线(横跨全宽,置于最上层) -->
+                <Canvas Grid.Column="1" Grid.ColumnSpan="7" x:Name="NowLineLayer"
+                        IsHitTestVisible="False">
+                    <Rectangle x:Name="NowLine" Height="2" Fill="#E23C3C" Canvas.ZIndex="99" />
+                </Canvas>
+            </Grid>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

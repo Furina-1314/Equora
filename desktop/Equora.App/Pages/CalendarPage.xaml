@@ -1,0 +1,70 @@
+<Page
+    x:Class="Equora.App.Pages.CalendarPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Equora.App.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Padding="8,8">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="240" />
+            <ColumnDefinition Width="*" MinWidth="360" />
+        </Grid.ColumnDefinitions>
+
+        <ScrollViewer Grid.Column="0" Padding="4,4">
+            <StackPanel Spacing="8">
+                <ComboBox Header="视图" SelectedIndex="{Binding ViewModeIndex, Mode=TwoWay}"
+                          SelectionChanged="OnViewModeSelectionChanged">
+                    <x:String>周视图</x:String>
+                    <x:String>日视图</x:String>
+                    <x:String>议程</x:String>
+                </ComboBox>
+
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <Button Content="◀" Click="OnPrev" />
+                    <Button Content="今天" Style="{StaticResource AccentButtonStyle}"
+                            Command="{Binding GoTodayCommand}" />
+                    <Button Content="▶" Click="OnNext" />
+                </StackPanel>
+
+                <TextBlock Text="未安排任务(拖入日历)" Opacity="0.6"
+                           Style="{StaticResource CaptionTextBlockStyle}" Margin="0,8,0,0" />
+                <ListView ItemsSource="{Binding UnscheduledTasks}" CanDragItems="True"
+                          DragItemsStarting="OnTaskDragStarting" SelectionMode="Single">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Vertical" Spacing="2" Padding="0,4">
+                                <TextBlock Text="{Binding Title}" TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+
+                <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,12,0,0">
+                    <Button Content="导出 ICS" Click="OnExportIcs" />
+                    <Button Content="导入 ICS" Click="OnImportIcs" />
+                </StackPanel>
+                <TextBlock Text="{Binding StatusText}" Opacity="0.7" TextWrapping="Wrap"
+                           Style="{StaticResource CaptionTextBlockStyle}" />
+            </StackPanel>
+        </ScrollViewer>
+
+        <Grid Grid.Column="1">
+            <controls:WeekView x:Name="Week" />
+            <ListView x:Name="AgendaList" Visibility="Collapsed" SelectionMode="None"
+                      Padding="8,0">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Vertical" Spacing="2" Padding="0,6">
+                            <TextBlock Text="{Binding DisplayTitle}" FontWeight="SemiBold" />
+                            <TextBlock Opacity="0.7" Style="{StaticResource CaptionTextBlockStyle}"
+                                       Text="{Binding Span.Start, Converter={StaticResource DueTextConverter}}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </Grid>
+    </Grid>
+</Page>
