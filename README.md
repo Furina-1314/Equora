@@ -24,7 +24,21 @@
 
 ## 📥 快速安装
 
-### 桌面应用(开发版)
+### 桌面应用(安装包)
+
+从 [Releases](https://github.com/Furina-1314/Equora/releases) 下载 `Equora-vX.Y.Z-win-x64.msix`(自包含,无需 .NET 运行时)。包为自签名,首次安装需信任一次证书(管理员确认):
+
+```powershell
+# 1. 信任发布证书(与 msix 同目录的 .cer;弹出 UAC 点"是")
+Import-Certificate -FilePath .\Equora.cer -CertStoreLocation Cert:\LocalMachine\TrustedPeople
+
+# 2. 安装
+Add-AppxPackage .\Equora-vX.Y.Z-win-x64.msix
+```
+
+也可以图形化操作:右键 `.cer` → 安装证书 → 存储位置选"本地计算机"→"将所有的证书都放入下列存储"→ 浏览 → "受信任人";然后双击 msix 安装。开始菜单搜索"衡序"启动。
+
+### 桌面应用(源码构建)
 
 **前置要求**:Windows 10 1809+ / Windows 11 · Visual Studio 2022(含 C++ 桌面开发) · CMake 3.24+ · .NET SDK 10 · [vcpkg](https://github.com/microsoft/vcpkg)
 

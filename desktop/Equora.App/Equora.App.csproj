@@ -6,7 +6,8 @@
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
     <RootNamespace>Equora.App</RootNamespace>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- 非打包运行用 Win32 清单;MSIX 打包(-p:WindowsPackageType=MSIX)改用 Package.appxmanifest -->
+    <ApplicationManifest Condition="'$(WindowsPackageType)' != 'MSIX'">app.manifest</ApplicationManifest>
     <Platforms>x64</Platforms>
     <PlatformTarget>x64</PlatformTarget>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
@@ -33,13 +34,18 @@
     <ProjectReference Include="..\Equora.App.ViewModels\Equora.App.ViewModels.csproj" />
   </ItemGroup>
 
-  <!-- 从本地 C++ 构建输出复制原生 DLL;目录不存在时跳过。 -->
-  <Target Name="CopyNativeBinaries" AfterTargets="Build"
-          Condition="Exists('..\..\native\build\win-x64-release\Schedule.CApi\Release\equora_capi.dll')">
-    <ItemGroup>
-      <NativeBin Include="..\..\native\build\win-x64-release\Schedule.CApi\Release\*.dll" />
-    </ItemGroup>
-    <Copy SourceFiles="@(NativeBin)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
-  </Target>
+  <!-- MSIX 侧载打包:dotnet build -p:WindowsPackageType=MSIX -p:PackageCertificateKeyFile=<pfx> [-p:PackageCertificatePassword=<pwd>] -->
+  <PropertyGroup Condition="'$(WindowsPackageType)' == 'MSIX'">
+    <GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
+    <AppxPackageSigningEnabled Condition="'$(AppxPackageSigningEnabled)' == ''">true</AppxPackageSigningEnabled>
+    <AppxBundle>Never</AppxBundle>
+    <UapAppxPackageBuildMode>SideloadOnly</UapAppxPackageBuildMode>
+  </PropertyGroup>
+
+  <!-- 原生 C ABI DLL(含 vcpkg 的 sqlite3.dll)以 Content 进入输出与 MSIX 布局;目录不存在时跳过(CI 先构建原生)。 -->
+  <ItemGroup Condition="Exists('..\..\native\build\win-x64-release\Schedule.CApi\Release\equora_capi.dll')">
+    <Content Include="..\..\native\build\win-x64-release\Schedule.CApi\Release\*.dll"
+             CopyToOutputDirectory="PreserveNewest" Link="%(Filename)%(Extension)" />
+  </ItemGroup>
 
 </Project>

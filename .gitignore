@@ -88,3 +88,6 @@ $RECYCLE.BIN/
 secrets/
 *.pfx
 *.key
+
+# MSIX 打包输出
+desktop/Equora.App/AppPackages/
