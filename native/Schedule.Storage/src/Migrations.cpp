@@ -253,6 +253,68 @@ constexpr std::string_view kV4Statements[] = {
 );)SQL",
 };
 
+// ---- v5:复盘存档与自动化规则 ----
+constexpr std::string_view kV5Name = "reviews automation_rules automation_logs";
+
+constexpr std::string_view kV5Statements[] = {
+    R"SQL(CREATE TABLE daily_reviews (
+    id              TEXT PRIMARY KEY,
+    local_date      TEXT    NOT NULL UNIQUE,
+    completed_count INTEGER NOT NULL,
+    deferred_count  INTEGER NOT NULL,
+    cancelled_count INTEGER NOT NULL,
+    planned_minutes INTEGER NOT NULL,
+    actual_minutes  INTEGER NOT NULL,
+    big_three_done  INTEGER NOT NULL,
+    distraction_count INTEGER NOT NULL,
+    notes           TEXT    NOT NULL DEFAULT '',
+    focus_tomorrow  TEXT    NOT NULL DEFAULT '',
+    created_at      INTEGER NOT NULL,
+    updated_at      INTEGER NOT NULL,
+    revision        INTEGER NOT NULL,
+    deleted_at      INTEGER,
+    last_device_id  TEXT    NOT NULL DEFAULT ''
+);)SQL",
+    R"SQL(CREATE TABLE weekly_reviews (
+    id                TEXT PRIMARY KEY,
+    week_start_date   TEXT    NOT NULL UNIQUE,
+    deep_work_minutes INTEGER NOT NULL,
+    focus_ratio       REAL    NOT NULL DEFAULT 0,
+    estimate_accuracy REAL    NOT NULL DEFAULT 0,
+    best_focus_hour   INTEGER NOT NULL DEFAULT -1,
+    notes             TEXT    NOT NULL DEFAULT '',
+    next_week_goals   TEXT    NOT NULL DEFAULT '',
+    created_at        INTEGER NOT NULL,
+    updated_at        INTEGER NOT NULL,
+    revision          INTEGER NOT NULL,
+    deleted_at        INTEGER,
+    last_device_id    TEXT    NOT NULL DEFAULT ''
+);)SQL",
+    R"SQL(CREATE TABLE automation_rules (
+    id          TEXT PRIMARY KEY,
+    name        TEXT    NOT NULL,
+    trigger     TEXT    NOT NULL, -- JSON: {type: task_created|tag_added|due_soon|completed, ...}
+    conditions  TEXT    NOT NULL DEFAULT '{}', -- JSON: {tag, priority_gte, estimate_gte}
+    actions     TEXT    NOT NULL, -- JSON: [{type: add_tag|suggest_split, ...}]
+    enabled     INTEGER NOT NULL DEFAULT 1,
+    created_at  INTEGER NOT NULL,
+    updated_at  INTEGER NOT NULL,
+    revision    INTEGER NOT NULL,
+    deleted_at  INTEGER,
+    last_device_id TEXT NOT NULL DEFAULT ''
+);)SQL",
+    R"SQL(CREATE INDEX idx_automation_enabled ON automation_rules (enabled) WHERE deleted_at IS NULL;)SQL",
+    R"SQL(CREATE TABLE automation_logs (
+    id          TEXT PRIMARY KEY,
+    rule_id     TEXT NOT NULL,
+    entity_id   TEXT NOT NULL,
+    triggered_at INTEGER NOT NULL,
+    success     INTEGER NOT NULL,
+    error       TEXT    NOT NULL DEFAULT ''
+);)SQL",
+    R"SQL(CREATE INDEX idx_automation_logs_rule ON automation_logs (rule_id, triggered_at);)SQL",
+};
+
 constexpr std::string_view kInsertRegistrySql =
     "INSERT INTO schema_migrations (version, name, applied_at) VALUES (?, ?, ?)";
 
@@ -272,6 +334,9 @@ const std::vector<Migration>& builtInMigrations() {
         Migration{4, kV4Name,
                   std::vector<std::string_view>(std::begin(kV4Statements),
                                                 std::end(kV4Statements))},
+        Migration{5, kV5Name,
+                  std::vector<std::string_view>(std::begin(kV5Statements),
+                                                std::end(kV5Statements))},
     };
     return kMigrations;
 }

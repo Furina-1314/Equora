@@ -3,6 +3,8 @@ add_library(equora_scheduling STATIC
     src/Recurrence.cpp
     src/Conflict.cpp
     src/FreeSlot.cpp
+    src/Planner.cpp
+    src/Estimate.cpp
 )
 
 add_library(Equora::Scheduling ALIAS equora_scheduling)
