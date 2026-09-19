@@ -591,3 +591,30 @@
 
 - P13(M7):Drogon REST API、PostgreSQL 迁移、账号/设备/令牌、
   Push/Pull/游标/墓碑、Docker 编排;双客户端离线与冲突测试。
+
+---
+
+## P13a — 同步协议核心(M7)✅(2026-09-19)
+
+### 已完成
+
+- **Equora.SyncCore**(纯逻辑,零外部依赖):`SyncStore` 抽象(getEntity/upsert/
+  listChanges/markProcessed)、`SyncService.sync(userId, deviceId, cursor, ops)`:
+  - **幂等**:operationId 登记,重放返回 Duplicate + 原结果,不产生重复效果;
+  - **base_revision 并发检查**:冲突返回服务端当前版本(payload+revision+墓碑标志)
+    供字段级合并;
+  - **墓碑优先**:删除与修改冲突默认保留墓碑(需求 §18),墓碑保留最后版本供恢复;
+  - **有序变更流**:用户内单调 seq 游标,增量拉取,跨用户隔离。
+- **MemorySyncStore**(线程安全;开发/测试用,生产为 PostgreSQL 实现)。
+- **测试 8 例**(M7 验收场景全落):创建/游标、幂等重放、并发冲突带服务端版本、
+  墓碑优先、增量游标、用户隔离、非法实体、**两设备离线并发后合流无数据丢失**
+  (离线建两实体→全量合流→交叉删除/更新→重放→最终墓碑+存活共存)。
+
+### 构建与测试结果(本机实测)
+
+- server 独立 CMake 工程(vcpkg 清单 + 预设);`ctest` 8/8。
+
+### 下一步
+
+- P13b:Drogon HTTP 层(/api/v1/sync + 健康检查 + Bearer 认证)、
+  PostgresSyncStore(libpq)、SQL 迁移、Docker 编排;server 纳入 CI。
