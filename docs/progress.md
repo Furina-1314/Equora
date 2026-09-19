@@ -5,7 +5,7 @@
 
 ## 当前状态
 
-- **当前阶段**:P11 — 网站限制(M5)
+- **当前阶段**:P12 — 智能规划、复盘与自动化(M6)
 - **已完成**:P0–P6(M2 核心与服务层完成)
 - **最新提交**:P8 四象限与快速收集
 
@@ -464,3 +464,47 @@
 - P11(M5):Edge/Chrome MV3 扩展(declarativeNetRequest 动态/会话规则、
   白名单优先、预算)、Native Messaging 带版本协议、限制页(返回任务/临时允许/紧急解锁)、
   异常恢复(扩展重启/主程序异常后状态一致)。
+
+---
+
+## P11 — 网站限制(M5)✅(2026-09-19)
+
+### 已完成
+
+- **MV3 扩展**(extension/Equora.BrowserExtension):
+  - **会话规则设计(可恢复限制的关键)**:扩展不持久化限制;每 30s 从 Native Host
+    拉取专注状态,用 declarativeNetRequest session rules 下发 —— 浏览器重启、
+    扩展/主程序异常后规则自然为空,绝无永久阻断;host 掉线时主动清空规则。
+  - background.js:连接管理(掉线 10s 重连)、白名单优先、临时允许 5 分钟、
+    域名预算(仅可见 tab 按分钟累计,存 chrome.storage.local,按日)。
+  - blocked.html/js 拦截页:当前任务、剩余时间倒数、返回任务 / 允许 5 分钟,
+    明示"会话结束自动解除"。
+  - README:开发安装全流程(host manifest 生成、注册表、解包加载)、协议表、
+    隐私边界与已知限制。
+- **Native Messaging 协议层**(NativeInterop,可测):Chrome 帧编解码
+  (4 字节小端 + 1MB 上限)、FNV-1a 校验和、FocusGateState、FocusGate 映射
+  (预设 JSON → 规范化域名:去协议/路径/端口/www、去重)、子域名匹配
+  (白名单优先、无子串误报)。
+- **Equora.NativeHost**(com.equora.nativehost.exe):stdin/stdout 循环、
+  版本检查、校验和验证、nonce 严格递增(重放拒绝)、query → 打开同一数据库
+  只读开放会话与默认预设 → FocusGateState;--print-manifest 生成 host manifest。
+- **本机端到端冒烟实测**:hello 握手 ✓、query 返回状态 JSON ✓、
+  版本不匹配 → error ✓、未知 type → error ✓。
+
+### 构建与测试结果(本机实测)
+
+- `dotnet build`(含 NativeHost)成功;`dotnet test` 77/77(新增 9 例:
+  帧编解码 3、状态映射 3、域名匹配 3)。
+
+### 已知问题 / 假设
+
+- host 打开同一 SQLite(只读查询 + WAL):多进程短期可接受,
+  P14 引入正式 IPC 后改为桌面端代理。
+- 拦截重定向 regexSubstitution 为简化实现(README 已注明生产化替换方案)。
+- 扩展行为需真机浏览器验证(无头环境覆盖协议层与纯函数)。
+- 紧急解锁(系统级出口)与浏览器集成测试归 M9/P15。
+
+### 下一步
+
+- P12(M6):空闲时间搜索 + 过载识别 + 排程差异预览与一次性撤销、
+  估时校正、任务拆分建议、每日/每周复盘、自动化规则与执行日志。

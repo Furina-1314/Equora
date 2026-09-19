@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "衡序 Equora 专注限制",
+  "version": "0.1.0",
+  "description": "专注期间按 Equora 下发的名单温和限制网站;不记录浏览内容。",
+  "permissions": [
+    "declarativeNetRequest",
+    "nativeMessaging",
+    "storage",
+    "tabs"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "icons": {
+    "128": "icon128.png"
+  },
+  "action": {
+    "default_title": "Equora 专注"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["blocked.html"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

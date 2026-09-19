@@ -4,4 +4,5 @@
   <Project Path="Equora.App.Tests/Equora.App.Tests.csproj" />
   <Project Path="Equora.App.ViewModels/Equora.App.ViewModels.csproj" />
   <Project Path="Equora.App/Equora.App.csproj" />
+  <Project Path="Equora.NativeHost/Equora.NativeHost.csproj" />
 </Solution>

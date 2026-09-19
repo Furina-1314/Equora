@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <title>回到专注 · 衡序 Equora</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body {
+      font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh; margin: 0;
+      background: #fafafa; color: #222;
+    }
+    @media (prefers-color-scheme: dark) {
+      body { background: #1c1c1c; color: #eee; }
+      .card { background: #2a2a2a !important; }
+    }
+    .card {
+      background: #fff; border-radius: 14px; padding: 36px 44px;
+      box-shadow: 0 8px 30px rgba(0,0,0,.08); text-align: center; max-width: 480px;
+    }
+    .glyph { font-size: 42px; margin-bottom: 8px; }
+    h1 { font-size: 20px; margin: 0 0 6px; }
+    .task { font-size: 15px; opacity: .85; margin-bottom: 14px; }
+    .time { font-size: 40px; font-family: Consolas, monospace; font-weight: 600; margin: 10px 0 4px; }
+    .hint { font-size: 12px; opacity: .6; margin-bottom: 22px; }
+    .row { display: flex; gap: 10px; justify-content: center; }
+    button {
+      border: 0; border-radius: 8px; padding: 10px 22px; font-size: 14px; cursor: pointer;
+    }
+    .primary { background: #2f6fd0; color: #fff; }
+    .ghost { background: transparent; border: 1px solid rgba(128,128,128,.4); }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="glyph">🌿</div>
+    <h1>这个网站不在你的专注名单里</h1>
+    <div class="task" id="task">…</div>
+    <div class="time" id="time">--:--</div>
+    <div class="hint">本次专注剩余时间</div>
+    <div class="row">
+      <button class="primary" id="back">返回任务</button>
+      <button class="ghost" id="allow">允许 5 分钟</button>
+    </div>
+    <div class="hint" style="margin-top:18px">
+      规则由 Equora 桌面端在专注会话期间下发;会话结束或浏览器重启后自动解除。
+    </div>
+  </div>
+  <script src="blocked.js"></script>
+</body>
+</html>
