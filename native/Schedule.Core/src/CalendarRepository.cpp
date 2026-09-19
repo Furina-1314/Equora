@@ -632,6 +632,8 @@ std::vector<Span> CalendarRepository::materializeWindow(domain::UtcMillis from,
         if (!ev.has_value()) continue;
         for (const auto& inst : scheduling::expandRecurrence(r, ev->startAt, ev->endAt,
                                                              from, to, tzOffsetMinutes)) {
+            // 宿主事件本身已计入窗口,跳过与其同时刻的种子实例。
+            if (inst.startUtc == ev->startAt) continue;
             Span s;
             s.sourceId = r.id + ":" + std::to_string(inst.startUtc);
             s.sourceType = "recurring";

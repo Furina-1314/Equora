@@ -319,6 +319,254 @@ int32_t EQUORA_API eq_import_tasks_json(EqCore* core, const char* path_utf8,
                                         int32_t* out_imported, int32_t* out_skipped,
                                         EqError* out_error);
 
+
+// ---- 日历(P6):时间块、日程、重复规则、窗口物化、冲突、空闲、ICS ----
+
+typedef struct EqCalendarView {
+    const char* id;
+    const char* name;
+    const char* color;
+    const char* source;
+    int32_t is_visible;
+    int64_t created_at;
+    int64_t updated_at;
+    int64_t revision;
+} EqCalendarView;
+
+typedef struct EqCalendarHandle EqCalendarHandle;
+typedef struct EqCalendarList EqCalendarList;
+
+EQUORA_API const EqCalendarView* eq_calendar_view(const EqCalendarHandle* handle);
+void EQUORA_API eq_calendar_handle_destroy(EqCalendarHandle* handle);
+int32_t EQUORA_API eq_calendar_create(EqCore* core, const char* name_utf8,
+                                      const char* color_utf8, EqCalendarHandle** out_handle,
+                                      EqError* out_error);
+int32_t EQUORA_API eq_calendar_list(EqCore* core, EqCalendarList** out_list,
+                                    EqError* out_error);
+int32_t EQUORA_API eq_calendar_list_count(const EqCalendarList* list);
+EQUORA_API const EqCalendarView* eq_calendar_list_get(const EqCalendarList* list, int32_t index);
+void EQUORA_API eq_calendar_list_destroy(EqCalendarList* list);
+
+typedef struct EqBlockInput {
+    const char* id;        // 更新必填
+    const char* task_id;   // 可 NULL
+    const char* calendar_id;
+    int64_t start_at;
+    int64_t end_at;
+    int32_t prepare_minutes;
+    int32_t buffer_minutes;
+    int32_t actual_minutes;
+    const char* note;
+    int64_t revision;
+} EqBlockInput;
+
+typedef struct EqBlockView {
+    const char* id;
+    const char* task_id; // NULL = 独立块
+    const char* calendar_id;
+    int64_t start_at;
+    int64_t end_at;
+    int32_t prepare_minutes;
+    int32_t buffer_minutes;
+    int32_t actual_minutes;
+    const char* note;
+    int64_t created_at;
+    int64_t updated_at;
+    int64_t revision;
+    int64_t deleted_at;
+    int32_t has_deleted;
+} EqBlockView;
+
+typedef struct EqBlockHandle EqBlockHandle;
+typedef struct EqBlockList EqBlockList;
+
+EQUORA_API const EqBlockView* eq_block_view(const EqBlockHandle* handle);
+void EQUORA_API eq_block_handle_destroy(EqBlockHandle* handle);
+int32_t EQUORA_API eq_block_create(EqCore* core, const EqBlockInput* input,
+                                   EqBlockHandle** out_handle, EqError* out_error);
+int32_t EQUORA_API eq_block_get(EqCore* core, const char* id_utf8, int32_t include_deleted,
+                                EqBlockHandle** out_handle, EqError* out_error);
+int32_t EQUORA_API eq_block_update(EqCore* core, const EqBlockInput* input,
+                                   EqBlockHandle** out_handle, EqError* out_error);
+int32_t EQUORA_API eq_block_set_deleted(EqCore* core, const char* id_utf8, int32_t deleted,
+                                        EqError* out_error);
+int32_t EQUORA_API eq_block_list_range(EqCore* core, int64_t from, int64_t to,
+                                       EqBlockList** out_list, EqError* out_error);
+int32_t EQUORA_API eq_block_list_for_task(EqCore* core, const char* task_id_utf8,
+                                          EqBlockList** out_list, EqError* out_error);
+int32_t EQUORA_API eq_block_list_count(const EqBlockList* list);
+EQUORA_API const EqBlockView* eq_block_list_get(const EqBlockList* list, int32_t index);
+void EQUORA_API eq_block_list_destroy(EqBlockList* list);
+
+typedef struct EqEventInput {
+    const char* id;    // 更新必填;创建可空(自动生成,导入时可指定)
+    const char* title;
+    const char* location;
+    const char* note;
+    const char* calendar_id;
+    int64_t start_at;
+    int64_t end_at;
+    int32_t is_all_day;
+    int64_t revision;
+} EqEventInput;
+
+typedef struct EqEventView {
+    const char* id;
+    const char* title;
+    const char* location;
+    const char* note;
+    const char* calendar_id;
+    int64_t start_at;
+    int64_t end_at;
+    int32_t is_all_day;
+    int64_t created_at;
+    int64_t updated_at;
+    int64_t revision;
+    int64_t deleted_at;
+    int32_t has_deleted;
+} EqEventView;
+
+typedef struct EqEventHandle EqEventHandle;
+typedef struct EqEventList EqEventList;
+
+EQUORA_API const EqEventView* eq_event_view(const EqEventHandle* handle);
+void EQUORA_API eq_event_handle_destroy(EqEventHandle* handle);
+int32_t EQUORA_API eq_event_create(EqCore* core, const EqEventInput* input,
+                                   EqEventHandle** out_handle, EqError* out_error);
+int32_t EQUORA_API eq_event_get(EqCore* core, const char* id_utf8, int32_t include_deleted,
+                                EqEventHandle** out_handle, EqError* out_error);
+int32_t EQUORA_API eq_event_update(EqCore* core, const EqEventInput* input,
+                                   EqEventHandle** out_handle, EqError* out_error);
+int32_t EQUORA_API eq_event_set_deleted(EqCore* core, const char* id_utf8, int32_t deleted,
+                                        EqError* out_error);
+int32_t EQUORA_API eq_event_list_range(EqCore* core, int64_t from, int64_t to,
+                                       EqEventList** out_list, EqError* out_error);
+int32_t EQUORA_API eq_event_list_count(const EqEventList* list);
+EQUORA_API const EqEventView* eq_event_list_get(const EqEventList* list, int32_t index);
+void EQUORA_API eq_event_list_destroy(EqEventList* list);
+
+typedef struct EqRuleInput {
+    const char* id;         // 更新必填
+    const char* host_type;  // "task" | "event"
+    const char* host_id;
+    int32_t freq;           // 0 Daily 1 Weekly 2 Monthly 3 Yearly
+    int32_t interval;
+    const char* by_weekday; // CSV "0,2,4"(Mon=0);可空
+    int32_t month_mode;     // 0 Date 1 NthWeekday 2 LastWeekday
+    int32_t month_nth;
+    int32_t month_weekday;
+    int64_t until_utc;
+    int32_t has_until;
+    int64_t max_count;
+    int32_t has_max_count;
+    int32_t complete_recur_days;
+    const char* excluded_dates; // CSV "YYYY-MM-DD";可空
+    int64_t revision;
+} EqRuleInput;
+
+typedef struct EqRuleView {
+    const char* id;
+    const char* host_type;
+    const char* host_id;
+    int32_t freq;
+    int32_t interval;
+    const char* by_weekday;
+    int32_t month_mode;
+    int32_t month_nth;
+    int32_t month_weekday;
+    int64_t until_utc;
+    int32_t has_until;
+    int64_t max_count;
+    int32_t has_max_count;
+    int32_t complete_recur_days;
+    const char* excluded_dates;
+    const char* rrule_text;
+    int64_t revision;
+} EqRuleView;
+
+typedef struct EqRuleHandle EqRuleHandle;
+typedef struct EqRuleList EqRuleList;
+
+EQUORA_API const EqRuleView* eq_rule_view(const EqRuleHandle* handle);
+void EQUORA_API eq_rule_handle_destroy(EqRuleHandle* handle);
+int32_t EQUORA_API eq_rule_create(EqCore* core, const EqRuleInput* input,
+                                  EqRuleHandle** out_handle, EqError* out_error);
+int32_t EQUORA_API eq_rule_get(EqCore* core, const char* id_utf8,
+                               EqRuleHandle** out_handle, EqError* out_error);
+int32_t EQUORA_API eq_rule_update(EqCore* core, const EqRuleInput* input,
+                                  EqRuleHandle** out_handle, EqError* out_error);
+int32_t EQUORA_API eq_rule_delete(EqCore* core, const char* id_utf8, EqError* out_error);
+int32_t EQUORA_API eq_rule_list_for_host(EqCore* core, const char* host_type_utf8,
+                                         const char* host_id_utf8, EqRuleList** out_list,
+                                         EqError* out_error);
+int32_t EQUORA_API eq_rule_list_count(const EqRuleList* list);
+EQUORA_API const EqRuleView* eq_rule_list_get(const EqRuleList* list, int32_t index);
+void EQUORA_API eq_rule_list_destroy(EqRuleList* list);
+
+typedef struct EqSpanView {
+    const char* source_id;
+    const char* source_type;
+    const char* title;
+    const char* task_id;
+    int64_t start;
+    int64_t end;
+} EqSpanView;
+
+typedef struct EqSpanList EqSpanList;
+int32_t EQUORA_API eq_window_spans(EqCore* core, int64_t from, int64_t to,
+                                   int32_t tz_offset_minutes, EqSpanList** out_list,
+                                   EqError* out_error);
+int32_t EQUORA_API eq_span_list_count(const EqSpanList* list);
+EQUORA_API const EqSpanView* eq_span_list_get(const EqSpanList* list, int32_t index);
+void EQUORA_API eq_span_list_destroy(EqSpanList* list);
+
+typedef struct EqConflictView {
+    EqSpanView a;
+    EqSpanView b;
+    int64_t overlap_minutes;
+} EqConflictView;
+
+typedef struct EqConflictList EqConflictList;
+int32_t EQUORA_API eq_window_conflicts(EqCore* core, int64_t from, int64_t to,
+                                       int32_t tz_offset_minutes, EqConflictList** out_list,
+                                       EqError* out_error);
+int32_t EQUORA_API eq_conflict_list_count(const EqConflictList* list);
+EQUORA_API const EqConflictView* eq_conflict_list_get(const EqConflictList* list, int32_t index);
+void EQUORA_API eq_conflict_list_destroy(EqConflictList* list);
+
+typedef struct EqSlotView {
+    int64_t start;
+    int64_t end;
+} EqSlotView;
+
+typedef struct EqSlotList EqSlotList;
+// workdayMask:bit0=Mon .. bit6=Sun。
+int32_t EQUORA_API eq_find_free_slots(EqCore* core, int64_t from, int64_t to,
+                                      int32_t work_start_minute, int32_t work_end_minute,
+                                      int32_t workday_mask, int64_t min_minutes,
+                                      int32_t limit, EqSlotList** out_list,
+                                      EqError* out_error);
+int32_t EQUORA_API eq_slot_list_count(const EqSlotList* list);
+EQUORA_API const EqSlotView* eq_slot_list_get(const EqSlotList* list, int32_t index);
+void EQUORA_API eq_slot_list_destroy(EqSlotList* list);
+
+// 例外编辑:detach = 仅修改本次;split = 本次及以后另立新规则。
+int32_t EQUORA_API eq_event_detach_occurrence(EqCore* core, const char* rule_id_utf8,
+                                              int64_t occurrence_start_utc,
+                                              int32_t tz_offset_minutes,
+                                              EqEventHandle** out_handle, EqError* out_error);
+int32_t EQUORA_API eq_rule_split_series(EqCore* core, const char* rule_id_utf8,
+                                        int64_t occurrence_start_utc,
+                                        EqRuleHandle** out_handle, EqError* out_error);
+
+// ICS 文件导入导出。
+int32_t EQUORA_API eq_export_ics(EqCore* core, int64_t from, int64_t to,
+                                 const char* path_utf8, int32_t* out_count,
+                                 EqError* out_error);
+int32_t EQUORA_API eq_import_ics(EqCore* core, const char* path_utf8, int32_t* out_imported,
+                                 int32_t* out_skipped, int32_t* out_failed,
+                                 EqError* out_error);
+
 #ifdef __cplusplus
 } // extern "C"
 #endif

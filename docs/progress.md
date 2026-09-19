@@ -5,9 +5,9 @@
 
 ## 当前状态
 
-- **当前阶段**:P6 — 日历与时间块核心(M2)
-- **已完成**:P0–P5(**M0、M1 达成**)
-- **最新提交**:P5 任务管理界面
+- **当前阶段**:P7 — 日历界面(M2 收尾)
+- **已完成**:P0–P6(M2 核心与服务层完成)
+- **最新提交**:P6 日历核心
 
 ---
 
@@ -253,3 +253,55 @@
 
 - P6(M2):迁移 v3 —— time_blocks/events/recurrence_rules/calendars 存储、
   重复规则展开与例外、冲突检测、空闲时间搜索、ICS 导入导出;原生智能排程地基。
+
+---
+
+## P6 — 日历与时间块核心(M2 数据/服务层)✅(2026-09-19)
+
+### 已完成(P6a 原生 + P6b 互操作)
+
+- **迁移 v3**:calendars、time_blocks(任务关联可空、准备/缓冲、CHECK end>start)、
+  events(全天标志)、recurrence_rules(CHECK host_type、RRULE 字段集合)。
+- **Schedule.Scheduling 模块**(纯函数,仅依赖 Domain):
+  - `Recurrence`:RRULE 子集展开(DAILY/WEEKLY+BYDAY/MONTHLY date/nth/last-weekday/YEARLY、
+    INTERVAL、UNTIL、COUNT、例外日期按本地时区过滤、4096 实例上限)、
+    nthWeekdayOfMonth、localDateString。
+  - `Conflict`:排序扫描 O(n log n) 重叠对检测。
+  - `FreeSlot`:按工作时段(起止分钟 + 工作日掩码)扣除忙碌区间,过滤最短时长。
+- **Domain**:`RecurrenceRule::toRruleString/parseRrule`(不支持部分明确拒绝)、
+  Calendar/TimeBlock/CalendarEvent 实体。
+- **CalendarRepository**:块/事件/规则 CRUD(乐观并发)、窗口查询、
+  `materializeWindow`(块+事件+展开实例;准备/缓冲计入冲突区间)、
+  例外编辑 `detachOccurrence`(物化+例外日期)与 `splitSeries`(截断+新规则)。
+- **ICS**:RFC5545 子集导出(CRLF、转义、UID/DTSTAMP)与导入(续行展开、
+  参数剥离、UID 幂等、RRULE 附着;缺时间字段计入 failed)。
+- **C ABI(v2 追加)**:日历/块/事件/规则句柄与列表、EqSpanList/EqConflictList/
+  EqSlotList、窗口物化/冲突/空闲、例外编辑、ICS 文件导入导出;EqCore 增挂 CalendarRepository。
+- **C#**:NativeMethods.P6 + EquoraCore.P6(CalendarDto/TimeBlockDto/CalendarEventDto/
+  RecurrenceRuleDto/SpanDto/ConflictDto/FreeSlotDto + 全套方法)、
+  ICalendarService + AppDataService.P6 实现。
+
+### 修复的缺陷
+
+- **窗口物化种子重复计入**(真实缺陷,由 C# 冲突测试暴露):宿主事件与规则展开的
+  种子实例同时入窗导致"自己与自己冲突 60 分钟"——展开时跳过与宿主同时刻的实例。
+- 测试侧:多处 `N * 86'400'000` 整型溢出(int32 超界使窗口为负返回空)、
+  日期常量差一天、同毫毫秒排序假设等(均为测试自身错误,实现经复核无误)。
+
+### 构建与测试结果(本机实测)
+
+- 原生:`ctest` 104/104(新增 14 例:重复/冲突/空闲/日历仓库/ICS/迁移 v3);/W4 零警告。
+- C#:`dotnet test` 33/33(新增 6 例:日历/块 CRUD 关联任务/系列+冲突+例外/空闲/ICS 往返/非法宿主)。
+
+### 已知问题 / 假设
+
+- 全天事件以调用方计算的本地日界 UTC 区间存储(is_all_day 标记语义展示用);
+  跨时区快照字段(存日序号)在同步阶段引入。
+- 任务的 completeRecurDays(完成后 N 天)字段已存储,展开器尚未消费(归 P12 智能规划)。
+- ICS 未做长行折叠(解析端支持续行,导出超长行在严格客户端可能被拒)。
+- eq_slot_list_get 以 reinterpret_cast 提供 FreeSlot→EqSlotView 视图(两者布局一致,纯只读)。
+
+### 下一步
+
+- P7(M2 收尾):日历界面 —— 自定义周视图(虚拟化)、拖拽创建/移动/缩放时间块、
+  当前时间线、工作时间底纹、冲突着色、月/议程视图、重复事件的例外编辑入口、ICS 导入导出 UI。

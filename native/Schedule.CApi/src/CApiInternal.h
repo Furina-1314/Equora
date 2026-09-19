@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include <equora/core/CalendarRepository.h>
 #include <equora/core/ChecklistRepository.h>
 #include <equora/core/ProjectRepository.h>
 #include <equora/core/TagRepository.h>
@@ -27,12 +28,14 @@
 struct EqCore {
     equora::storage::Database db;
     equora::core::TaskRepository tasks;
+    equora::core::CalendarRepository calendar;
     equora::core::ProjectRepository projects;
     equora::core::TagRepository tags;
     equora::core::ChecklistRepository checklist;
 
     EqCore(equora::storage::Database&& d, std::string deviceId)
-        : db(std::move(d)), tasks(db, deviceId), projects(db, deviceId),
+        : db(std::move(d)), tasks(db, deviceId), calendar(db, deviceId),
+          projects(db, deviceId),
           tags(db, deviceId), checklist(db, deviceId) {}
 };
 

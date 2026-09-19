@@ -93,8 +93,8 @@ TEST_F(CalendarRepoTest, EventSeriesMaterializeAndDetach) {
     const auto savedRule = cal_->createRule(rule);
 
     const auto spans = cal_->materializeWindow(kDay, kDay + 28LL * 86'400'000, 0);
-    // 事件本身(startAt 在窗口内)+ 4 个周五实例。
-    EXPECT_EQ(spans.size(), 5U);
+    // 宿主事件本身 + 非种子的 3 个周五实例(种子去重)。
+    EXPECT_EQ(spans.size(), 4U);
 
     // 冲突检测能发现两个重叠的周五实例(构造一个真实块与第 2 周实例重叠)。
     const auto secondFriday = kDay + 7 * 86'400'000 + 2 * 3'600'000 + 30 * 60'000;
@@ -111,7 +111,7 @@ TEST_F(CalendarRepoTest, EventSeriesMaterializeAndDetach) {
     EXPECT_NE(materialized.id, created.id);
     const auto afterDetach = cal_->materializeWindow(kDay, kDay + 28LL * 86'400'000, 0);
     // 虚拟实例换成真实事件;窗口内还有冲突测试用的真实块。
-    EXPECT_EQ(afterDetach.size(), 6U);
+    EXPECT_EQ(afterDetach.size(), 5U);
 
     // 修改本次及以后:旧规则截断 + 新规则,后续实例双份(detach 已推进规则版本,需重取)。
     const auto ruleAfterDetach = cal_->findRule(savedRule.id).value();

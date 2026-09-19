@@ -26,7 +26,7 @@ public interface ITaskService
 /// 单机数据服务:持有 EquoraCore(原生数据库上下文)。
 /// 打开失败会抛出带原因的 EquoraException,由调用方呈现恢复路径。
 /// </summary>
-public sealed partial class AppDataService : ITaskService, IWorkspaceService, IDisposable
+public sealed partial class AppDataService : ITaskService, IWorkspaceService, ICalendarService, IDisposable
 {
     private readonly EquoraCore _core;
 
