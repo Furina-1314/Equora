@@ -1,0 +1,17 @@
+<UserControl
+    x:Class="Equora.App.Controls.QuickCaptureFlyout"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <StackPanel Spacing="10" MinWidth="420">
+        <TextBox x:Name="InputBox" PlaceholderText="例如:明天下午3点开会一小时 #产品 !高"
+                 TextChanged="OnTextChanged" KeyDown="OnKeyDown" />
+        <TextBlock Text="识别预览(回车提交,Esc 取消;识别不出的部分保留为标题)"
+                   Opacity="0.6" Style="{StaticResource CaptionTextBlockStyle}" />
+        <TextBlock x:Name="TitlePreview" FontWeight="SemiBold" TextWrapping="Wrap" />
+        <TextBlock x:Name="FieldsPreview" Opacity="0.8" TextWrapping="Wrap"
+                   Style="{StaticResource CaptionTextBlockStyle}" />
+        <TextBlock x:Name="StatusLine" Opacity="0.6"
+                   Style="{StaticResource CaptionTextBlockStyle}" />
+    </StackPanel>
+</UserControl>

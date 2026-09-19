@@ -18,5 +18,7 @@ internal static class AppServices
 
     public static CalendarViewModel Calendar { get; } = new(Data, Data, Undo);
 
+    public static MatrixViewModel Matrix { get; } = new(Data, Data, Undo);
+
     public static HomeViewModel Home { get; } = new(Data);
 }

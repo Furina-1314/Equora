@@ -1,0 +1,108 @@
+<Page
+    x:Class="Equora.App.Pages.MatrixPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Padding="12,8">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
+            <Button Content="撤销" Command="{Binding UndoCommand}" />
+            <TextBlock Text="{Binding StatusText}" Opacity="0.7" VerticalAlignment="Center"
+                       Style="{StaticResource CaptionTextBlockStyle}" />
+        </StackPanel>
+
+        <Grid Grid.Row="1" ColumnSpacing="8" RowSpacing="8">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Grid Grid.Row="0" Grid.Column="0" Background="#18C03030" CornerRadius="6"
+                  Padding="8" AllowDrop="True" DragOver="OnQuadrantDragOver" Drop="OnQuadrantDrop"
+                  Tag="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" /><RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <TextBlock Text="重要且紧急 — 立即处理" FontWeight="SemiBold" Margin="4" />
+                <ListView Grid.Row="1" ItemsSource="{Binding Q1}"
+                          CanDragItems="True" DragItemsStarting="OnTaskDragStarting"
+                          SelectionMode="Single" DoubleTapped="OnToggleBigThree">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Title}" TextTrimming="CharacterEllipsis"
+                                       Padding="0,3" />
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Grid>
+
+            <Grid Grid.Row="0" Grid.Column="1" Background="#183070C0" CornerRadius="6"
+                  Padding="8" AllowDrop="True" DragOver="OnQuadrantDragOver" Drop="OnQuadrantDrop"
+                  Tag="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" /><RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <TextBlock Text="重要不紧急 — 安排时间" FontWeight="SemiBold" Margin="4" />
+                <ListView Grid.Row="1" ItemsSource="{Binding Q2}"
+                          CanDragItems="True" DragItemsStarting="OnTaskDragStarting"
+                          SelectionMode="Single" DoubleTapped="OnToggleBigThree">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Title}" TextTrimming="CharacterEllipsis"
+                                       Padding="0,3" />
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Grid>
+
+            <Grid Grid.Row="1" Grid.Column="0" Background="#18C09030" CornerRadius="6"
+                  Padding="8" AllowDrop="True" DragOver="OnQuadrantDragOver" Drop="OnQuadrantDrop"
+                  Tag="3">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" /><RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <TextBlock Text="紧急不重要 — 委派/快速处理" FontWeight="SemiBold" Margin="4" />
+                <ListView Grid.Row="1" ItemsSource="{Binding Q3}"
+                          CanDragItems="True" DragItemsStarting="OnTaskDragStarting"
+                          SelectionMode="Single" DoubleTapped="OnToggleBigThree">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Title}" TextTrimming="CharacterEllipsis"
+                                       Padding="0,3" />
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Grid>
+
+            <Grid Grid.Row="1" Grid.Column="1" Background="#18909090" CornerRadius="6"
+                  Padding="8" AllowDrop="True" DragOver="OnQuadrantDragOver" Drop="OnQuadrantDrop"
+                  Tag="4">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" /><RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <TextBlock Text="不重要不紧急 — 减少/推迟" FontWeight="SemiBold" Margin="4" />
+                <ListView Grid.Row="1" ItemsSource="{Binding Q4}"
+                          CanDragItems="True" DragItemsStarting="OnTaskDragStarting"
+                          SelectionMode="Single" DoubleTapped="OnToggleBigThree">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Title}" TextTrimming="CharacterEllipsis"
+                                       Padding="0,3" />
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Grid>
+        </Grid>
+    </Grid>
+</Page>

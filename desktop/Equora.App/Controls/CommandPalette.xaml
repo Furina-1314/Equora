@@ -1,0 +1,24 @@
+<UserControl
+    x:Class="Equora.App.Controls.CommandPalette"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <StackPanel Spacing="8" MinWidth="460">
+        <TextBox x:Name="SearchBox" PlaceholderText="输入命令或页面名…"
+                 TextChanged="OnSearchChanged" KeyDown="OnKeyDown" />
+        <ListView x:Name="ResultsList" MaxHeight="320" SelectionMode="Single"
+                  IsItemClickEnabled="True" ItemClick="OnItemClicked"
+                  DoubleTapped="OnItemDoubleTapped">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal" Spacing="10" Padding="0,6">
+                        <FontIcon Glyph="{Binding Glyph}" FontSize="14" />
+                        <TextBlock Text="{Binding Title}" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding Hint}" Opacity="0.5" FontSize="11"
+                                   VerticalAlignment="Center" Margin="8,0,0,0" />
+                    </StackPanel>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+    </StackPanel>
+</UserControl>
