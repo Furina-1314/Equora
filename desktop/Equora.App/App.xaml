@@ -1,12 +1,21 @@
 <Application
     x:Class="Equora.App.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Equora.App">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
             </ResourceDictionary.MergedDictionaries>
+
+            <local:DoneStatusConverter x:Key="DoneStatusConverter" />
+            <local:DueTextConverter x:Key="DueTextConverter" />
+            <local:PriorityBrushConverter x:Key="PriorityBrushConverter" />
+            <local:TrueToVisibleConverter x:Key="TrueToVisibleConverter" />
+            <local:FalseToVisibleConverter x:Key="FalseToVisibleConverter" />
+            <local:BoolToVisibleConverter x:Key="BoolToVisibleConverter" />
+            <local:BoolToInvisibleConverter x:Key="BoolToInvisibleConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

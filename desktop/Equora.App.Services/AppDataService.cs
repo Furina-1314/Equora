@@ -9,11 +9,17 @@ public interface ITaskService
     int Ping(int value);
     int SchemaVersion { get; }
     TaskDto CreateTask(TaskDraft draft);
-    TaskDto? GetTask(string id);
+
     TaskDto UpdateTask(TaskDto task);
     void DeleteTask(string id);
     void RestoreTask(string id);
     IReadOnlyList<TaskDto> ListTasks(bool includeDeleted = false);
+
+    // 按过滤条件查询(智能清单/搜索/分页)。
+    IReadOnlyList<TaskDto> QueryTasks(TaskQuery query);
+
+    // 按 id 查找;includeDeleted=true 时可见回收站条目。
+    TaskDto? GetTask(string id, bool includeDeleted = false);
 }
 
 /// <summary>
@@ -35,7 +41,7 @@ public sealed partial class AppDataService : ITaskService, IWorkspaceService, ID
     public int SchemaVersion => _core.SchemaVersion;
 
     public TaskDto CreateTask(TaskDraft draft) => _core.CreateTask(draft);
-    public TaskDto? GetTask(string id) => _core.GetTask(id);
+    public TaskDto? GetTask(string id, bool includeDeleted = false) => _core.GetTask(id, includeDeleted);
     public TaskDto UpdateTask(TaskDto task) => _core.UpdateTask(task);
     public void DeleteTask(string id) => _core.DeleteTask(id);
     public void RestoreTask(string id) => _core.RestoreTask(id);

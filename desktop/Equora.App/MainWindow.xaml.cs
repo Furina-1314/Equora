@@ -11,7 +11,7 @@ public sealed partial class MainWindow : Window
         InitializeComponent();
         Title = "衡序 Equora";
         ExtendsContentIntoTitleBar = false;
-        ContentFrame.Navigate(typeof(HomePage));
+        ContentFrame.Navigate(typeof(TasksPage));
         Nav.SelectedItem = Nav.MenuItems[0];
     }
 

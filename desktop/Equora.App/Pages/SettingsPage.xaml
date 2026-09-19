@@ -3,18 +3,36 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <StackPanel Padding="24,16" Spacing="12" MaxWidth="560" HorizontalAlignment="Left">
-        <TextBlock Text="设置" Style="{StaticResource TitleTextBlockStyle}" />
+    <ScrollViewer Padding="24,16">
+        <StackPanel Spacing="12" MaxWidth="620" HorizontalAlignment="Left">
+            <TextBlock Text="设置" Style="{StaticResource TitleTextBlockStyle}" />
 
-        <TextBlock Text="主题" Style="{StaticResource SubtitleTextBlockStyle}" />
-        <RadioButtons x:Name="ThemeChoice" Header="应用外观(默认跟随系统)"
-                      SelectionChanged="OnThemeChanged">
-            <x:String>跟随系统</x:String>
-            <x:String>浅色</x:String>
-            <x:String>深色</x:String>
-        </RadioButtons>
+            <TextBlock Text="主题" Style="{StaticResource SubtitleTextBlockStyle}" />
+            <RadioButtons x:Name="ThemeChoice" Header="应用外观(默认跟随系统)"
+                          SelectionChanged="OnThemeChanged">
+                <x:String>跟随系统</x:String>
+                <x:String>浅色</x:String>
+                <x:String>深色</x:String>
+            </RadioButtons>
 
-        <TextBlock Text="关于" Style="{StaticResource SubtitleTextBlockStyle}" />
-        <TextBlock x:Name="AboutText" Opacity="0.7" TextWrapping="Wrap" />
-    </StackPanel>
+            <TextBlock Text="数据" Style="{StaticResource SubtitleTextBlockStyle}" Margin="0,12,0,0" />
+            <TextBlock x:Name="AboutText" Opacity="0.7" TextWrapping="Wrap" IsTextSelectionEnabled="True" />
+
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Content="立即备份" Style="{StaticResource AccentButtonStyle}" Click="OnBackupNow" />
+                <Button Content="打开数据目录" Click="OnOpenDataFolder" />
+            </StackPanel>
+            <TextBlock x:Name="BackupStatus" Opacity="0.7" TextWrapping="Wrap"
+                       Style="{StaticResource CaptionTextBlockStyle}" />
+
+            <TextBlock Text="导入与导出" Style="{StaticResource SubtitleTextBlockStyle}" Margin="0,12,0,0" />
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Content="导出 JSON" Click="OnExportJson" />
+                <Button Content="导出 CSV" Click="OnExportCsv" />
+                <Button Content="导入 JSON" Click="OnImportJson" />
+            </StackPanel>
+            <TextBlock x:Name="TransferStatus" Opacity="0.7" TextWrapping="Wrap"
+                       Style="{StaticResource CaptionTextBlockStyle}" />
+        </StackPanel>
+    </ScrollViewer>
 </Page>

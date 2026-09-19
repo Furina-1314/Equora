@@ -21,34 +21,34 @@ public sealed class EquoraException : Exception
 /// <summary>任务的可空字段与展示值(托管副本,脱离原生句柄生命周期)。</summary>
 public sealed record TaskDto
 {
-    public required string Id { get; init; }
-    public required string Title { get; init; }
-    public string Note { get; init; } = "";
-    public TaskStatus Status { get; init; }
-    public Priority Priority { get; init; }
-    public int Importance { get; init; }
-    public DateTimeOffset? DueAt { get; init; }
-    public int? EstimateMinutes { get; init; }
-    public int ActualMinutes { get; init; }
-    public string? ProjectId { get; init; }
-    public DateTimeOffset CreatedAt { get; init; }
-    public DateTimeOffset UpdatedAt { get; init; }
-    public long Revision { get; init; }
-    public bool IsDeleted { get; init; }
-    public string LastDeviceId { get; init; } = "";
+    public string Id { get; set; } = "";
+    public string Title { get; set; } = "";
+    public string Note { get; set; } = "";
+    public TaskStatus Status { get; set; }
+    public Priority Priority { get; set; }
+    public int Importance { get; set; }
+    public DateTimeOffset? DueAt { get; set; }
+    public int? EstimateMinutes { get; set; }
+    public int ActualMinutes { get; set; }
+    public string? ProjectId { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset UpdatedAt { get; set; }
+    public long Revision { get; set; }
+    public bool IsDeleted { get; set; }
+    public string LastDeviceId { get; set; } = "";
 }
 
 /// <summary>创建任务的输入(原生层补全 id/时间戳/revision)。</summary>
 public sealed record TaskDraft
 {
-    public required string Title { get; init; }
-    public string Note { get; init; } = "";
-    public TaskStatus Status { get; init; } = TaskStatus.Inbox;
-    public Priority Priority { get; init; } = Priority.Normal;
-    public int Importance { get; init; }
-    public DateTimeOffset? DueAt { get; init; }
-    public int? EstimateMinutes { get; init; }
-    public string? ProjectId { get; init; }
+    public string Title { get; set; } = "";
+    public string Note { get; set; } = "";
+    public TaskStatus Status { get; set; } = TaskStatus.Inbox;
+    public Priority Priority { get; set; } = Priority.Normal;
+    public int Importance { get; set; }
+    public DateTimeOffset? DueAt { get; set; }
+    public int? EstimateMinutes { get; set; }
+    public string? ProjectId { get; set; }
 }
 
 public enum TaskStatus
