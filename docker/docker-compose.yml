@@ -1,0 +1,38 @@
+# 本机模式 B:PostgreSQL 容器 + 同步服务器(构建上下文 = 仓库根)。
+# 用法:cd Equora && docker compose -f docker/docker-compose.yml up --build
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: equora
+      POSTGRES_PASSWORD: equora-dev
+      POSTGRES_DB: equora
+    # 数据库仅绑定本机,不暴露公网(需求 §3.4)。
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ../server/migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U equora"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  server:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      EQUORA_PORT: "8787"
+      EQUORA_DB_URL: postgres://equora:equora-dev@db:5432/equora
+      EQUORA_BOOTSTRAP_TOKEN: dev-local-token
+      EQUORA_BOOTSTRAP_USER: local
+    ports:
+      - "127.0.0.1:8787:8787"
+
+volumes:
+  pgdata:

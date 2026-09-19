@@ -1,6 +1,10 @@
 {
   "version": 3,
-  "cmakeMinimumRequired": { "major": 3, "minor": 24, "patch": 0 },
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 24,
+    "patch": 0
+  },
   "configurePresets": [
     {
       "name": "win-x64-release",
@@ -9,12 +13,29 @@
       "architecture": "x64",
       "binaryDir": "${sourceDir}/build/${presetName}",
       "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+    },
+    {
+      "name": "win-x64-server",
+      "displayName": "Windows x64 Server (Drogon + libpq, heavy)",
+      "generator": "Visual Studio 18 2026",
+      "architecture": "x64",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+      "cacheVariables": {
+        "EQUORA_BUILD_SERVER": "ON",
+        "VCPKG_MANIFEST_DIR": "${sourceDir}/Equora.Server"
+      }
     }
   ],
   "buildPresets": [
     {
       "name": "win-x64-release",
       "configurePreset": "win-x64-release",
+      "configuration": "Release"
+    },
+    {
+      "name": "win-x64-server",
+      "configurePreset": "win-x64-server",
       "configuration": "Release"
     }
   ],
@@ -23,7 +44,9 @@
       "name": "win-x64-release",
       "configurePreset": "win-x64-release",
       "configuration": "Release",
-      "output": { "outputOnFailure": true }
+      "output": {
+        "outputOnFailure": true
+      }
     }
   ]
 }

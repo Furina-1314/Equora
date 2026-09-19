@@ -2,6 +2,7 @@ find_package(GTest CONFIG REQUIRED)
 
 add_executable(equora_server_tests
     src/SyncServiceTests.cpp
+    src/SyncJsonTests.cpp
 )
 
 target_link_libraries(equora_server_tests PRIVATE
