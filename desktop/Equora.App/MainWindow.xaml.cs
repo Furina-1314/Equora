@@ -24,9 +24,10 @@ public sealed partial class MainWindow : Window
         ContentFrame.Navigate(typeof(TasksPage));
         Nav.SelectedItem = Nav.Items[1];
         _restrictions = new RestrictionRuntime(message => { RestrictionNotice.Message = message; RestrictionNotice.IsOpen = true; });
+        _restrictions.PauseChanged += UpdatePauseNotice;
         try { _tray = new TrayIcon(WinRT.Interop.WindowNative.GetWindowHandle(this), Path.Combine(AppContext.BaseDirectory, "Assets", "Equora.ico"), RestoreWindow, ExitApplication); }
         catch (Exception ex) { RestrictionNotice.Message = ex.Message; RestrictionNotice.IsOpen = true; }
-        _clock.Tick += (_, _) => AppServices.FocusVm.Clock = DateTimeOffset.Now;
+        _clock.Tick += (_, _) => { AppServices.FocusVm.Clock = DateTimeOffset.Now; UpdatePauseNotice(); };
         _clock.Start();
         AppWindow.Closing += (_, e) =>
         {
@@ -51,6 +52,14 @@ public sealed partial class MainWindow : Window
     }
 
     public void ShowPage(Type page) => ContentFrame.Navigate(page);
+
+    private void UpdatePauseNotice()
+    {
+        var remaining = _restrictions.PauseRemaining;
+        PauseNotice.IsOpen = remaining > TimeSpan.Zero;
+        if (PauseNotice.IsOpen)
+            PauseNotice.Message = $"剩余 {(int)remaining.TotalMinutes:00}:{remaining.Seconds:00}，倒计时结束后自动恢复限制。";
+    }
 
     private void OnTogglePane(object sender, RoutedEventArgs e)
     {

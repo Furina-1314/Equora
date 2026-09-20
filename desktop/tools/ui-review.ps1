@@ -23,7 +23,7 @@ $dataDirectory = Join-Path $OutputDirectory ('data-' + [Guid]::NewGuid().ToStrin
 New-Item -ItemType Directory -Path $dataDirectory | Out-Null
 $previousData = $env:EQUORA_TEST_DATA_DIRECTORY
 $env:EQUORA_TEST_DATA_DIRECTORY = $dataDirectory
-try { $app = Start-Process -FilePath $Exe -WindowStyle Normal -PassThru }
+try { $app = Start-Process -FilePath $Exe -ArgumentList '--data-directory', ('"' + [IO.Path]::GetFullPath($dataDirectory) + '"') -WindowStyle Normal -PassThru }
 finally { $env:EQUORA_TEST_DATA_DIRECTORY = $previousData }
 try {
     for ($attempt = 0; $attempt -lt 40; $attempt++) {
@@ -87,6 +87,7 @@ try {
     Click-Ui (Find-Ui '已完成')
     Find-Ui '界面验收任务' | Out-Null
     Click-Ui (Find-Ui '删除任务')
+    Click-Ui (Find-Ui '删除')
     Click-Ui (Find-Ui '回收站')
     Find-Ui '界面验收任务' | Out-Null
     Click-Ui (Find-Ui '恢复')
@@ -94,6 +95,25 @@ try {
     Find-Ui '界面验收任务' | Out-Null
     Click-Ui (Find-Ui '界面验收任务')
     Save-Shot 'tasks'
+    Set-Text (Find-Ui '新任务标题') '永久删除验收任务'
+    Click-Ui (Find-Ui '添加任务')
+    Click-Ui (Find-Ui '永久删除验收任务')
+    $trashTask = Find-Ui '永久删除验收任务'
+    $row = [System.Windows.Automation.TreeWalker]::ControlViewWalker.GetParent($trashTask)
+    while ($row -and $row.Current.ControlType -ne [System.Windows.Automation.ControlType]::ListItem) { $row = [System.Windows.Automation.TreeWalker]::ControlViewWalker.GetParent($row) }
+    $delete = $row.FindFirst([System.Windows.Automation.TreeScope]::Descendants, [System.Windows.Automation.PropertyCondition]::new([System.Windows.Automation.AutomationElement]::NameProperty, '删除任务'))
+    Click-Ui $delete
+    Click-Ui (Find-Ui '删除')
+    Click-Ui (Find-Ui '回收站')
+    Click-Ui (Find-Ui '删除任务')
+    Click-Ui (Find-Ui '取消')
+    Find-Ui '永久删除验收任务' | Out-Null
+    Click-Ui (Find-Ui '删除任务')
+    Click-Ui (Find-Ui '永久删除')
+    $remainingTask = $script:ui.FindFirst([System.Windows.Automation.TreeScope]::Descendants, [System.Windows.Automation.PropertyCondition]::new([System.Windows.Automation.AutomationElement]::NameProperty, '永久删除验收任务'))
+    if ($remainingTask) { throw 'Permanently deleted task remains visible.' }
+    Click-Ui (Find-Ui '全部任务')
+    Click-Ui (Find-Ui '界面验收任务')
     Click-Ui (Find-Ui '设置')
     Set-Text (Find-Ui '' 'AccentHex') '#0078D4'
     Click-Ui (Find-Ui '应用')
@@ -129,8 +149,11 @@ try {
     Click-Ui (Find-Ui '应用与网站限制')
     Save-Shot 'restrictions'
     Click-Ui (Find-Ui '读取已安装的应用')
-    Start-Sleep -Seconds 3
-    $readMessage = $script:ui.FindAll([System.Windows.Automation.TreeScope]::Descendants, [System.Windows.Automation.Condition]::TrueCondition) | Where-Object { $_.Current.Name -match '^已读取 [1-9][0-9]* 个应用' }
+    $readMessage = $null
+    for ($readAttempt = 0; $readAttempt -lt 30 -and !$readMessage; $readAttempt++) {
+        Start-Sleep -Seconds 1
+        $readMessage = $script:ui.FindAll([System.Windows.Automation.TreeScope]::Descendants, [System.Windows.Automation.Condition]::TrueCondition) | Where-Object { $_.Current.Name -match '^已读取 [1-9][0-9]* 个应用' }
+    }
     if (!$readMessage) { throw 'Installed application discovery did not return applications.' }
     Set-Text (Find-Ui '' 'RuleName') '测试应用限制'
     Set-Text (Find-Ui '' 'RuleTarget') 'equora-review-probe.exe'
@@ -160,6 +183,14 @@ try {
         if ([ReviewWindow]::IsIconic($probeWindow)) { throw 'Focus-only restriction remained after pausing focus.' }
     }
     finally { $probe.CloseMainWindow() | Out-Null }
+    Click-Ui (Find-Ui '应用与网站限制')
+    Click-Ui (Find-Ui '暂停所有限制 15 分钟')
+    $pauseNotice = Find-Ui '' 'PauseNotice'
+    if ($pauseNotice.Current.IsOffscreen) { throw 'Pause countdown is not visible.' }
+    Save-Shot 'restrictions-paused'
+    Click-Ui (Find-Ui '任务')
+    if ((Find-Ui '' 'PauseNotice').Current.IsOffscreen) { throw 'Pause countdown disappeared after navigation.' }
+    Click-Ui (Find-Ui '专注')
     [ReviewWindow]::SetForegroundWindow($handle) | Out-Null
     Click-Ui (Find-Ui '结束')
     Click-Ui (Find-Ui '任务')
@@ -218,7 +249,7 @@ try {
     if (!$pulse.focusing) { throw 'Focus stopped while in tray.' }
     $priorData = $env:EQUORA_TEST_DATA_DIRECTORY
     $env:EQUORA_TEST_DATA_DIRECTORY = $dataDirectory
-    try { $second = Start-Process -FilePath $Exe -WindowStyle Hidden -PassThru }
+    try { $second = Start-Process -FilePath $Exe -ArgumentList '--data-directory', ('"' + [IO.Path]::GetFullPath($dataDirectory) + '"') -WindowStyle Hidden -PassThru }
     finally { $env:EQUORA_TEST_DATA_DIRECTORY = $priorData }
     if (!$second.WaitForExit(10000)) { $second.Kill(); throw 'Second instance did not redirect to the tray instance.' }
     Start-Sleep -Milliseconds 500
@@ -231,7 +262,8 @@ try {
     Click-Ui (Find-Ui '任务')
     [ReviewWindow]::MoveWindow($handle, 20, 20, 900, 760, $true) | Out-Null
     Start-Sleep -Milliseconds 500
-    if (!(Find-Ui '返回任务列表').Current.IsOffscreen) { Click-Ui (Find-Ui '返回任务列表') }
+    $backButton = $script:ui.FindFirst([System.Windows.Automation.TreeScope]::Descendants, [System.Windows.Automation.PropertyCondition]::new([System.Windows.Automation.AutomationElement]::NameProperty, '返回任务列表'))
+    if ($backButton -and !$backButton.Current.IsOffscreen) { Click-Ui $backButton }
     Find-Ui '界面验收任务' | Out-Null
     Save-Shot 'tasks-narrow'
     'PASS: navigation, task lifecycle, themes, focus pause, restrictions, discovery, classification CRUD, calendar CRUD, close-to-tray, background focus and single-instance restore.'

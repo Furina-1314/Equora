@@ -1,6 +1,39 @@
 importScripts('policy.js');
 let port, lastNonce = 0, previous = null, gate = { enabled: false }, allowances = {};
 let updating = Promise.resolve();
+let granting = Promise.resolve();
+function allowanceState(host) {
+  const entries = Object.entries(allowances).filter(([domain]) => matches(host, domain));
+  return { until: Math.max(0, ...entries.map(([, until]) => until)), used: entries.length > 0 };
+}
+async function grantAllowance(host) {
+  await ready;
+  const domain = (gate.blockedDomains || []).filter(domain => matches(host, domain)).sort((a, b) => a.length - b.length)[0] || host;
+  const existing = allowanceState(host);
+  if (existing.used) return { ok: existing.until > Date.now(), ...existing, error: '此网站的临时允许机会已使用。' };
+  const until = Date.now() + 300000;
+  allowances[domain] = until;
+  try {
+    await chrome.storage.local.set({ allowances });
+    await chrome.alarms.create('equora-allowance-expiry', { when: Math.min(...Object.values(allowances).filter(value => value > Date.now())) });
+    await refreshRules();
+    return { ok: true, until, used: true };
+  } catch {
+    delete allowances[domain];
+    await chrome.storage.local.set({ allowances }).catch(() => {});
+    await refreshRules().catch(() => {});
+    return { ok: false, error: '临时允许未能生效，请重新加载扩展后重试。' };
+  }
+}
+let receivedState = false;
+function popupStatus() {
+  const fresh = Boolean(port && receivedState && gate.updatedUtcMs && Date.now() - gate.updatedUtcMs <= 12000);
+  return {
+    connected: Boolean(port && receivedState), fresh,
+    enabled: fresh && Boolean(gate.enabled),
+    blockedDomains: fresh && gate.enabled ? (gate.blockedDomains || []).filter(domain => !allowed(domain)) : []
+  };
+}
 const matches = EquoraPolicy.matches;
 const allowed = host => Object.entries(allowances).some(([domain, until]) => until > Date.now() && matches(host, domain));
 const blocked = host => gate.enabled && gate.blockedDomains?.some(domain => matches(host, domain)) && !allowed(host);
@@ -9,7 +42,7 @@ async function refresh() {
   const domains = gate.enabled ? gate.blockedDomains || [] : [];
   const addRules = domains.length ? [{ id: 1001, priority: 1,
     action: { type: 'redirect', redirect: { regexSubstitution: chrome.runtime.getURL('blocked.html') + '?host=\\1' } },
-    condition: { regexFilter: '^https?://([^/:?#]+)', requestDomains: domains, resourceTypes: ['main_frame'] }
+    condition: { regexFilter: '^https?://([^/:?#]+)(?::[0-9]+)?(?:[/?#].*)?$', requestDomains: domains, resourceTypes: ['main_frame'] }
   }] : [];
   const exceptions = Object.entries(allowances).filter(([, until]) => until > Date.now()).map(([domain]) => domain);
   if (exceptions.length) addRules.push({ id: 1002, priority: 2, action: { type: 'allow' }, condition: { requestDomains: exceptions, resourceTypes: ['main_frame'] } });
@@ -43,34 +76,60 @@ function connect() {
   try {
     port = chrome.runtime.connectNative('com.equora.nativehost');
     port.onMessage.addListener(message => {
-      if (message.type === 'state') { gate = message.state; refreshRules(); }
+      if (message.type === 'state') { receivedState = true; gate = message.state; refreshRules(); }
     });
     port.onDisconnect.addListener(() => {
       void chrome.runtime.lastError;
-      port = null; previous = null; gate = { enabled: false }; refreshRules();
+      port = null; receivedState = false; previous = null; gate = { enabled: false }; refreshRules();
     });
     query();
   } catch { port = null; gate = { enabled: false }; refreshRules(); }
 }
 chrome.runtime.onMessage.addListener((message, sender, respond) => {
-  if (!sender.url?.startsWith(chrome.runtime.getURL('blocked.html'))) return;
+  if (message.type === 'allowanceStatus') {
+    const page = new URL(sender.url || 'about:blank');
+    const isBlockedPage = page.href.split('?')[0].split('#')[0] === chrome.runtime.getURL('blocked.html');
+    const host = isBlockedPage ? EquoraPolicy.hostname('https://' + (page.searchParams.get('host') || '')) : EquoraPolicy.hostname(sender.url);
+    if (!host) return;
+    ready.then(() => {
+      const state = allowanceState(host);
+      respond(state);
+      if (state.used && state.until <= Date.now() && blocked(host)) return refreshRules();
+    }, () => respond({ error: '无法读取临时允许状态。' })).catch(() => {});
+    return true;
+  }
+  if (sender.url === chrome.runtime.getURL('popup.html') && message.type === 'getStatus') {
+    respond(popupStatus());
+    void query();
+    return;
+  }
+  const blockedUrl = new URL(sender.url || 'about:blank');
+  if (blockedUrl.href.split('?')[0].split('#')[0] !== chrome.runtime.getURL('blocked.html')) return;
   if (message.type === 'allowTemp') {
     const host = EquoraPolicy.hostname('https://' + message.host);
-    if (!host || host !== message.host) { respond({ ok: false }); return; }
-    allowances[host] = Date.now() + 300000;
-    chrome.storage.session.set({ allowances }).then(refreshRules).then(() => respond({ ok: true }));
+    const sourceHost = EquoraPolicy.hostname('https://' + (blockedUrl.searchParams.get('host') || ''));
+    if (!host || host !== sourceHost) { respond({ ok: false, error: '网站地址无效。' }); return; }
+    granting = granting.catch(() => {}).then(() => grantAllowance(host));
+    granting.then(respond, () => respond({ ok: false, error: '连接失败，请重新加载扩展后重试。' }));
     return true;
   }
   if (message.type === 'close' && sender.tab) chrome.tabs.remove(sender.tab.id);
 });
-chrome.alarms.onAlarm.addListener(() => query());
+chrome.alarms.onAlarm.addListener(async () => {
+  await ready;
+  await refreshRules();
+  const pending = Object.values(allowances).filter(until => until > Date.now());
+  if (pending.length) await chrome.alarms.create('equora-allowance-expiry', { when: Math.min(...pending) });
+  await query();
+});
 chrome.tabs.onActivated.addListener(() => query());
 chrome.tabs.onUpdated.addListener((_id, change) => { if (change.url) query(); });
 async function start() {
-  allowances = (await chrome.storage.session.get('allowances')).allowances || {};
+  allowances = { ...((await chrome.storage.session.get('allowances')).allowances || {}), ...((await chrome.storage.local.get('allowances')).allowances || {}) };
+  await chrome.storage.local.set({ allowances });
   await refreshRules();
   await chrome.alarms.create('equora-policy', { periodInMinutes: 0.5 });
   connect();
   setInterval(query, 5000);
 }
-start();
+const ready = start();

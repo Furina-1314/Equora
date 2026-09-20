@@ -161,6 +161,16 @@ int32_t eq_task_update(EqCore* core, const EqTaskInput* input, EqTaskHandle** ou
     });
 }
 
+int32_t eq_task_permanently_delete(EqCore* core, const char* id_utf8, EqError* out_error) {
+    using namespace equora;
+    using namespace equora::capi;
+    return guard(out_error, [&]() -> int32_t {
+        if (!core || !id_utf8) return fillError(out_error, static_cast<int32_t>(ErrorCode::InvalidArgument), "core/id must not be null");
+        core->tasks.permanentlyDelete(id_utf8);
+        return 0;
+    });
+}
+
 int32_t eq_task_set_deleted(EqCore* core, const char* id_utf8, int32_t deleted,
                             EqTaskHandle** out_handle, EqError* out_error) {
     using namespace equora;

@@ -1,57 +1,31 @@
-# 衡序 Equora 浏览器扩展(Edge / Chrome,MV3)
+# 衡序 Equora 浏览器扩展
 
-专注会话期间,按桌面端下发的名单温和限制网站。**扩展不持久化限制规则**:
-每次从 Native Host 拉取当前专注状态,用 `declarativeNetRequest` 的
-**会话规则**下发 —— 浏览器重启、扩展崩溃、主程序异常后规则自然清空,
-绝不可能把用户永久锁在网络之外。
+适用于 Edge / Chrome 的 Manifest V3 扩展。配合 Equora 桌面应用，按专注状态、每日时段和使用额度管理网站。
 
-## 隐私边界
+## 安装和更新
 
-- 只读取**域名**(不采集页面内容、不记录浏览历史)。
-- 预算计时只按域名累计分钟数,存于扩展本地 `chrome.storage.local`。
+1. 将扩展解压到固定目录，保留其中全部文件。
+2. 打开 `edge://extensions`（Chrome 为 `chrome://extensions`），启用开发者模式。
+3. 点击“加载解压缩的扩展”，选择包含 `manifest.json` 的目录。
+4. 点击工具栏中的 Equora 图标，打开面板并复制扩展 ID。
+5. 在桌面应用“使用限制”页面粘贴 ID，点击“连接 Edge 与 Chrome”，启用限制服务并添加网站规则。
 
-## 开发安装(解包加载)
+更新时，用新版文件覆盖原扩展目录，然后在扩展管理页点击“重新加载”。旧版本没有工具栏面板；更新后点击图标会显示连接状态、当前受限域名和连接指引。若更换加载目录导致扩展 ID 改变，需要重新连接。
 
-1. 构建并运行一次桌面端(生成数据库)。
-2. 构建 Native Host:
+## 使用
 
-   ```bash
-   cd desktop
-   dotnet build Equora.NativeHost -c Release
-   ```
+保持桌面应用和扩展运行。面板每 2 秒更新状态；规则在桌面应用中增改删。受限域名包含其子域名。每个网站仅能临时允许一次、共 5 分钟，同一规则覆盖的子域名共享机会。网页右上角显示倒计时；到期后恢复拦截并禁用再次允许，刷新页面或重启浏览器不会重置。
 
-3. 生成 host manifest 并注册注册表:
+扩展约每 5 秒查询本地连接组件，并按当前前台浏览器窗口中的活动网页累计使用时间；空闲超过 60 秒或后台标签不计时。不读取网页正文，不保存 URL 路径。用量通过本地连接组件保存到 Equora 数据目录，临时允许的截止时间和已使用记录保存在扩展本地存储中。
 
-   ```powershell
-   cd desktop/Equora.NativeHost/bin/Release/net10.0-windows10.0.19041.0
-   ./com.equora.nativehost.exe --print-manifest . > com.equora.nativehost.json
-   # 用文本编辑器把 EXTENSION_ID_PLACEHOLDER 替换为第 5 步加载扩展后的真实 ID
-   reg add HKCU\Software\Google\Chrome\NativeMessagingHosts\com.equora.nativehost /ve /t REG_SZ /d "<本目录>\com.equora.nativehost.json"
-   # Edge 对应键:HKCU\Software\Microsoft\Edge\NativeMessagingHosts\com.equora.nativehost
-   ```
+连接中断或桌面端心跳失效后解除拦截；本功能用于自主使用管理。隐私窗口需要单独允许扩展运行，浏览器内部页面不受限制。
 
-4. 在 `chrome://extensions`(Edge 为 `edge://extensions`)开启开发者模式。
-5. 「加载解包的扩展」选择本目录(`extension/Equora.BrowserExtension`)。
-   首次图标缺失不影响功能;可放置 `icon128.png`。
-6. 桌面端开启一次专注(默认预设可含 blocked_sites,如 `["weibo.com","bilibili.com"]`),
-   访问受限域名应看到拦截页(返回任务 / 允许 5 分钟)。
+## 验证
 
-## 消息协议(v1)
+在仓库根目录运行：
 
-帧格式遵循 Chrome Native Messaging(4 字节小端长度 + UTF-8 JSON)。
+```powershell
+node --test extension/tests/*.test.cjs
+```
 
-| 方向 | type | 说明 |
-|---|---|---|
-| 扩展 → host | `hello` | 版本握手 |
-| 扩展 → host | `query` | 拉取当前专注状态(每 30s) |
-| host → 扩展 | `state` | `FocusGateState`(focusing/名单/预算) |
-| 双向 | `error` | `version-mismatch` / `checksum-mismatch` / `replay` / … |
-
-每条消息携带 `protocolVersion`、`nonce`(严格递增,重放拒绝)、
-`checksum`(FNV-1a 防传输损坏;安全边界由 allowed_origins 保证)。
-
-## 已知限制(当前阶段)
-
-- 拦截重定向用 `regexSubstitution` 简化实现,复杂 URL 编码场景未覆盖,
-  生产化前替换为 `redirect` + query 参数方案并补集成测试。
-- 紧急解锁(绕过所有限制的系统级出口)在桌面端通知中心,P12 一并实现。
+测试模拟浏览器 API，覆盖域名边界、拦截与临时允许、连接过期、面板状态和复制 ID。真实浏览器连接按上面的安装步骤验证。

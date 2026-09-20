@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "衡序 Equora 专注限制",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "minimum_chrome_version": "120",
   "host_permissions": ["http://*/*", "https://*/*"],
   "description": "根据 Equora 的专注状态、时段和每日额度管理网站使用；不记录网页内容。",
@@ -14,11 +14,17 @@
   "background": {
     "service_worker": "background.js"
   },
+  "content_scripts": [{
+    "matches": ["http://*/*", "https://*/*"],
+    "js": ["allowance-timer.js"],
+    "run_at": "document_idle"
+  }],
   "icons": {
     "128": "icon128.png"
   },
   "action": {
-    "default_title": "Equora 专注"
+    "default_popup": "popup.html",
+    "default_icon": "icon128.png"
   },
   "web_accessible_resources": [
     {

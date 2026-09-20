@@ -106,6 +106,7 @@ int32_t EQUORA_API eq_task_get(EqCore* core, const char* id_utf8, int32_t includ
                                EqTaskHandle** out_handle, EqError* out_error);
 int32_t EQUORA_API eq_task_update(EqCore* core, const EqTaskInput* input,
                                   EqTaskHandle** out_handle, EqError* out_error);
+int32_t EQUORA_API eq_task_permanently_delete(EqCore* core, const char* id_utf8, EqError* out_error);
 int32_t EQUORA_API eq_task_set_deleted(EqCore* core, const char* id_utf8, int32_t deleted,
                                        EqTaskHandle** out_handle, EqError* out_error);
 

@@ -1,5 +1,5 @@
 param(
-    [string]$Version = '0.2.0',
+    [string]$Version = '0.2.1',
     [Parameter(Mandatory)][string]$SdkBin,
     [Parameter(Mandatory)][string]$VCRedist,
     [Parameter(Mandatory)][string]$InnoCompiler,
@@ -23,6 +23,9 @@ if (!$SkipPublish) {
 $browserHost = Join-Path $payload 'BrowserHost'
 New-Item -ItemType Directory -Path $browserHost -Force | Out-Null
 Copy-Item -Path (Join-Path $hostPayload '*') -Destination $browserHost -Recurse -Force
+$browserExtension = Join-Path $payload 'BrowserExtension'
+New-Item -ItemType Directory -Path $browserExtension -Force | Out-Null
+Get-ChildItem -LiteralPath (Join-Path $root 'extension/Equora.BrowserExtension') -File | Where-Object Extension -in '.js','.html','.json','.png' | Copy-Item -Destination $browserExtension -Force
 Get-ChildItem -LiteralPath $VCRedist -Filter '*.dll' | Copy-Item -Destination $payload -Force
 New-Item -ItemType Directory -Path (Join-Path $payload 'Docs') -Force | Out-Null
 Copy-Item -LiteralPath (Join-Path $root 'docs/help.md'),(Join-Path $root 'docs/usage-restrictions.md'),(Join-Path $root 'LICENSE'),(Join-Path $root 'THIRD-PARTY-NOTICES.md') -Destination (Join-Path $payload 'Docs') -Force

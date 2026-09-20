@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>衡序 Equora</title>
+  <style>
+    :root { color-scheme: light dark; font-family: "Segoe UI", "Microsoft YaHei UI", sans-serif; font-size: 14px; --bg: #fafafa; --fg: #202020; --line: #d5d5d5; --muted: #606060; --panel: #fff; --accent: #b52835; }
+    @media (prefers-color-scheme: dark) { :root { --bg: #202020; --fg: #f3f3f3; --line: #555; --muted: #c0c0c0; --panel: #2c2c2c; --accent: #ee8992; } }
+    * { box-sizing: border-box; }
+    body { width: 360px; margin: 0; background: var(--bg); color: var(--fg); }
+    header { display: flex; align-items: center; gap: 12px; padding: 20px; border-bottom: 3px solid var(--accent); }
+    header img { width: 36px; height: 36px; }
+    h1 { margin: 0; font-size: 20px; font-weight: 600; }
+    header p { margin: 3px 0 0; }
+    main { padding: 20px; }
+    h2 { margin: 0 0 8px; font-size: 16px; font-weight: 600; }
+    p { line-height: 1.6; margin: 8px 0; }
+    .muted { color: var(--muted); font-size: 12px; }
+    #status { color: var(--accent); }
+    section + section { border-top: 1px solid var(--line); margin-top: 20px; padding-top: 16px; }
+    ul { padding: 0; margin: 12px 0; max-height: 132px; overflow-y: auto; list-style: none; }
+    li { padding: 8px 10px; background: var(--panel); border-bottom: 1px solid var(--line); overflow-wrap: anywhere; }
+    label { display: block; font-size: 12px; margin: 12px 0 6px; }
+    input { width: 100%; border: 1px solid var(--line); background: var(--panel); color: var(--fg); border-radius: 0; padding: 9px; font-family: Consolas, monospace; font-size: 12px; }
+    button { width: 100%; margin-top: 8px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 0; background: var(--panel); color: var(--fg); font: inherit; cursor: pointer; }
+    button:hover { border-color: var(--fg); }
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    ol { margin: 8px 0 0; padding-left: 20px; line-height: 1.7; color: var(--muted); font-size: 12px; }
+  </style>
+</head>
+<body>
+  <header><img src="icon128.png" alt=""><div><h1>衡序 Equora</h1><p class="muted">网站使用管理</p></div></header>
+  <main>
+    <section aria-label="连接状态">
+      <h2 id="status" role="status">正在检查连接…</h2>
+      <p id="description">请稍候。</p>
+      <ul id="domains" aria-label="当前限制的网站" hidden></ul>
+      <button id="refresh" type="button">刷新连接状态</button>
+    </section>
+    <section aria-label="连接指引">
+      <h2>连接桌面应用</h2>
+      <label for="extensionId">扩展 ID</label>
+      <input id="extensionId" readonly spellcheck="false">
+      <button id="copy" type="button">复制扩展 ID</button>
+      <p id="feedback" class="muted" role="status"></p>
+      <ol>
+        <li>打开 Equora 的“使用限制”页面。</li>
+        <li>粘贴扩展 ID，点击“连接 Edge 与 Chrome”。</li>
+        <li>启用限制服务并添加网站规则，保持 Equora 运行。</li>
+      </ol>
+      <p class="muted">网站规则在桌面应用中管理。扩展不读取网页正文。</p>
+    </section>
+  </main>
+  <script src="popup.js"></script>
+</body>
+</html>

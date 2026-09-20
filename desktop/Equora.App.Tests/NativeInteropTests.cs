@@ -32,6 +32,19 @@ public class NativeInteropTests : IDisposable
     }
 
     [Fact]
+    public void PermanentDeleteOnlyAcceptsTrashAndRemovesItFromStorage()
+    {
+        var task = _service.CreateTask(new TaskDraft { Title = "永久删除测试" });
+        Assert.Throws<EquoraException>(() => _service.PermanentlyDeleteTask(task.Id));
+        Assert.NotNull(_service.GetTask(task.Id));
+        _service.DeleteTask(task.Id);
+        _service.PermanentlyDeleteTask(task.Id);
+        Assert.Null(_service.GetTask(task.Id, true));
+        Assert.DoesNotContain(_service.ListTasks(true), item => item.Id == task.Id);
+        Assert.Throws<EquoraException>(() => _service.RestoreTask(task.Id));
+    }
+
+    [Fact]
     public void NativeVersionIsReported()
     {
         Assert.Contains("Equora", _service.NativeVersion, StringComparison.Ordinal);

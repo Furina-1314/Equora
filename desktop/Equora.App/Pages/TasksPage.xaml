@@ -126,8 +126,7 @@
                                     VerticalAlignment="Stretch"
                                     Background="{Binding Priority, Converter={StaticResource PriorityBrushConverter}}" />
                             <Button Grid.Column="3" AutomationProperties.Name="删除任务" FontSize="12" Padding="8,2"
-                                    Click="OnDeleteTask"
-                                    Visibility="{Binding IsDeleted, Converter={StaticResource FalseToVisibleConverter}}"><FontIcon Glyph="&#xE74D;" FontSize="16" /></Button>
+                                    Click="OnDeleteTask"><FontIcon Glyph="&#xE74D;" FontSize="16" /></Button>
                             <Button Grid.Column="4" Content="恢复" FontSize="12" Padding="8,2"
                                     Click="OnRestoreTask"
                                     Visibility="{Binding IsDeleted, Converter={StaticResource TrueToVisibleConverter}}" />

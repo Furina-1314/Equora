@@ -30,6 +30,7 @@ public:
 
     // 软删除/恢复(墓碑语义);返回最新实体。
     domain::Task setDeleted(const std::string& id, bool deleted) const;
+    void permanentlyDelete(const std::string& id) const;
 
     // 列出任务(默认排除软删除,按创建时间升序)。
     [[nodiscard]] std::vector<domain::Task> listAll(bool includeDeleted = false) const;

@@ -89,6 +89,11 @@ public sealed partial class EquoraCore : IDisposable
     }
 
     public void DeleteTask(string id) => SetDeleted(id, true);
+    public void PermanentlyDeleteTask(string id)
+    {
+        var rc = NativeMethods.eq_task_permanently_delete(_core, id, out var error);
+        EquoraException.ThrowIfFailed(rc, error, "task_permanently_delete");
+    }
 
     public void RestoreTask(string id) => SetDeleted(id, false);
 

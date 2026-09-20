@@ -114,6 +114,9 @@ internal static partial class NativeMethods
     internal static partial int eq_task_set_deleted(IntPtr core, string idUtf8, int deleted,
         out IntPtr handle, out EqError error);
 
+    [LibraryImport("equora_capi", StringMarshalling = StringMarshalling.Utf8)]
+    internal static partial int eq_task_permanently_delete(IntPtr core, string idUtf8, out EqError error);
+
     [LibraryImport("equora_capi")]
     internal static partial int eq_task_list_all(IntPtr core, int includeDeleted,
         out IntPtr list, out EqError error);

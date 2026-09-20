@@ -15,7 +15,10 @@ internal sealed class RestrictionRuntime : IDisposable
     private DateTimeOffset _last = DateTimeOffset.Now;
     private DateTimeOffset _lastSave = DateTimeOffset.Now;
     private string? _lastProcess;
-    private DateTimeOffset? _allowUntil;
+    private readonly RestrictionPause _pause = new();
+    private DateTimeOffset? _allowUntil => _pause.Until;
+    public event Action? PauseChanged;
+    public TimeSpan PauseRemaining => _pause.Remaining(DateTimeOffset.Now);
     public string Status { get; private set; } = "限制服务已启动";
 
     public RestrictionRuntime(Action<string> notify)
@@ -35,9 +38,10 @@ internal sealed class RestrictionRuntime : IDisposable
     }
     public void AllowTemporarily()
     {
-        _allowUntil = DateTimeOffset.Now.AddMinutes(15);
+        _pause.Start(DateTimeOffset.Now);
         Store.Pulse(false, _allowUntil);
         Status = "所有限制已暂停 15 分钟";
+        PauseChanged?.Invoke();
     }
     public double Usage(UsageRule rule) => Store.Usage(rule.Kind, DateTimeOffset.Now).GetValueOrDefault(rule.Target) +
         (rule.Kind == "app" ? _pending.GetValueOrDefault(rule.Target) : 0);
@@ -45,6 +49,11 @@ internal sealed class RestrictionRuntime : IDisposable
     private void OnTick(object? sender, object e)
     {
         var now = DateTimeOffset.Now;
+        if (_pause.TryExpire(now))
+        {
+            Status = Configuration.Enabled ? "暂停已结束，限制已恢复" : "暂停已结束，限制服务未启用";
+            PauseChanged?.Invoke();
+        }
         try
         {
             var focusing = AppServices.FocusVm.Session?.State == SessionStateDto.Running;

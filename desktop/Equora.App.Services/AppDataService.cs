@@ -12,6 +12,7 @@ public interface ITaskService
 
     TaskDto UpdateTask(TaskDto task);
     void DeleteTask(string id);
+    void PermanentlyDeleteTask(string id) => throw new NotSupportedException();
     void RestoreTask(string id);
     IReadOnlyList<TaskDto> ListTasks(bool includeDeleted = false);
 
@@ -44,6 +45,7 @@ public sealed partial class AppDataService : ITaskService, IWorkspaceService, IC
     public TaskDto? GetTask(string id, bool includeDeleted = false) => _core.GetTask(id, includeDeleted);
     public TaskDto UpdateTask(TaskDto task) => _core.UpdateTask(task);
     public void DeleteTask(string id) => _core.DeleteTask(id);
+    public void PermanentlyDeleteTask(string id) => _core.PermanentlyDeleteTask(id);
     public void RestoreTask(string id) => _core.RestoreTask(id);
     public IReadOnlyList<TaskDto> ListTasks(bool includeDeleted = false) =>
         _core.ListTasks(includeDeleted);

@@ -31,6 +31,16 @@ protected:
     std::unique_ptr<TaskRepository> repo_;
 };
 
+TEST_F(TaskRepositoryTest, PermanentDeleteRequiresTrashAndCannotBeRestored) {
+    const auto task = repo_->create(Task::draft("permanent deletion"));
+    EXPECT_THROW(repo_->permanentlyDelete(task.id), EquoraError);
+    EXPECT_TRUE(repo_->findById(task.id).has_value());
+    repo_->setDeleted(task.id, true);
+    repo_->permanentlyDelete(task.id);
+    EXPECT_FALSE(repo_->findById(task.id, true).has_value());
+    EXPECT_THROW(repo_->setDeleted(task.id, false), EquoraError);
+}
+
 TEST_F(TaskRepositoryTest, CreateFillsSyncFields) {
     const Task created = repo_->create(Task::draft("写周报"));
     ASSERT_FALSE(created.id.empty());

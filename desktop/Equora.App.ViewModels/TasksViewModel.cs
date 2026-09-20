@@ -238,6 +238,16 @@ public partial class TasksViewModel : ObservableObject
     public void DeleteTask(TaskDto? task)
     {
         if (task is null) return;
+        if (task.IsDeleted)
+        {
+            _tasks.PermanentlyDeleteTask(task.Id);
+            _undo.Clear();
+            if (SelectedTask?.Id == task.Id) SelectedTask = null;
+            Refresh();
+            StatusText = $"已永久删除:{task.Title}";
+            OnPropertyChanged(nameof(CanUndo));
+            return;
+        }
         if (_tasks.GetTask(task.Id) is null) return;
 
         _tasks.DeleteTask(task.Id);

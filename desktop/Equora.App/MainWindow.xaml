@@ -3,7 +3,11 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Grid Background="{ThemeResource EquoraSurfaceBrush}">
         <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
-        <InfoBar x:Name="RestrictionNotice" IsOpen="False" IsClosable="True" Severity="Warning" />
+        <StackPanel>
+            <InfoBar x:Name="PauseNotice" IsOpen="False" IsClosable="False" Severity="Warning"
+                     Background="#FFF4CE" Foreground="#453400" Title="所有限制已暂停" />
+            <InfoBar x:Name="RestrictionNotice" IsOpen="False" IsClosable="True" Severity="Warning" />
+        </StackPanel>
         <SplitView Grid.Row="1" x:Name="Shell" DisplayMode="CompactInline" IsPaneOpen="True"
                    OpenPaneLength="208" CompactPaneLength="56"
                    PaneBackground="{ThemeResource EquoraPaneBrush}">

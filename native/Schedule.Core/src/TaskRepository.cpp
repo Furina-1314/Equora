@@ -201,6 +201,17 @@ Task TaskRepository::setDeleted(const std::string& id, bool deleted) const {
     return updated;
 }
 
+void TaskRepository::permanentlyDelete(const std::string& id) const {
+    Transaction tx = db_.beginTransaction();
+    const auto task = findById(id, true);
+    if (!task) throw EquoraError(ErrorCode::NotFound, "task not found");
+    if (!task->deletedAt) throw EquoraError(ErrorCode::InvalidArgument, "only trashed tasks can be permanently deleted");
+    auto st = db_.prepare("DELETE FROM tasks WHERE id = ? AND deleted_at IS NOT NULL");
+    st.bind(1, id);
+    st.step();
+    tx.commit();
+}
+
 std::vector<Task> TaskRepository::listAll(bool includeDeleted) const {
     auto st = db_.prepare(std::string(kSelectColumns) +
                           (includeDeleted ? "" : " WHERE deleted_at IS NULL") +

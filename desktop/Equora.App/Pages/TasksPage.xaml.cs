@@ -70,9 +70,21 @@ public sealed partial class TasksPage : Page
         if (!ViewModel.IsRefreshing) ViewModel.SelectedTask = TaskList.SelectedItem as TaskDto;
     }
 
-    private void OnDeleteTask(object sender, RoutedEventArgs e)
+    private bool _confirmingDelete;
+    private async void OnDeleteTask(object sender, RoutedEventArgs e)
     {
-        if (sender is FrameworkElement { DataContext: TaskDto task }) Run(() => ViewModel.DeleteTask(task));
+        if (_confirmingDelete || sender is not FrameworkElement { DataContext: TaskDto task }) return;
+        _confirmingDelete = true;
+        try
+        {
+            var dialog = new ContentDialog { XamlRoot = XamlRoot,
+                Title = task.IsDeleted ? "永久删除任务" : "删除任务",
+                Content = task.IsDeleted ? $"永久删除「{task.Title}」？此操作无法撤销。" : $"将「{task.Title}」移入回收站？",
+                PrimaryButtonText = task.IsDeleted ? "永久删除" : "删除", CloseButtonText = "取消",
+                DefaultButton = ContentDialogButton.Close };
+            if (await dialog.ShowAsync() == ContentDialogResult.Primary) Run(() => ViewModel.DeleteTask(task));
+        }
+        finally { _confirmingDelete = false; }
     }
 
     private void OnRestoreTask(object sender, RoutedEventArgs e)
