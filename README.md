@@ -2,53 +2,52 @@
 
 **本地优先的 Windows 日程规划与专注软件。**
 
+任务、日历、四象限、专注与应用限制,共享同一份本地数据。无账号,无广告,离线可用;数据始终存储在用户自己的设备上。
+
+<p align="center">
+  <img src="docs/images/app-home.png" alt="衡序 Equora — 工作概览" width="49%" />
+  &nbsp;
+  <img src="docs/images/app-tasks.png" alt="衡序 Equora — 任务管理与详情" width="49%" />
+</p>
+
 > **Equora** = **Equ**ilibrium + **H**ora(拉丁语"时间")——在时间中保持平衡,即"衡序"。
->
-> 🏆 **v0.1.0 发布候选** · M0–M10 全部里程碑达成 · 262 例自动化测试全通过 · [发布说明](docs/release-notes.md)
 
-## ✨ 功能总览
+当前版本 [v0.2.0](https://github.com/Furina-1314/Equora/releases)(预发布) · 287 例自动化测试全部通过 · [发布说明](docs/release-notes.md) · [下载安装包](https://github.com/Furina-1314/Equora/releases)
 
-| 功能 | 说明 |
+## 功能
+
+| 模块 | 能力 |
 |---|---|
-| 📋 **任务管理** | 三栏布局,9 个智能清单,搜索,撤销,回收站恢复 |
-| 📅 **日历时间块** | 周视图拖拽创建/移动/缩放,冲突检测,重复规则,ICS 导入导出 |
-| 🎯 **四象限** | 重要/紧急矩阵,拖拽换象限,今日三件要事,容量提示 |
-| ⚡ **快速收集** | `Ctrl+Shift+Space` 全局快捷键,中文自然语言解析(日期/时长/标签/优先级),预览确认 |
-| 🍅 **专注会话** | 番茄钟/深度工作/Flowtime/正计时/无计时五种模式,分心捕获,崩溃恢复 |
-| 🌐 **网站限制** | Edge/Chrome MV3 扩展,会话规则(浏览器重启自动解除),白名单优先 |
-| 🧠 **智能规划** | 确定性排程引擎,空闲时间搜索,估时校正,任务拆分建议 |
-| 📊 **每日/每周复盘** | 计划 vs 实际,专注度比率,最佳时段,估时准确度 |
-| 🔄 **自动化规则** | 触发器/条件/动作,防递归,执行日志 |
-| ☁️ **多设备同步** | 本地优先,可选自托管同步服务器(Docker),冲突中心,幂等重试 |
-| 🔒 **安全设计** | 20+ 关键进程永不限,紧急解锁,审计日志,脱敏 |
+| 任务管理 | 三栏布局,九个智能清单,项目与标签,全文搜索,撤销栈,回收站恢复 |
+| 日历 | 周视图时间块,拖拽创建、移动与缩放,冲突检测,重复规则,ICS 导入导出 |
+| 四象限 | 重要/紧急矩阵,拖拽换象限,今日要事,容量提示 |
+| 快速收集 | 全局快捷键 `Ctrl+Shift+Space`,中文自然语言解析(日期、时长、标签、优先级),预览确认 |
+| 专注 | 番茄钟、深度工作、Flowtime、正计时、无计时五种模式,暂停与继续,工作/休息轮次,分心捕获,崩溃恢复 |
+| 使用限制 | 应用程序与网站域名规则(Edge/Chrome 扩展);专注期间禁止、每日时段、每日额度三类条件;临时允许与一键暂停 |
+| 智能规划 | 确定性排程引擎,空闲时间搜索,估时校正,任务拆分建议 |
+| 复盘 | 每日与每周报告:计划对比实际、专注度、最佳时段、估时准确度 |
+| 自动化 | 触发器、条件、动作,防递归保护,执行日志 |
+| 多设备同步 | 可选自托管服务器(Docker),冲突中心,幂等重试,指数退避 |
+| 安全设计 | 关键进程白名单,紧急解锁,脱敏审计日志 |
 
-## 📥 快速安装
+## 安装
 
-### 桌面应用(EXE 安装包,推荐)
+从 [Releases](https://github.com/Furina-1314/Equora/releases) 获取。两种桌面安装包均为自包含,无需安装 .NET 运行时。
 
-从 [Releases](https://github.com/Furina-1314/Equora/releases) 下载 `Equora-vX.Y.Z-win-x64-Setup.exe`,双击安装:安装到当前用户目录(`%LocalAppData%\Programs\Equora`),无需管理员权限、无需信任证书,自带全部运行时(含 VC 运行库)。
+**EXE 安装包(推荐)** —— 双击 `Equora-vX.Y.Z-win-x64-Setup.exe` 完成安装。安装到当前用户目录,不需要管理员权限,不需要信任证书。
 
-### 桌面应用(MSIX)
-
-下载 `Equora-vX.Y.Z-win-x64.msix`(自包含,无需 .NET 运行时)。包为自签名,首次安装需信任一次证书(管理员确认):
+**MSIX 包** —— 下载 `Equora-vX.Y.Z-win-x64.msix` 与随附的 `.cer` 证书。安装包使用自签名证书签署,首次安装需将其导入本机受信任存储(管理员 PowerShell):
 
 ```powershell
-# 1. 信任发布证书(与 msix 同目录的 .cer;弹出 UAC 点"是")
-Import-Certificate -FilePath .\Equora.cer -CertStoreLocation Cert:\LocalMachine\TrustedPeople
-
-# 2. 安装
+Import-Certificate -FilePath .\Equora-vX.Y.Z.cer -CertStoreLocation Cert:\LocalMachine\TrustedPeople
 Add-AppxPackage .\Equora-vX.Y.Z-win-x64.msix
 ```
 
-也可以图形化操作:右键 `.cer` → 安装证书 → 存储位置选"本地计算机"→"将所有的证书都放入下列存储"→ 浏览 → "受信任人";然后双击 msix 安装。开始菜单搜索"衡序"启动。
+**网站限制扩展** —— 启用网站限制需要加载随发行版提供的 Edge/Chrome 扩展(`Equora-vX.Y.Z-BrowserExtension.zip` 或安装目录内的 `BrowserExtension` 文件夹),并按应用内"使用限制"页的指引连接。详见 [使用限制指南](docs/usage-restrictions.md)。
 
-### 网站限制浏览器扩展
+## 从源码构建
 
-启用网站限制需加载随应用附带的 Edge/Chrome 扩展:下载 `Equora-vX.Y.Z-BrowserExtension.zip` 解压(或使用安装目录内的 `BrowserExtension` 文件夹),在 `edge://extensions` / `chrome://extensions` 开发者模式加载,然后按应用内"使用限制"页指引连接。详见 [docs/usage-restrictions.md](docs/usage-restrictions.md)。
-
-### 桌面应用(源码构建)
-
-**前置要求**:Windows 10 1809+ / Windows 11 · Visual Studio 2022(含 C++ 桌面开发) · CMake 3.24+ · .NET SDK 10 · [vcpkg](https://github.com/microsoft/vcpkg)
+前置要求:Windows 10 19041 或更高 · Visual Studio 2022(C++ 桌面开发负载)· CMake 3.24+ · .NET SDK 10 · [vcpkg](https://github.com/microsoft/vcpkg)
 
 ```bash
 git clone https://github.com/Furina-1314/Equora.git
@@ -65,43 +64,35 @@ ctest --preset win-x64-release    # 137/137 通过
 # 2. 构建桌面应用(WinUI 3)
 cd ../desktop
 dotnet build Equora.slnx -c Release
-dotnet test Equora.App.Tests --no-build   # 105/105 通过
+dotnet test Equora.App.Tests --no-build   # 127/127 通过
 
 # 3. 运行
 dotnet run --project Equora.App -c Release
 ```
 
-### 同步服务器(可选,Docker Compose)
+同步服务器(可选,Docker Compose):
 
 ```bash
-# 自动启动 PostgreSQL + Equora Server
 docker compose -f docker/docker-compose.yml up --build
 
-# 服务器: http://127.0.0.1:8787
+# 服务地址: http://127.0.0.1:8787
 # 健康检查: curl http://127.0.0.1:8787/api/v1/health
-# 令牌: dev-local-token(环境变量自定义)
+# 默认令牌: dev-local-token(可用环境变量自定义)
 ```
 
-### 浏览器扩展(可选)
+发布打包(MSIX 与 EXE 安装器)由 [desktop/packaging/build-release.ps1](desktop/packaging/build-release.ps1) 一键完成,详见脚本头注。
 
-```bash
-# 1. 构建 Native Host
-cd desktop && dotnet build Equora.NativeHost -c Release
-
-# 2. 注册(详见 extension/Equora.BrowserExtension/README.md)
-# 3. chrome://extensions → 开发者模式 → 加载解包的扩展 → 选择 extension/Equora.BrowserExtension
-```
-
-## 📊 测试覆盖
+## 测试与持续集成
 
 | 测试套件 | 数量 | CI |
 |---|---|---|
 | 原生核心(GoogleTest / C++20) | 137 | [![native-ci](https://github.com/Furina-1314/Equora/actions/workflows/native-ci.yml/badge.svg)](https://github.com/Furina-1314/Equora/actions/workflows/native-ci.yml) |
-| 桌面应用(xUnit / C#) | 105 | [![desktop-ci](https://github.com/Furina-1314/Equora/actions/workflows/desktop-ci.yml/badge.svg)](https://github.com/Furina-1314/Equora/actions/workflows/desktop-ci.yml) |
+| 桌面应用(xUnit / C#) | 127 | [![desktop-ci](https://github.com/Furina-1314/Equora/actions/workflows/desktop-ci.yml/badge.svg)](https://github.com/Furina-1314/Equora/actions/workflows/desktop-ci.yml) |
 | 同步服务器(GoogleTest) | 20 | [![server-ci](https://github.com/Furina-1314/Equora/actions/workflows/server-ci.yml/badge.svg)](https://github.com/Furina-1314/Equora/actions/workflows/server-ci.yml) |
-| **合计** | **262** | **全部通过** |
+| 浏览器扩展与本地消息组件 | 3 | 本地验证 |
+| **合计** | **287** | |
 
-## 🏗️ 架构
+## 架构
 
 ```text
 ┌─────────────────────────────────────────────────────┐
@@ -128,17 +119,18 @@ cd desktop && dotnet build Equora.NativeHost -c Release
 └─────────────────────────────────────────────────────┘
 ```
 
-## 📁 仓库结构
+## 仓库结构
 
 ```text
 Equora/
 ├─ desktop/                    C# 桌面应用
 │  ├─ Equora.App/              WinUI 3 入口(页面/控件/转换器)
 │  ├─ Equora.App.ViewModels/   MVVM 视图模型
-│  ├─ Equora.App.Services/     数据服务/同步/安全机制
+│  ├─ Equora.App.Services/     数据服务/同步/限制/安全机制
 │  ├─ Equora.App.NativeInterop/ C ABI P/Invoke 封装
 │  ├─ Equora.NativeHost/       Native Messaging Host
-│  └─ Equora.App.Tests/        xUnit 测试
+│  ├─ Equora.App.Tests/        xUnit 测试
+│  └─ packaging/               发布打包脚本(MSIX / Inno Setup)
 ├─ native/                     C++20 原生核心
 │  ├─ Schedule.Domain/         实体/值对象(纯 C++)
 │  ├─ Schedule.Common/         日志/SHA-256
@@ -158,34 +150,35 @@ Equora/
 └─ THIRD-PARTY-NOTICES.md      第三方组件许可清单
 ```
 
-## 📚 文档
+## 文档
 
 | 文档 | 说明 |
 |---|---|
 | [用户指南](docs/user-guide.md) | 安装、功能操作、FAQ、快捷键 |
+| [使用限制指南](docs/usage-restrictions.md) | 应用与网站限制的规则、安全边界与浏览器扩展连接 |
 | [隐私与安全](docs/privacy-and-security.md) | 采集清单、网络通信、限制安全出口 |
 | [架构](docs/architecture.md) | 分层设计、C ABI 规则、线程模型 |
 | [数据模型](docs/data-model.md) | 实体定义、迁移策略、备份恢复 |
-| [开发进度](docs/progress.md) | P0–P16 全阶段记录 |
+| [开发进度](docs/progress.md) | P0–P17 全阶段记录 |
 | [阶段规划](docs/PHASES.md) | 里程碑映射 |
 | [发布说明](docs/release-notes.md) | 版本变更、已知限制 |
 | [第三方声明](THIRD-PARTY-NOTICES.md) | 开源组件许可 |
 
-## 🎨 核心设计原则
+## 设计原则
 
-- **本地优先**:无账号、无网络时全部核心功能可用
-- **单一事实源**:日历、列表、四象限、专注共享同一批任务数据
-- **可恢复限制**:一切应用/网站限制必有安全白名单 + 紧急解锁 + 自动解除
-- **可解释智能**:自动排程附理由,冲突显示双方版本,估时校正保留原始值
-- **隐私优先**:前台监测默认关闭;开启后仅读进程名,不读窗口内容
+- **本地优先** —— 无账号、无网络时全部核心功能可用。
+- **单一事实源** —— 日历、清单、四象限、专注共享同一批任务数据。
+- **可恢复的限制** —— 一切应用/网站限制必有关键进程白名单、紧急解锁与自动解除。
+- **可解释的智能** —— 自动排程附理由,冲突显示双方版本,估时校正保留原始值。
+- **隐私优先** —— 前台监测默认关闭;开启后仅读进程名,不读窗口内容。
 
-## 📄 许可证
+## 许可证
 
 [MIT](LICENSE) © 2026 Furina-1314
 
-## 🤝 贡献
+## 反馈
 
-发现问题或建议改进请提交 [GitHub Issues](https://github.com/Furina-1314/Equora/issues)。
+问题与建议请提交 [GitHub Issues](https://github.com/Furina-1314/Equora/issues)。
 
 ---
 
