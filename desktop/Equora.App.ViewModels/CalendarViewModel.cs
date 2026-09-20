@@ -12,9 +12,11 @@ public sealed record CalendarItem
 {
     public required SpanDto Span { get; init; }
     public bool IsConflict { get; init; }
+    public string Color { get; init; } = "";
+    public string Note { get; init; } = "";
 
-    public string DisplayTitle => string.IsNullOrWhiteSpace(Span.Title)
-        ? (Span.SourceType == "block" ? "时间块" : "日程")
+    public string DisplayTitle => Span.SourceType == "block" && Span.TaskId is null && !string.IsNullOrWhiteSpace(Note) ? Note.Split('\n')[0] : string.IsNullOrWhiteSpace(Span.Title)
+        ? (string.IsNullOrWhiteSpace(Note) ? (Span.SourceType == "block" ? "时间段" : "日程") : Note.Split('\n')[0])
         : Span.Title;
 }
 
@@ -125,13 +127,17 @@ public partial class CalendarViewModel : ObservableObject
         }
 
         Items.Clear();
+        var calendars = _calendar.ListCalendars().ToDictionary(c => c.Id);
         foreach (var s in spans)
         {
+            var block = s.SourceType == "block" ? _calendar.GetBlock(s.SourceId) : null;
             // 冲突集合记录的是「块 id」或「ruleId:时刻」;两者都对 SourceId 匹配。
             Items.Add(new CalendarItem
             {
                 Span = s,
                 IsConflict = conflictedIds.Contains(s.SourceId),
+                Note = block?.Note ?? "",
+                Color = block is not null && calendars.TryGetValue(block.CalendarId, out var calendar) ? calendar.Color : "",
             });
         }
 
@@ -143,10 +149,10 @@ public partial class CalendarViewModel : ObservableObject
                      Limit = 30,
                  }))
         {
-            if (!_calendar.BlocksForTask(t.Id).Any()) UnscheduledTasks.Add(t);
+            if (t.Status is not (TaskStatus.Done or TaskStatus.Cancelled) && !_calendar.BlocksForTask(t.Id).Any()) UnscheduledTasks.Add(t);
         }
 
-        StatusText = $"{WindowStart:MM-dd} 起 7 天 · {Items.Count} 项 · 冲突 {conflicts.Count}";
+        StatusText = $"{WindowStart:yyyy-MM-dd} · {(ViewModeIndex == 1 ? "日视图" : "周视图")} · {Items.Count} 项 · 冲突 {conflicts.Count}";
     }
 
     [RelayCommand]
@@ -156,15 +162,41 @@ public partial class CalendarViewModel : ObservableObject
         SelectedDay = today;
         var dow = today.DayOfWeek;
         WeekStart = today.AddDays(-(int)dow + (dow == DayOfWeek.Sunday ? -6 : 1));
+        Refresh();
     }
 
     [RelayCommand]
-    public void PrevWeek() => WeekStart = WeekStart.AddDays(ViewModeIndex == 1 ? -1 : -7);
+    public void PrevWeek() => MoveWindow(-1);
 
     [RelayCommand]
-    public void NextWeek() => WeekStart = WeekStart.AddDays(ViewModeIndex == 1 ? 1 : 7);
+    public void NextWeek() => MoveWindow(1);
+
+    private void MoveWindow(int direction)
+    {
+        if (ViewModeIndex == 1)
+        {
+            SelectedDay = SelectedDay.AddDays(direction);
+            OnPropertyChanged(nameof(WindowStart));
+            OnPropertyChanged(nameof(WindowEnd));
+            Refresh();
+        }
+        else WeekStart = WeekStart.AddDays(direction * 7);
+    }
 
     // ---- 块编辑(接撤销) ----
+    public TimeBlockDto SaveTimeBlock(string? id, DateTimeOffset start, DateTimeOffset end, string note, string color, string? newTaskTitle = null)
+    {
+        if (end <= start) throw new ArgumentException("结束时间必须晚于开始时间。");
+        if (color.Length != 7 || color[0] != '#' || !color.AsSpan(1).ToString().All(Uri.IsHexDigit)) throw new ArgumentException("颜色格式应为 #RRGGBB。");
+        var calendar = _calendar.ListCalendars().FirstOrDefault(c => c.Color.Equals(color, StringComparison.OrdinalIgnoreCase))
+            ?? _calendar.CreateCalendar("时间段 " + color, color);
+        var old = id is null ? null : _calendar.GetBlock(id) ?? throw new ArgumentException("时间段已不存在。");
+        var taskId = old?.TaskId;
+        if (old is null && !string.IsNullOrWhiteSpace(newTaskTitle)) taskId = _tasks.CreateTask(new TaskDraft { Title = newTaskTitle.Trim(), Status = TaskStatus.Planned }).Id;
+        var block = old ?? _calendar.CreateBlock(taskId, start, end, note);
+        var saved = _calendar.UpdateBlock(block with { StartAt = start, EndAt = end, Note = note, CalendarId = calendar.Id });
+        Refresh(); return saved;
+    }
 
     /// <summary>在指定槽位创建块(视图拖拽/点击创建与待办拖入共用)。</summary>
     public TimeBlockDto CreateBlockAt(DateTimeOffset start, int minutes, string? taskId)
@@ -285,9 +317,9 @@ public partial class CalendarViewModel : ObservableObject
 
     // ---- ICS ----
 
-    public string ExportIcs()
+    public string ExportIcs(string? destination = null)
     {
-        var path = System.IO.Path.Combine(System.IO.Path.GetTempPath(),
+        var path = destination ?? System.IO.Path.Combine(System.IO.Path.GetTempPath(),
             $"equora-{Guid.NewGuid():N}.ics");
         var count = _calendar.ExportIcs(WindowStart, WindowEnd, path);
         StatusText = $"已导出 {count} 项到 {path}";

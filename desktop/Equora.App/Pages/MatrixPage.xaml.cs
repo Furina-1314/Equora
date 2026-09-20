@@ -17,6 +17,22 @@ public sealed partial class MatrixPage : Page
         ViewModel.Refresh();
     }
 
+    private void OnLayoutSizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        if (Quadrants is null) return;
+        var narrow = e.NewSize.Width < 740;
+        while (Quadrants.RowDefinitions.Count < 4) Quadrants.RowDefinitions.Add(new RowDefinition());
+        for (var i = 0; i < 4; i++) Quadrants.RowDefinitions[i].Height =
+            new GridLength(narrow || i < 2 ? 1 : 0, GridUnitType.Star);
+        Quadrants.ColumnDefinitions[1].Width = new GridLength(narrow ? 0 : 1, GridUnitType.Star);
+        var panels = new[] { Quadrant1, Quadrant2, Quadrant3, Quadrant4 };
+        for (var i = 0; i < panels.Length; i++)
+        {
+            Grid.SetRow(panels[i], narrow ? i : i / 2);
+            Grid.SetColumn(panels[i], narrow ? 0 : i % 2);
+        }
+    }
+
     private void OnTaskDragStarting(object sender, DragItemsStartingEventArgs e)
     {
         if (e.Items.Count == 1 && e.Items[0] is TaskDto task)

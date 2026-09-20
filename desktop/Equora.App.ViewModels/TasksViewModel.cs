@@ -60,6 +60,12 @@ public partial class TasksViewModel : ObservableObject
     [ObservableProperty]
     private string _statusText = "";
 
+    [ObservableProperty]
+    private string _newTaskTitle = "";
+
+    public bool HasTasks => Tasks.Count > 0;
+    public bool IsRefreshing { get; private set; }
+
     public bool CanUndo => _undo.CanUndo;
 
     partial void OnSelectedListChanged(NavItem? value)
@@ -69,7 +75,7 @@ public partial class TasksViewModel : ObservableObject
 
     partial void OnSelectedTaskChanged(TaskDto? value)
     {
-        Detail.Load(value);
+        if (!IsRefreshing) Detail.Load(value);
     }
 
     // ---- 初始化与查询 ----
@@ -99,6 +105,7 @@ public partial class TasksViewModel : ObservableObject
     [RelayCommand]
     public void Refresh()
     {
+        var selectedId = SelectedTask?.Id;
         var query = BuildQuery();
         var result = _tasks.QueryTasks(query);
 
@@ -108,8 +115,28 @@ public partial class TasksViewModel : ObservableObject
             result = result.Where(t => t.IsDeleted).ToList();
         }
 
-        Tasks.Clear();
-        foreach (var t in result) Tasks.Add(t);
+        IsRefreshing = true;
+        try
+        {
+            // Keep selection stable while ListView processes collection notifications.
+            for (var i = Tasks.Count - 1; i >= 0; i--)
+                if (!result.Any(t => t.Id == Tasks[i].Id)) Tasks.RemoveAt(i);
+            for (var i = 0; i < result.Count; i++)
+            {
+                var existing = Tasks.FirstOrDefault(t => t.Id == result[i].Id);
+                if (existing is null) Tasks.Insert(i, result[i]);
+                else
+                {
+                    var index = Tasks.IndexOf(existing);
+                    if (index != i) Tasks.Move(index, i);
+                    if (Tasks[i] != result[i]) Tasks[i] = result[i];
+                }
+            }
+            SelectedTask = Tasks.FirstOrDefault(t => t.Id == selectedId);
+            Detail.Load(SelectedTask);
+        }
+        finally { IsRefreshing = false; }
+        OnPropertyChanged(nameof(HasTasks));
         StatusText = SelectedList?.Title is null
             ? $"共 {Tasks.Count} 项"
             : $"{SelectedList.Title} · {Tasks.Count} 项";
@@ -166,11 +193,20 @@ public partial class TasksViewModel : ObservableObject
     [RelayCommand]
     public void NewTask()
     {
+        var nav = SelectedList;
+        var now = DateTimeOffset.Now;
         var created = _tasks.CreateTask(new TaskDraft
         {
-            Title = string.IsNullOrWhiteSpace(SearchText) ? "新任务" : SearchText.Trim(),
-            Status = navIsInbox() ? TaskStatus.Inbox : TaskStatus.Planned,
+            Title = string.IsNullOrWhiteSpace(NewTaskTitle) ? "新任务" : NewTaskTitle.Trim(),
+            Status = nav?.SmartList == SmartListKind.Waiting ? TaskStatus.Waiting : TaskStatus.Inbox,
+            ProjectId = nav?.ProjectId,
+            DueAt = nav?.SmartList is SmartListKind.Today or SmartListKind.Upcoming7 ? now.Date.AddHours(18) : null,
         });
+        if (nav?.TagId is string tag) _workspace.AddTagToTask(created.Id, tag);
+        NewTaskTitle = "";
+        SearchText = "";
+        if (nav?.IncludeDeleted == true || nav?.SmartList is SmartListKind.Completed or SmartListKind.Overdue)
+            SelectedList = Lists.First(l => l.Key == "inbox");
         _undo.Push($"新建「{created.Title}」", () => _tasks.DeleteTask(created.Id));
         Refresh();
         SelectedTask = Tasks.FirstOrDefault(t => t.Id == created.Id);
@@ -178,16 +214,14 @@ public partial class TasksViewModel : ObservableObject
         OnPropertyChanged(nameof(CanUndo));
     }
 
-    private bool navIsInbox() => SelectedList?.SmartList == SmartListKind.Inbox;
-
     [RelayCommand]
     public void ToggleDone(TaskDto? task)
     {
         if (task is null) return;
         var fresh = _tasks.GetTask(task.Id);
-        if (fresh is null) return;
+        if (fresh is null || fresh.IsDeleted) return;
 
-        var target = fresh.Status is TaskStatus.Done or TaskStatus.Cancelled
+        var target = fresh.Status == TaskStatus.Done
             ? TaskStatus.Inbox
             : TaskStatus.Done;
         var updated = _tasks.UpdateTask(fresh with { Status = target });
@@ -204,11 +238,11 @@ public partial class TasksViewModel : ObservableObject
     public void DeleteTask(TaskDto? task)
     {
         if (task is null) return;
-        if (_tasks.GetTask(task.Id, includeDeleted: true) is null) return;
+        if (_tasks.GetTask(task.Id) is null) return;
 
         _tasks.DeleteTask(task.Id);
         _undo.Push($"删除「{task.Title}」", () => _tasks.RestoreTask(task.Id));
-        if (ReferenceEquals(SelectedTask, task)) SelectedTask = null;
+        if (SelectedTask?.Id == task.Id) SelectedTask = null;
         Refresh();
         StatusText = $"已移入回收站:{task.Title}(Ctrl+Z 撤销)";
         OnPropertyChanged(nameof(CanUndo));
@@ -219,6 +253,7 @@ public partial class TasksViewModel : ObservableObject
     {
         if (task is null) return;
         _tasks.RestoreTask(task.Id);
+        _undo.Push($"恢复「{task.Title}」", () => _tasks.DeleteTask(task.Id));
         Refresh();
         StatusText = $"已恢复:{task.Title}";
     }
@@ -227,8 +262,8 @@ public partial class TasksViewModel : ObservableObject
     public void Undo()
     {
         var description = _undo.Undo();
-        StatusText = description is null ? "没有可撤销的操作" : $"已撤销:{description}";
         Refresh();
+        StatusText = description is null ? "没有可撤销的操作" : $"已撤销:{description}";
         OnPropertyChanged(nameof(CanUndo));
     }
 

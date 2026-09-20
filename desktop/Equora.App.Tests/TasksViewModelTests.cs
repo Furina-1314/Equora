@@ -209,4 +209,78 @@ public class TasksViewModelTests : IDisposable
         Assert.Single(_vm.Tasks);
         Assert.Equal("带标签", _vm.Tasks[0].Title);
     }
+    [Fact]
+    public void SwitchingDetailsDoesNotWriteOrCreateUndoEntries()
+    {
+        var first = _service.CreateTask(new TaskDraft { Title = "第一项", DueAt = DateTimeOffset.Now.AddDays(1) });
+        var second = _service.CreateTask(new TaskDraft { Title = "第二项", Status = TaskStatus.Waiting, Priority = Priority.High });
+        SelectList("all");
+        _vm.SelectedTask = _vm.Tasks.First(t => t.Id == first.Id);
+        _vm.SelectedTask = _vm.Tasks.First(t => t.Id == second.Id);
+        Assert.Equal(second.Revision, _service.GetTask(second.Id)!.Revision);
+        Assert.False(_vm.CanUndo);
+        Assert.Equal("第二项", _vm.Detail.Title);
+    }
+
+    [Fact]
+    public void EditingTitlePreservesSelectionAndUndoRestoresOriginal()
+    {
+        var task = _service.CreateTask(new TaskDraft { Title = "原标题" });
+        SelectList("all");
+        _vm.SelectedTask = _vm.Tasks.Single();
+        _vm.Detail.Title = "修改后";
+        Assert.Equal(task.Id, _vm.SelectedTask?.Id);
+        Assert.True(_vm.Detail.IsLoaded);
+        _vm.Undo();
+        Assert.Equal("原标题", _service.GetTask(task.Id)!.Title);
+        Assert.Equal("原标题", _vm.Detail.Title);
+        Assert.StartsWith("已撤销", _vm.StatusText);
+    }
+
+    [Fact]
+    public void CompletionThenDeleteThenRestoreKeepsPersistedStatus()
+    {
+        var task = _service.CreateTask(new TaskDraft { Title = "完整流程" });
+        SelectList("all");
+        _vm.SelectedTask = _vm.Tasks.Single();
+        _vm.ToggleDone(_vm.SelectedTask);
+        Assert.Equal(TaskStatus.Done, _vm.SelectedTask!.Status);
+        Assert.Equal((int)TaskStatus.Done, _vm.Detail.StatusIndex);
+        _vm.DeleteTask(task);
+        Assert.Null(_vm.SelectedTask);
+        Assert.False(_vm.Detail.IsLoaded);
+        SelectList("trash");
+        _vm.RestoreTask(Assert.Single(_vm.Tasks));
+        Assert.Empty(_vm.Tasks);
+        Assert.Equal(TaskStatus.Done, _service.GetTask(task.Id)!.Status);
+        _vm.Undo();
+        Assert.Single(_vm.Tasks);
+    }
+
+    [Fact]
+    public void NewTaskUsesDraftNotSearchAndHonorsProject()
+    {
+        var project = _service.CreateProject("设计");
+        _vm.SelectedList = new NavItem("project", project.Name, "", ProjectId: project.Id);
+        _vm.SearchText = "不应成为标题";
+        _vm.NewTaskTitle = "新增任务";
+        _vm.NewTask();
+        Assert.Equal("新增任务", _vm.SelectedTask!.Title);
+        Assert.Equal(project.Id, _vm.SelectedTask.ProjectId);
+        Assert.Empty(_vm.SearchText);
+        Assert.Empty(_vm.NewTaskTitle);
+    }
+
+    [Fact]
+    public void LoadingUndatedTaskAfterDatedTaskDoesNotClearPersistedDueDate()
+    {
+        var dated = _service.CreateTask(new TaskDraft { Title = "有日期", DueAt = DateTimeOffset.Now.AddDays(2) });
+        var undated = _service.CreateTask(new TaskDraft { Title = "无日期" });
+        SelectList("all");
+        _vm.SelectedTask = _vm.Tasks.First(t => t.Id == dated.Id);
+        _vm.SelectedTask = _vm.Tasks.First(t => t.Id == undated.Id);
+        Assert.Equal(undated.Revision, _service.GetTask(undated.Id)!.Revision);
+        Assert.NotNull(_service.GetTask(dated.Id)!.DueAt);
+        Assert.False(_vm.CanUndo);
+    }
 }

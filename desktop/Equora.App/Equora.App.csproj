@@ -2,6 +2,10 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
+    <Version>0.2.0</Version>
+    <AssemblyVersion>0.2.0.0</AssemblyVersion>
+    <FileVersion>0.2.0.0</FileVersion>
+    <ApplicationIcon>Assets\Equora.ico</ApplicationIcon>
     <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
@@ -30,9 +34,19 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Equora.NativeHost\Equora.NativeHost.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\Equora.App.Services\Equora.App.Services.csproj" />
     <ProjectReference Include="..\Equora.App.ViewModels\Equora.App.ViewModels.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\..\extension\Equora.BrowserExtension\*.js;..\..\extension\Equora.BrowserExtension\*.html;..\..\extension\Equora.BrowserExtension\*.json;..\..\extension\Equora.BrowserExtension\*.png" Link="BrowserExtension\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <Target Name="CopyBrowserHost" AfterTargets="Build">
+    <ItemGroup><BrowserHostFiles Include="..\Equora.NativeHost\bin\$(Platform)\$(Configuration)\$(TargetFramework)\com.equora.nativehost.*" /></ItemGroup>
+    <Copy SourceFiles="@(BrowserHostFiles)" DestinationFolder="$(OutDir)BrowserHost" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(OutDir)Equora.App.Services.dll;$(OutDir)Equora.App.NativeInterop.dll" DestinationFolder="$(OutDir)BrowserHost" SkipUnchangedFiles="true" />
+  </Target>
 
   <!-- MSIX 侧载打包:dotnet build -p:WindowsPackageType=MSIX -p:PackageCertificateKeyFile=<pfx> [-p:PackageCertificatePassword=<pwd>] -->
   <PropertyGroup Condition="'$(WindowsPackageType)' == 'MSIX'">

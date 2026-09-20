@@ -6,19 +6,20 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Padding="12,8">
+    <Grid Padding="28,24" SizeChanged="OnLayoutSizeChanged">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
+            <TextBlock Text="四象限" Style="{StaticResource EquoraPageTitleStyle}" Margin="0,0,24,8" />
             <Button Content="撤销" Command="{Binding UndoCommand}" />
             <TextBlock Text="{Binding StatusText}" Opacity="0.7" VerticalAlignment="Center"
                        Style="{StaticResource CaptionTextBlockStyle}" />
         </StackPanel>
 
-        <Grid Grid.Row="1" ColumnSpacing="8" RowSpacing="8">
+        <Grid x:Name="Quadrants" Grid.Row="1" ColumnSpacing="16" RowSpacing="16">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
                 <RowDefinition Height="*" />
@@ -28,8 +29,8 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <Grid Grid.Row="0" Grid.Column="0" Background="#18C03030" CornerRadius="6"
-                  Padding="8" AllowDrop="True" DragOver="OnQuadrantDragOver" Drop="OnQuadrantDrop"
+            <Grid x:Name="Quadrant1" Grid.Row="0" Grid.Column="0" Background="{ThemeResource EquoraPaneBrush}" BorderThickness="0,3,0,0" BorderBrush="#C32F37" CornerRadius="0"
+                  Padding="16" AllowDrop="True" DragOver="OnQuadrantDragOver" Drop="OnQuadrantDrop"
                   Tag="1">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" /><RowDefinition Height="*" />
@@ -47,8 +48,8 @@
                 </ListView>
             </Grid>
 
-            <Grid Grid.Row="0" Grid.Column="1" Background="#183070C0" CornerRadius="6"
-                  Padding="8" AllowDrop="True" DragOver="OnQuadrantDragOver" Drop="OnQuadrantDrop"
+            <Grid x:Name="Quadrant2" Grid.Row="0" Grid.Column="1" Background="{ThemeResource EquoraPaneBrush}" BorderThickness="0,3,0,0" BorderBrush="#0078D4" CornerRadius="0"
+                  Padding="16" AllowDrop="True" DragOver="OnQuadrantDragOver" Drop="OnQuadrantDrop"
                   Tag="2">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" /><RowDefinition Height="*" />
@@ -66,8 +67,8 @@
                 </ListView>
             </Grid>
 
-            <Grid Grid.Row="1" Grid.Column="0" Background="#18C09030" CornerRadius="6"
-                  Padding="8" AllowDrop="True" DragOver="OnQuadrantDragOver" Drop="OnQuadrantDrop"
+            <Grid x:Name="Quadrant3" Grid.Row="1" Grid.Column="0" Background="{ThemeResource EquoraPaneBrush}" BorderThickness="0,3,0,0" BorderBrush="#A65E00" CornerRadius="0"
+                  Padding="16" AllowDrop="True" DragOver="OnQuadrantDragOver" Drop="OnQuadrantDrop"
                   Tag="3">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" /><RowDefinition Height="*" />
@@ -85,8 +86,8 @@
                 </ListView>
             </Grid>
 
-            <Grid Grid.Row="1" Grid.Column="1" Background="#18909090" CornerRadius="6"
-                  Padding="8" AllowDrop="True" DragOver="OnQuadrantDragOver" Drop="OnQuadrantDrop"
+            <Grid x:Name="Quadrant4" Grid.Row="1" Grid.Column="1" Background="{ThemeResource EquoraPaneBrush}" BorderThickness="0,3,0,0" BorderBrush="#52616B" CornerRadius="0"
+                  Padding="16" AllowDrop="True" DragOver="OnQuadrantDragOver" Drop="OnQuadrantDrop"
                   Tag="4">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" /><RowDefinition Height="*" />

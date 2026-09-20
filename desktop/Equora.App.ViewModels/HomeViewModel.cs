@@ -22,7 +22,7 @@ public partial class HomeViewModel : ObservableObject
     private int _taskCount;
 
     [ObservableProperty]
-    private string _statusText = "就绪。点击「运行自检」验证 C#/C++ 边界。";
+    private string _statusText = "安排今天的工作，从一项任务开始。";
 
     public ObservableCollection<string> Diagnostics { get; } = new();
 
@@ -45,7 +45,7 @@ public partial class HomeViewModel : ObservableObject
             Diagnostics.Add($"eq_ping(41) = {pingResult}(期望 42)");
             Diagnostics.Add($"数据库模式版本:v{SchemaVersion}");
             Diagnostics.Add($"当前任务数:{_tasks.ListTasks().Count}");
-            StatusText = pingResult == 42 ? "自检通过 ✓" : "自检异常:ping 结果不符 ✗";
+            StatusText = pingResult == 42 ? "自检通过" : "自检异常:ping 结果不符";
         }
         catch (EquoraException ex)
         {
@@ -104,7 +104,7 @@ public partial class HomeViewModel : ObservableObject
         }
     }
 
-    private void ReloadTasks()
+    public void ReloadTasks()
     {
         Tasks.Clear();
         foreach (var t in _tasks.ListTasks())

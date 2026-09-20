@@ -24,9 +24,13 @@
 
 ## 📥 快速安装
 
-### 桌面应用(安装包)
+### 桌面应用(EXE 安装包,推荐)
 
-从 [Releases](https://github.com/Furina-1314/Equora/releases) 下载 `Equora-vX.Y.Z-win-x64.msix`(自包含,无需 .NET 运行时)。包为自签名,首次安装需信任一次证书(管理员确认):
+从 [Releases](https://github.com/Furina-1314/Equora/releases) 下载 `Equora-vX.Y.Z-win-x64-Setup.exe`,双击安装:安装到当前用户目录(`%LocalAppData%\Programs\Equora`),无需管理员权限、无需信任证书,自带全部运行时(含 VC 运行库)。
+
+### 桌面应用(MSIX)
+
+下载 `Equora-vX.Y.Z-win-x64.msix`(自包含,无需 .NET 运行时)。包为自签名,首次安装需信任一次证书(管理员确认):
 
 ```powershell
 # 1. 信任发布证书(与 msix 同目录的 .cer;弹出 UAC 点"是")
@@ -37,6 +41,10 @@ Add-AppxPackage .\Equora-vX.Y.Z-win-x64.msix
 ```
 
 也可以图形化操作:右键 `.cer` → 安装证书 → 存储位置选"本地计算机"→"将所有的证书都放入下列存储"→ 浏览 → "受信任人";然后双击 msix 安装。开始菜单搜索"衡序"启动。
+
+### 网站限制浏览器扩展
+
+启用网站限制需加载随应用附带的 Edge/Chrome 扩展:下载 `Equora-vX.Y.Z-BrowserExtension.zip` 解压(或使用安装目录内的 `BrowserExtension` 文件夹),在 `edge://extensions` / `chrome://extensions` 开发者模式加载,然后按应用内"使用限制"页指引连接。详见 [docs/usage-restrictions.md](docs/usage-restrictions.md)。
 
 ### 桌面应用(源码构建)
 

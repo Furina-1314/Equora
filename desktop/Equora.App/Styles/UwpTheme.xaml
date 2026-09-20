@@ -1,0 +1,281 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Light">
+            <SolidColorBrush x:Key="ComboBoxDropDownBackground" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="ComboBoxDropDownBorderBrush" Color="#A0A0A0" />
+            <SolidColorBrush x:Key="ComboBoxItemBackgroundSelected" Color="#E0E0E0" />
+            <SolidColorBrush x:Key="ComboBoxItemBackgroundSelectedPointerOver" Color="#F0F0F0" />
+            <SolidColorBrush x:Key="ComboBoxItemForegroundSelected" Color="#202020" />
+            <SolidColorBrush x:Key="ComboBoxItemForegroundSelectedPointerOver" Color="#202020" />
+            <SolidColorBrush x:Key="ComboBoxItemBackgroundPointerOver" Color="#F0F0F0" />
+            <SolidColorBrush x:Key="ComboBoxItemBorderBrushSelected" Color="#E0E0E0" />
+            <SolidColorBrush x:Key="ComboBoxItemForegroundSelectedUnfocused" Color="#202020" />
+            <SolidColorBrush x:Key="ComboBoxItemBackgroundSelectedUnfocused" Color="#E0E0E0" />
+            <SolidColorBrush x:Key="AccentFillColorDefaultBrush" Color="#C32F37" />
+            <SolidColorBrush x:Key="AccentFillColorSecondaryBrush" Color="#C32F37" />
+            <SolidColorBrush x:Key="AccentFillColorTertiaryBrush" Color="#C32F37" />
+            <SolidColorBrush x:Key="AccentFillColorDisabledBrush" Color="#C32F37" />
+            <SolidColorBrush x:Key="TextOnAccentFillColorPrimaryBrush" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="TextOnAccentFillColorSecondaryBrush" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="TextOnAccentFillColorDisabledBrush" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="NavigationViewItemBackgroundSelected" Color="#C32F37" />
+            <SolidColorBrush x:Key="NavigationViewItemForegroundSelected" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="NavigationViewItemBackgroundSelectedPointerOver" Color="#C32F37" />
+            <SolidColorBrush x:Key="NavigationViewItemForegroundSelectedPointerOver" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="NavigationViewItemBackgroundSelectedPressed" Color="#C32F37" />
+            <SolidColorBrush x:Key="NavigationViewItemForegroundSelectedPressed" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="ListViewItemBackgroundSelected" Color="#C32F37" />
+            <SolidColorBrush x:Key="ListViewItemForegroundSelected" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="ListViewItemBackgroundSelectedPointerOver" Color="#C32F37" />
+            <SolidColorBrush x:Key="ListViewItemForegroundSelectedPointerOver" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="ListViewItemBackgroundSelectedPressed" Color="#C32F37" />
+            <SolidColorBrush x:Key="ListViewItemForegroundSelectedPressed" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="EquoraPaneBrush" Color="#F5F7FA" />
+            <SolidColorBrush x:Key="EquoraCanvasBrush" Color="#EDF2F7" />
+            <SolidColorBrush x:Key="EquoraSurfaceBrush" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="EquoraDividerBrush" Color="#E9DADB" />
+            <SolidColorBrush x:Key="EquoraAccentBrush" Color="#C32F37" />
+            <SolidColorBrush x:Key="EquoraOnAccentBrush" Color="#FFFFFF" />
+            <StaticResource x:Key="AccentButtonBackground" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="AccentButtonBackgroundPointerOver" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="AccentButtonBackgroundPressed" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="CheckBoxCheckBackgroundFillChecked" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="CheckBoxCheckBackgroundFillCheckedPointerOver" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="CheckBoxCheckBackgroundFillCheckedPressed" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="CheckBoxCheckBackgroundStrokeChecked" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="CheckBoxCheckBackgroundStrokeCheckedPointerOver" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="CheckBoxCheckBackgroundStrokeCheckedPressed" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="RadioButtonOuterEllipseCheckedStroke" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="RadioButtonOuterEllipseCheckedStrokePointerOver" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="RadioButtonOuterEllipseCheckedStrokePressed" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="RadioButtonOuterEllipseCheckedFill" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="RadioButtonOuterEllipseCheckedFillPointerOver" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="RadioButtonOuterEllipseCheckedFillPressed" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="AccentButtonForeground" ResourceKey="EquoraOnAccentBrush" />
+            <StaticResource x:Key="AccentButtonForegroundPointerOver" ResourceKey="EquoraOnAccentBrush" />
+            <StaticResource x:Key="AccentButtonForegroundPressed" ResourceKey="EquoraOnAccentBrush" />
+            <StaticResource x:Key="CheckBoxCheckGlyphForegroundChecked" ResourceKey="EquoraOnAccentBrush" />
+            <StaticResource x:Key="CheckBoxCheckGlyphForegroundCheckedPointerOver" ResourceKey="EquoraOnAccentBrush" />
+            <StaticResource x:Key="CheckBoxCheckGlyphForegroundCheckedPressed" ResourceKey="EquoraOnAccentBrush" />
+            <StaticResource x:Key="TextControlBorderBrushFocused" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="ComboBoxBorderBrushFocused" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="ToggleSwitchFillOn" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="ToggleSwitchFillOnPointerOver" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="ToggleSwitchFillOnPressed" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="ListViewItemSelectionIndicatorBrush" ResourceKey="EquoraAccentBrush" />
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Default">
+            <SolidColorBrush x:Key="ComboBoxDropDownBackground" Color="#252525" />
+            <SolidColorBrush x:Key="ComboBoxDropDownBorderBrush" Color="#707070" />
+            <SolidColorBrush x:Key="ComboBoxItemBackgroundSelected" Color="#484848" />
+            <SolidColorBrush x:Key="ComboBoxItemBackgroundSelectedPointerOver" Color="#383838" />
+            <SolidColorBrush x:Key="ComboBoxItemForegroundSelected" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="ComboBoxItemForegroundSelectedPointerOver" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="ComboBoxItemBackgroundPointerOver" Color="#383838" />
+            <SolidColorBrush x:Key="ComboBoxItemBorderBrushSelected" Color="#484848" />
+            <SolidColorBrush x:Key="ComboBoxItemForegroundSelectedUnfocused" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="ComboBoxItemBackgroundSelectedUnfocused" Color="#484848" />
+            <SolidColorBrush x:Key="AccentFillColorDefaultBrush" Color="#EF858D" />
+            <SolidColorBrush x:Key="AccentFillColorSecondaryBrush" Color="#EF858D" />
+            <SolidColorBrush x:Key="AccentFillColorTertiaryBrush" Color="#EF858D" />
+            <SolidColorBrush x:Key="AccentFillColorDisabledBrush" Color="#EF858D" />
+            <SolidColorBrush x:Key="TextOnAccentFillColorPrimaryBrush" Color="#000000" />
+            <SolidColorBrush x:Key="TextOnAccentFillColorSecondaryBrush" Color="#000000" />
+            <SolidColorBrush x:Key="TextOnAccentFillColorDisabledBrush" Color="#000000" />
+            <SolidColorBrush x:Key="NavigationViewItemBackgroundSelected" Color="#EF858D" />
+            <SolidColorBrush x:Key="NavigationViewItemForegroundSelected" Color="#191C20" />
+            <SolidColorBrush x:Key="NavigationViewItemBackgroundSelectedPointerOver" Color="#EF858D" />
+            <SolidColorBrush x:Key="NavigationViewItemForegroundSelectedPointerOver" Color="#191C20" />
+            <SolidColorBrush x:Key="NavigationViewItemBackgroundSelectedPressed" Color="#EF858D" />
+            <SolidColorBrush x:Key="NavigationViewItemForegroundSelectedPressed" Color="#191C20" />
+            <SolidColorBrush x:Key="ListViewItemBackgroundSelected" Color="#EF858D" />
+            <SolidColorBrush x:Key="ListViewItemForegroundSelected" Color="#191C20" />
+            <SolidColorBrush x:Key="ListViewItemBackgroundSelectedPointerOver" Color="#EF858D" />
+            <SolidColorBrush x:Key="ListViewItemForegroundSelectedPointerOver" Color="#191C20" />
+            <SolidColorBrush x:Key="ListViewItemBackgroundSelectedPressed" Color="#EF858D" />
+            <SolidColorBrush x:Key="ListViewItemForegroundSelectedPressed" Color="#191C20" />
+            <SolidColorBrush x:Key="EquoraPaneBrush" Color="#202327" />
+            <SolidColorBrush x:Key="EquoraCanvasBrush" Color="#272C32" />
+            <SolidColorBrush x:Key="EquoraSurfaceBrush" Color="#191C20" />
+            <SolidColorBrush x:Key="EquoraDividerBrush" Color="#454047" />
+            <SolidColorBrush x:Key="EquoraAccentBrush" Color="#EF858D" />
+            <SolidColorBrush x:Key="EquoraOnAccentBrush" Color="#191C20" />
+            <StaticResource x:Key="AccentButtonBackground" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="AccentButtonBackgroundPointerOver" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="AccentButtonBackgroundPressed" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="CheckBoxCheckBackgroundFillChecked" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="CheckBoxCheckBackgroundFillCheckedPointerOver" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="CheckBoxCheckBackgroundFillCheckedPressed" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="CheckBoxCheckBackgroundStrokeChecked" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="CheckBoxCheckBackgroundStrokeCheckedPointerOver" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="CheckBoxCheckBackgroundStrokeCheckedPressed" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="RadioButtonOuterEllipseCheckedStroke" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="RadioButtonOuterEllipseCheckedStrokePointerOver" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="RadioButtonOuterEllipseCheckedStrokePressed" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="RadioButtonOuterEllipseCheckedFill" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="RadioButtonOuterEllipseCheckedFillPointerOver" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="RadioButtonOuterEllipseCheckedFillPressed" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="AccentButtonForeground" ResourceKey="EquoraOnAccentBrush" />
+            <StaticResource x:Key="AccentButtonForegroundPointerOver" ResourceKey="EquoraOnAccentBrush" />
+            <StaticResource x:Key="AccentButtonForegroundPressed" ResourceKey="EquoraOnAccentBrush" />
+            <StaticResource x:Key="CheckBoxCheckGlyphForegroundChecked" ResourceKey="EquoraOnAccentBrush" />
+            <StaticResource x:Key="CheckBoxCheckGlyphForegroundCheckedPointerOver" ResourceKey="EquoraOnAccentBrush" />
+            <StaticResource x:Key="CheckBoxCheckGlyphForegroundCheckedPressed" ResourceKey="EquoraOnAccentBrush" />
+            <StaticResource x:Key="TextControlBorderBrushFocused" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="ComboBoxBorderBrushFocused" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="ToggleSwitchFillOn" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="ToggleSwitchFillOnPointerOver" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="ToggleSwitchFillOnPressed" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="ListViewItemSelectionIndicatorBrush" ResourceKey="EquoraAccentBrush" />
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="HighContrast">
+            <SolidColorBrush x:Key="ComboBoxDropDownBackground" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="ComboBoxDropDownBorderBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="ComboBoxItemBackgroundSelected" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="ComboBoxItemBackgroundSelectedPointerOver" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="ComboBoxItemForegroundSelected" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="ComboBoxItemForegroundSelectedPointerOver" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="ComboBoxItemBackgroundPointerOver" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="ComboBoxItemBorderBrushSelected" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="ComboBoxItemForegroundSelectedUnfocused" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="ComboBoxItemBackgroundSelectedUnfocused" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="AccentFillColorDefaultBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="AccentFillColorSecondaryBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="AccentFillColorTertiaryBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="AccentFillColorDisabledBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="TextOnAccentFillColorPrimaryBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
+            <SolidColorBrush x:Key="TextOnAccentFillColorSecondaryBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
+            <SolidColorBrush x:Key="TextOnAccentFillColorDisabledBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
+            <SolidColorBrush x:Key="NavigationViewItemBackgroundSelected" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="NavigationViewItemForegroundSelected" Color="{ThemeResource SystemColorHighlightTextColor}" />
+            <SolidColorBrush x:Key="NavigationViewItemBackgroundSelectedPointerOver" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="NavigationViewItemForegroundSelectedPointerOver" Color="{ThemeResource SystemColorHighlightTextColor}" />
+            <SolidColorBrush x:Key="NavigationViewItemBackgroundSelectedPressed" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="NavigationViewItemForegroundSelectedPressed" Color="{ThemeResource SystemColorHighlightTextColor}" />
+            <SolidColorBrush x:Key="ListViewItemBackgroundSelected" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="ListViewItemForegroundSelected" Color="{ThemeResource SystemColorHighlightTextColor}" />
+            <SolidColorBrush x:Key="ListViewItemBackgroundSelectedPointerOver" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="ListViewItemForegroundSelectedPointerOver" Color="{ThemeResource SystemColorHighlightTextColor}" />
+            <SolidColorBrush x:Key="ListViewItemBackgroundSelectedPressed" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="ListViewItemForegroundSelectedPressed" Color="{ThemeResource SystemColorHighlightTextColor}" />
+            <SolidColorBrush x:Key="EquoraPaneBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="EquoraCanvasBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="EquoraSurfaceBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="EquoraDividerBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="EquoraAccentBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="EquoraOnAccentBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
+            <StaticResource x:Key="AccentButtonBackground" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="AccentButtonBackgroundPointerOver" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="AccentButtonBackgroundPressed" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="CheckBoxCheckBackgroundFillChecked" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="CheckBoxCheckBackgroundFillCheckedPointerOver" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="CheckBoxCheckBackgroundFillCheckedPressed" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="CheckBoxCheckBackgroundStrokeChecked" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="CheckBoxCheckBackgroundStrokeCheckedPointerOver" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="CheckBoxCheckBackgroundStrokeCheckedPressed" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="RadioButtonOuterEllipseCheckedStroke" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="RadioButtonOuterEllipseCheckedStrokePointerOver" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="RadioButtonOuterEllipseCheckedStrokePressed" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="RadioButtonOuterEllipseCheckedFill" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="RadioButtonOuterEllipseCheckedFillPointerOver" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="RadioButtonOuterEllipseCheckedFillPressed" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="AccentButtonForeground" ResourceKey="EquoraOnAccentBrush" />
+            <StaticResource x:Key="AccentButtonForegroundPointerOver" ResourceKey="EquoraOnAccentBrush" />
+            <StaticResource x:Key="AccentButtonForegroundPressed" ResourceKey="EquoraOnAccentBrush" />
+            <StaticResource x:Key="CheckBoxCheckGlyphForegroundChecked" ResourceKey="EquoraOnAccentBrush" />
+            <StaticResource x:Key="CheckBoxCheckGlyphForegroundCheckedPointerOver" ResourceKey="EquoraOnAccentBrush" />
+            <StaticResource x:Key="CheckBoxCheckGlyphForegroundCheckedPressed" ResourceKey="EquoraOnAccentBrush" />
+            <StaticResource x:Key="TextControlBorderBrushFocused" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="ComboBoxBorderBrushFocused" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="ToggleSwitchFillOn" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="ToggleSwitchFillOnPointerOver" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="ToggleSwitchFillOnPressed" ResourceKey="EquoraAccentBrush" />
+            <StaticResource x:Key="ListViewItemSelectionIndicatorBrush" ResourceKey="EquoraAccentBrush" />
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
+
+    <!-- Square geometry and solid surfaces, inspired by the Windows 10 RSS sample. -->
+    <Color x:Key="SystemAccentColor">#C32F37</Color>
+    <Color x:Key="SystemAccentColorDark1">#AD2931</Color>
+    <Color x:Key="SystemAccentColorDark2">#922229</Color>
+    <Color x:Key="SystemAccentColorDark3">#741B21</Color>
+    <Color x:Key="SystemAccentColorLight1">#D85B64</Color>
+    <Color x:Key="SystemAccentColorLight2">#EF858D</Color>
+    <Color x:Key="SystemAccentColorLight3">#F5BEC2</Color>
+    <CornerRadius x:Key="ControlCornerRadius">0</CornerRadius>
+    <Style TargetType="ToolTip"><Setter Property="Visibility" Value="Collapsed" /></Style>
+    <CornerRadius x:Key="ContentDialogCornerRadius">0</CornerRadius>
+    <CornerRadius x:Key="OverlayCornerRadius">0</CornerRadius>
+    <CornerRadius x:Key="ListViewItemCornerRadius">0</CornerRadius>
+    <CornerRadius x:Key="NavigationViewItemCornerRadius">0</CornerRadius>
+    <CornerRadius x:Key="NavigationViewContentGridCornerRadius">0</CornerRadius>
+    <Thickness x:Key="NavigationViewItemMargin">0</Thickness>
+    <Thickness x:Key="ListViewItemPresenterMargin">0</Thickness>
+    <SolidColorBrush x:Key="NavigationViewDefaultPaneBackground" Color="Transparent" />
+    <SolidColorBrush x:Key="NavigationViewContentBackground" Color="Transparent" />
+
+    <Style x:Key="EquoraPageTitleStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="32" />
+        <Setter Property="FontWeight" Value="Light" />
+        <Setter Property="Foreground" Value="{ThemeResource EquoraAccentBrush}" />
+        <Setter Property="Margin" Value="0,0,0,12" />
+    </Style>
+    <CornerRadius x:Key="ComboBoxCornerRadius">0</CornerRadius>
+    <CornerRadius x:Key="ComboBoxDropDownCornerRadius">0</CornerRadius>
+    <CornerRadius x:Key="ComboBoxItemPillCornerRadius">0</CornerRadius>
+    <x:Double x:Key="ComboBoxItemPillWidth">0</x:Double>
+    <Style x:Key="EquoraChoiceItemStyle" TargetType="ComboBoxItem">
+        <Setter Property="MinHeight" Value="36" /><Setter Property="Padding" Value="12,8" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="UseSystemFocusVisuals" Value="True" />
+        <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ComboBoxItem">
+            <Grid x:Name="ChoiceSurface" Background="Transparent">
+                <VisualStateManager.VisualStateGroups>
+                    <VisualStateGroup x:Name="CommonStates">
+                        <VisualState x:Name="Normal" />
+                        <VisualState x:Name="PointerOver"><VisualState.Setters><Setter Target="ChoiceSurface.Background" Value="{ThemeResource ComboBoxItemBackgroundPointerOver}" /></VisualState.Setters></VisualState>
+                        <VisualState x:Name="Pressed"><VisualState.Setters><Setter Target="ChoiceSurface.Background" Value="{ThemeResource ComboBoxItemBackgroundSelected}" /></VisualState.Setters></VisualState>
+                        <VisualState x:Name="Disabled"><VisualState.Setters><Setter Target="ChoiceSurface.Opacity" Value="0.4" /></VisualState.Setters></VisualState>
+                        <VisualState x:Name="Selected"><VisualState.Setters><Setter Target="ChoiceSurface.Background" Value="{ThemeResource ComboBoxItemBackgroundSelected}" /></VisualState.Setters></VisualState>
+                        <VisualState x:Name="SelectedUnfocused"><VisualState.Setters><Setter Target="ChoiceSurface.Background" Value="{ThemeResource ComboBoxItemBackgroundSelected}" /></VisualState.Setters></VisualState>
+                        <VisualState x:Name="SelectedPointerOver"><VisualState.Setters><Setter Target="ChoiceSurface.Background" Value="{ThemeResource ComboBoxItemBackgroundSelectedPointerOver}" /></VisualState.Setters></VisualState>
+                        <VisualState x:Name="SelectedPressed"><VisualState.Setters><Setter Target="ChoiceSurface.Background" Value="{ThemeResource ComboBoxItemBackgroundSelected}" /></VisualState.Setters></VisualState>
+                        <VisualState x:Name="SelectedDisabled"><VisualState.Setters><Setter Target="ChoiceSurface.Opacity" Value="0.4" /></VisualState.Setters></VisualState>
+                    </VisualStateGroup>
+                </VisualStateManager.VisualStateGroups>
+                <ContentPresenter Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" Margin="{TemplateBinding Padding}" Foreground="{ThemeResource ComboBoxItemForegroundSelected}" VerticalAlignment="Center" />
+            </Grid>
+        </ControlTemplate></Setter.Value></Setter>
+    </Style>
+    <Style TargetType="ComboBox"><Setter Property="CornerRadius" Value="0" /><Setter Property="ItemContainerStyle" Value="{StaticResource EquoraChoiceItemStyle}" /></Style>
+    <Style TargetType="FontIcon">
+        <Setter Property="FontFamily" Value="Segoe MDL2 Assets" />
+    </Style>
+    <Style x:Key="EquoraSectionStyle" TargetType="Border">
+        <Setter Property="Background" Value="{ThemeResource EquoraPaneBrush}" />
+        <Setter Property="Padding" Value="24" />
+        <Setter Property="BorderBrush" Value="{ThemeResource EquoraDividerBrush}" />
+        <Setter Property="BorderThickness" Value="0,0,0,1" />
+    </Style>
+    <Style TargetType="Button">
+        <Setter Property="CornerRadius" Value="0" />
+        <Setter Property="MinHeight" Value="36" />
+        <Setter Property="Padding" Value="16,7" />
+    </Style>
+    <Style TargetType="ListViewItem">
+        <Setter Property="CornerRadius" Value="0" />
+        <Setter Property="MinHeight" Value="44" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    </Style>
+    <Style x:Key="EquoraTaskItemStyle" TargetType="ListViewItem">
+        <Setter Property="CornerRadius" Value="0" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="Background" Value="{ThemeResource EquoraSurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource EquoraDividerBrush}" />
+        <Setter Property="BorderThickness" Value="0,0,0,1" />
+        <Setter Property="Margin" Value="0,0,0,10" />
+        <Setter Property="Padding" Value="12,10" />
+    </Style>
+</ResourceDictionary>
+

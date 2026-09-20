@@ -52,7 +52,7 @@ public class FocusViewModelTests : IDisposable
         Assert.Null(_vm.Session);
         Assert.False(_vm.IsRunning);
         Assert.Contains("有效专注 25 分钟", _vm.StatusText); // 30 - 5 暂停
-        Assert.Contains("今日累计 25 分钟", _vm.StatusText);
+        Assert.Equal(25, _vm.TodayFocusMinutes().TotalMinutes);
         Assert.Null(_service.OpenFocus());
     }
 
@@ -62,7 +62,7 @@ public class FocusViewModelTests : IDisposable
         var task = _service.CreateTask(new TaskDraft { Title = "专注对象" });
         _vm.Clock = T0;
         _vm.SelectedTaskId = task.Id;
-        _vm.ModeIndex = 2; // Flowtime(不需要时长)
+        _vm.ModeIndex = 2; // 正计时(不需要时长)
         _vm.Start();
 
         Assert.Equal(TaskStatus.InProgress, _service.GetTask(task.Id)!.Status);

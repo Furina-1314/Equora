@@ -30,6 +30,10 @@ public partial class TaskDetailViewModel : ObservableObject
 
     public ObservableCollection<ChecklistItemDto> Checklist { get; } = new();
 
+    public ObservableCollection<ProjectDto> AllProjects { get; } = new();
+    [ObservableProperty]
+    private string _selectedProjectId = "";
+
     public ObservableCollection<TagDto> AllTags { get; } = new();
 
     public ObservableCollection<string> AssignedTagIds { get; } = new();
@@ -72,6 +76,8 @@ public partial class TaskDetailViewModel : ObservableObject
         "无", "低", "普通", "高", "紧急",
     };
 
+    public bool CanEdit => IsLoaded && _model is { IsDeleted: false };
+
     public string CreatedInfo => _model is null
         ? ""
         : $"创建于 {_model.CreatedAt.ToLocalTime():yyyy-MM-dd HH:mm} · 修订 {_model.Revision}";
@@ -80,7 +86,9 @@ public partial class TaskDetailViewModel : ObservableObject
 
     public void Load(TaskDto? task)
     {
+        IsLoaded = false;
         _model = task;
+        OnPropertyChanged(nameof(CanEdit));
         if (task is null)
         {
             IsLoaded = false;
@@ -90,14 +98,18 @@ public partial class TaskDetailViewModel : ObservableObject
             return;
         }
 
+        AllProjects.Clear();
+        AllProjects.Add(new ProjectDto { Id = "", Name = "无项目" });
+        foreach (var project in _workspace.ListProjects()) AllProjects.Add(project);
+        SelectedProjectId = task.ProjectId ?? "";
         Title = task.Title;
-        Note = task.Note;
+        Note = task.Note ?? "";
         StatusIndex = (int)task.Status;
         PriorityIndex = (int)task.Priority;
         HasDue = task.DueAt.HasValue;
-        DueDate = task.DueAt?.ToLocalTime();
+        DueDate = task.DueAt?.ToLocalTime() ?? DateTimeOffset.Now;
         DueTime = task.DueAt?.ToLocalTime().TimeOfDay ?? TimeSpan.FromHours(9);
-        EstimateText = task.EstimateMinutes.HasValue ? task.EstimateMinutes.ToString() : "";
+        EstimateText = task.EstimateMinutes.HasValue ? task.EstimateMinutes.Value.ToString() : "";
 
         Checklist.Clear();
         foreach (var item in _workspace.ListChecklist(task.Id)) Checklist.Add(item);
@@ -108,6 +120,7 @@ public partial class TaskDetailViewModel : ObservableObject
         foreach (var tag in _workspace.TagsForTask(task.Id)) AssignedTagIds.Add(tag.Id);
 
         IsLoaded = true;
+        OnPropertyChanged(nameof(CanEdit));
         OnPropertyChanged(nameof(CreatedInfo));
     }
 
@@ -127,7 +140,7 @@ public partial class TaskDetailViewModel : ObservableObject
         var current = Current();
         if (current is null) return null;
 
-        var before = snapshot ?? current;
+        var before = (snapshot ?? current) with { };
         mutate(current);
         var updated = _tasks.UpdateTask(current);
         _undo.Push(undoDescription, () =>
@@ -153,9 +166,15 @@ public partial class TaskDetailViewModel : ObservableObject
 
     // ---- 字段变更(即时保存;批内首变更快照供整组撤销) ----
 
+    partial void OnSelectedProjectIdChanged(string value)
+    {
+        if (!IsLoaded || _model is null || value == (_model.ProjectId ?? "")) return;
+        Apply(t => t.ProjectId = string.IsNullOrEmpty(value) ? null : value, "修改项目", null);
+    }
+
     partial void OnTitleChanged(string value)
     {
-        if (!IsLoaded || _model is null || value == _model.Title) return;
+        if (!IsLoaded || _model is null || value == _model.Title || string.IsNullOrWhiteSpace(value)) return;
         Apply(t => t.Title = value, $"修改标题「{_model.Title}」", snapshot: null);
     }
 
@@ -167,14 +186,14 @@ public partial class TaskDetailViewModel : ObservableObject
 
     partial void OnStatusIndexChanged(int value)
     {
-        if (!IsLoaded || _model is null || value == (int)_model.Status) return;
+        if (!IsLoaded || _model is null || value < 0 || value >= StatusNames.Count || value == (int)_model.Status) return;
         var snapshot = _model;
         Apply(t => t.Status = (TaskStatus)value, $"状态改为「{StatusNames[value]}」", snapshot);
     }
 
     partial void OnPriorityIndexChanged(int value)
     {
-        if (!IsLoaded || _model is null || value == (int)_model.Priority) return;
+        if (!IsLoaded || _model is null || value < 0 || value >= PriorityNames.Count || value == (int)_model.Priority) return;
         var snapshot = _model;
         Apply(t => t.Priority = (Priority)value, $"优先级改为「{PriorityNames[value]}」", snapshot);
     }
@@ -206,7 +225,16 @@ public partial class TaskDetailViewModel : ObservableObject
     public void CommitEstimate()
     {
         if (!IsLoaded || _model is null) return;
-        int? estimate = int.TryParse(EstimateText.Trim(), out var v) ? v : null;
+        int? estimate = null;
+        if (!string.IsNullOrWhiteSpace(EstimateText))
+        {
+            if (!int.TryParse(EstimateText.Trim(), out var v) || v < 0)
+            {
+                _owner.StatusText = "预计时长请输入非负整数。";
+                return;
+            }
+            estimate = v;
+        }
         if (estimate == _model.EstimateMinutes) return;
         var snapshot = _model;
         Apply(t => t.EstimateMinutes = estimate, "修改预计时长", snapshot);

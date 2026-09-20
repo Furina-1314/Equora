@@ -132,6 +132,27 @@ public class CalendarViewModelTests : IDisposable
         Assert.Equal("01234567-89ab-cdef-0123-456789abcdef",
             CalendarViewModel.ExtractBlockId("01234567-89ab-cdef-0123-456789abcdef"));
     }
+    [Fact]
+    public void DayNavigationMovesSelectedDayInsteadOfWeekAnchor()
+    {
+        _vm.ViewModeIndex = 1;
+        var start = _vm.WindowStart;
+        _vm.NextWeek();
+        Assert.Equal(start.AddDays(1), _vm.WindowStart);
+        Assert.Equal(_vm.WindowStart.AddDays(1), _vm.WindowEnd);
+        _vm.PrevWeek();
+        Assert.Equal(start, _vm.WindowStart);
+    }
+
+    [Fact]
+    public void UnscheduledListExcludesCompletedTasks()
+    {
+        _service.CreateTask(new TaskDraft { Title = "已完成", Status = TaskStatus.Done });
+        _service.CreateTask(new TaskDraft { Title = "待安排" });
+        _vm.Refresh();
+        Assert.Equal("待安排", Assert.Single(_vm.UnscheduledTasks).Title);
+    }
+
 }
 
 file static class CalendarTestExtensions

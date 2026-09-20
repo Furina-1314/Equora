@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
+    <PlatformTarget>x64</PlatformTarget>
     <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
     <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
     <RootNamespace>Equora.NativeHost</RootNamespace>
@@ -11,7 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Equora.App.NativeInterop\Equora.App.NativeInterop.csproj" />
+    <ProjectReference Include="..\Equora.App.Services\Equora.App.Services.csproj" />
   </ItemGroup>
 
   <!-- 从本地 C++ 构建输出复制原生 DLL;目录不存在时跳过(如 CI)。 -->

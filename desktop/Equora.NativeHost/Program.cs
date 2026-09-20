@@ -1,24 +1,28 @@
 using System.Text;
 using System.Text.Json;
 using Equora.App.NativeInterop;
+using Equora.App.Services;
 
 namespace Equora.NativeHost;
 
 /// <summary>
 /// Equora Native Messaging host(Chrome/Edge 规范)。
-/// 扩展 ←stdin/stdout→ 本进程 →(equora_capi.dll,同库只读会话 + 读 appsettings)。
-/// 协议:v1 {type, protocolVersion, sessionId, ts, nonce, checksum} + {type:"query"} →
-/// 回 {type:"state", state:FocusGateState}。校验和不匹配回 {type:"error"}。
+/// 扩展通过长度前缀 JSON 查询桌面端限制规则，并报告前台域名使用秒数。
+/// 桌面端心跳过期后停止限制。协议 v1，nonce 严格递增。
 /// </summary>
 public static class Program
 {
     // 默认数据库与主程序一致(LocalAppData\Equora\equora.db)。
-    private static readonly string DbPath = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "Equora", "equora.db");
+    private static RestrictionStore Rules => new(AppPaths.ResolveDataDirectory());
+    private static DateTimeOffset _lastQuery = DateTimeOffset.Now;
 
     public static int Main(string[] args)
     {
+        if (args.Length > 0 && args[0] == "--state")
+        {
+            Console.Write(JsonSerializer.Serialize(BuildState(null)));
+            return 0;
+        }
         if (args.Length > 0 && args[0] == "--print-manifest")
         {
             Console.Out.Write(BuildHostManifest(args.Length > 1 ? args[1]
@@ -48,7 +52,8 @@ public static class Program
                 continue;
             }
 
-            var root = doc.RootElement;
+            using var document = doc;
+            var root = document.RootElement;
             if (root.ValueKind != JsonValueKind.Object ||
                 !root.TryGetProperty("type", out var typeEl))
             {
@@ -96,7 +101,7 @@ public static class Program
                     });
                     break;
                 case "query":
-                    WriteJson(stdout, new { type = "state", state = BuildState() });
+                    WriteJson(stdout, new { type = "state", state = BuildState(root) });
                     break;
                 default:
                     WriteJson(stdout, new { type = "error", reason = "unknown-type" });
@@ -141,38 +146,39 @@ public static class Program
         output.Flush();
     }
 
-    /// <summary>查询开放专注会话 + 对应预设的站点名单 → FocusGateState。</summary>
-    private static object BuildState()
+    private static object BuildState(JsonElement? request)
     {
-        if (!File.Exists(DbPath))
+        var now = DateTimeOffset.Now;
+        Rules.MarkBrowserSeen();
+        var configuration = Rules.Load();
+        var heartbeat = Rules.Heartbeat;
+        var active = configuration.Enabled && Rules.IsDesktopActive(now);
+        var websiteRules = configuration.Rules.Where(r => r.Enabled && r.Kind == "website").ToList();
+        if (active && request is { } root && root.TryGetProperty("usage", out var report) && report.ValueKind == JsonValueKind.Object &&
+            report.TryGetProperty("domain", out var domainValue) && domainValue.ValueKind == JsonValueKind.String &&
+            report.TryGetProperty("seconds", out var secondsValue) && secondsValue.TryGetDouble(out var seconds))
         {
-            return FocusGate.FromSession(null, null, null, null);
-        }
-        try
-        {
-            using var core = EquoraCore.Open(DbPath, "native-host");
-            var session = core.OpenFocus();
-            string? taskTitle = null;
-            string? allowed = null;
-            string? blocked = null;
-            if (session is { TaskId: { } taskId })
+            try
             {
-                taskTitle = core.GetTask(taskId)?.Title;
+                var domain = RestrictionPolicy.NormalizeTarget("website", domainValue.GetString()!);
+                var elapsed = Math.Min(Math.Clamp((now - _lastQuery).TotalSeconds, 0, 10), Math.Clamp(seconds, 0, 10));
+                if (double.IsFinite(elapsed) && now.Date == _lastQuery.Date)
+                {
+                    var increments = websiteRules.Select(r => r.Target).Distinct(StringComparer.OrdinalIgnoreCase)
+                        .Where(target => RestrictionPolicy.Matches("website", target, domain)).ToDictionary(target => target, _ => elapsed);
+                    Rules.AddUsage("website", increments, now);
+                }
             }
-            if (session is not null)
-            {
-                // 找默认预设或第一个预设(扩展执行阶段统一走预设;P11 取默认)。
-                var profile = core.ListFocusProfiles().FirstOrDefault(p => p.IsDefault)
-                              ?? core.ListFocusProfiles().FirstOrDefault();
-                allowed = profile?.AllowedSites;
-                blocked = profile?.BlockedSites;
-            }
-            return FocusGate.FromSession(session, taskTitle, allowed, blocked);
+            catch (ArgumentException) { }
         }
-        catch (EquoraException)
-        {
-            return FocusGate.FromSession(null, null, null, null);
-        }
+        _lastQuery = now;
+        var usage = Rules.Usage("website", now);
+        var temporary = heartbeat?.AllowUntil > now;
+        var blocked = active && !temporary ? websiteRules.Where(r => RestrictionPolicy.Reason(r, now,
+            heartbeat?.Focusing == true, usage.GetValueOrDefault(r.Target)) is not null).Select(r => r.Target).Distinct().ToArray() : Array.Empty<string>();
+        return new { enabled = active, focusing = heartbeat?.Focusing == true, updatedUtcMs = now.ToUnixTimeMilliseconds(),
+            blockedDomains = blocked, trackedDomains = active ? websiteRules.Select(r => r.Target).Distinct().ToArray() : Array.Empty<string>(),
+            usedSeconds = usage };
     }
 
     private static string AssemblyLocation() =>

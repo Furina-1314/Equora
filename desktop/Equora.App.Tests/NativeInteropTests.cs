@@ -113,7 +113,7 @@ public class HomeViewModelTests
         vm.RunDiagnosticsCommand.Execute(null);
 
         Assert.Equal(42, service.Ping(41));
-        Assert.Equal("自检通过 ✓", vm.StatusText);
+        Assert.Equal("自检通过", vm.StatusText);
         Assert.NotEmpty(vm.Diagnostics);
     }
 }

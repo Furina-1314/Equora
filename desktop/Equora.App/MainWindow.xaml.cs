@@ -6,13 +6,33 @@ namespace Equora.App;
 
 public sealed partial class MainWindow : Window
 {
+    private readonly RestrictionRuntime _restrictions;
+    private TrayIcon? _tray;
+    private bool _exiting;
+    private readonly DispatcherTimer _clock = new() { Interval = TimeSpan.FromSeconds(1) };
+    public void ExitApplication() { _exiting = true; Close(); }
+    public void RestoreWindow() { AppWindow.Show(); Activate(); }
+
     public MainWindow()
     {
         InitializeComponent();
         Title = "衡序 Equora";
+        AppWindow.SetIcon(Path.Combine(AppContext.BaseDirectory, "Assets", "Equora.ico"));
         ExtendsContentIntoTitleBar = false;
+        Appearance.Apply((FrameworkElement)Content);
+        ContentFrame.Navigated += (_, args) => SyncNavigation(args.SourcePageType);
         ContentFrame.Navigate(typeof(TasksPage));
-        Nav.SelectedItem = Nav.MenuItems[0];
+        Nav.SelectedItem = Nav.Items[1];
+        _restrictions = new RestrictionRuntime(message => { RestrictionNotice.Message = message; RestrictionNotice.IsOpen = true; });
+        try { _tray = new TrayIcon(WinRT.Interop.WindowNative.GetWindowHandle(this), Path.Combine(AppContext.BaseDirectory, "Assets", "Equora.ico"), RestoreWindow, ExitApplication); }
+        catch (Exception ex) { RestrictionNotice.Message = ex.Message; RestrictionNotice.IsOpen = true; }
+        _clock.Tick += (_, _) => AppServices.FocusVm.Clock = DateTimeOffset.Now;
+        _clock.Start();
+        AppWindow.Closing += (_, e) =>
+        {
+            if (!_exiting && Appearance.Current.CloseToTray && _tray is not null) { e.Cancel = true; AppWindow.Hide(); }
+        };
+        Closed += (_, _) => { _clock.Stop(); _tray?.Dispose(); _restrictions.Dispose(); AppServices.Data.Dispose(); };
 
         // App 内快捷键(全局热键 RegisterHotKey 在真机阶段接窗口过程)。
         // Window 没有 KeyboardAccelerators,挂在内容根元素上;Invoked 在加速器上。
@@ -30,6 +50,39 @@ public sealed partial class MainWindow : Window
         };
     }
 
+    public void ShowPage(Type page) => ContentFrame.Navigate(page);
+
+    private void OnTogglePane(object sender, RoutedEventArgs e)
+    {
+        Shell.IsPaneOpen = !Shell.IsPaneOpen;
+        foreach (var item in Nav.Items.Concat(FooterNav.Items).OfType<ListViewItem>())
+        {
+            if (item.Content is not StackPanel panel) continue;
+            var transform = panel.RenderTransform as Microsoft.UI.Xaml.Media.TranslateTransform ?? new();
+            panel.RenderTransform = transform;
+            var animation = new Microsoft.UI.Xaml.Media.Animation.DoubleAnimation
+            {
+                To = Shell.IsPaneOpen ? 0 : 4,
+                Duration = new Duration(TimeSpan.FromMilliseconds(180)),
+                EnableDependentAnimation = true,
+                EasingFunction = new Microsoft.UI.Xaml.Media.Animation.CubicEase { EasingMode = Microsoft.UI.Xaml.Media.Animation.EasingMode.EaseOut }
+            };
+            Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTarget(animation, transform);
+            Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTargetProperty(animation, "X");
+            var storyboard = new Microsoft.UI.Xaml.Media.Animation.Storyboard();
+            storyboard.Children.Add(animation); storyboard.Begin();
+        }
+    }
+
+    private void SyncNavigation(Type page)
+    {
+        var tag = page == typeof(TasksPage) ? "tasks" : page == typeof(CalendarPage) ? "calendar"
+            : page == typeof(MatrixPage) ? "matrix" : page == typeof(FocusPage) ? "focus"
+            : page == typeof(RestrictionsPage) ? "restrictions" : page == typeof(SettingsPage) ? "settings" : "home";
+        Nav.SelectedItem = Nav.Items.OfType<ListViewItem>().FirstOrDefault(item => Equals(item.Tag, tag));
+        FooterNav.SelectedItem = tag == "settings" ? FooterNav.Items[0] : null;
+    }
+
     private void AddAccelerator(Microsoft.UI.Xaml.UIElement root,
         Windows.System.VirtualKey key, Windows.System.VirtualKeyModifiers modifiers)
     {
@@ -42,10 +95,14 @@ public sealed partial class MainWindow : Window
         root.KeyboardAccelerators.Add(accelerator);
     }
 
-    private void OnNavSelectionChanged(NavigationView sender,
-        NavigationViewSelectionChangedEventArgs args)
+    private void OnFooterSelected(object sender, SelectionChangedEventArgs e)
     {
-        if (args.SelectedItemContainer?.Tag is not string tag) return;
+        if (FooterNav.SelectedItem is not null && ContentFrame.CurrentSourcePageType != typeof(SettingsPage)) ShowPage(typeof(SettingsPage));
+    }
+
+    private void OnNavSelectionChanged(object sender, SelectionChangedEventArgs args)
+    {
+        if ((Nav.SelectedItem as ListViewItem)?.Tag is not string tag) return;
 
         var page = tag switch
         {
@@ -55,12 +112,13 @@ public sealed partial class MainWindow : Window
             "matrix" => typeof(MatrixPage),
             "focus" => typeof(FocusPage),
             "settings" => typeof(SettingsPage),
+            "restrictions" => typeof(RestrictionsPage),
             _ => typeof(HomePage),
         };
         if (ContentFrame.CurrentSourcePageType != page)
         {
             ContentFrame.Navigate(page, null,
-                new Microsoft.UI.Xaml.Media.Animation.SuppressNavigationTransitionInfo());
+                new Microsoft.UI.Xaml.Media.Animation.EntranceNavigationTransitionInfo());
         }
     }
     private async void OnAcceleratorInvoked(Microsoft.UI.Xaml.Input.KeyboardAccelerator sender,

@@ -10,7 +10,7 @@ namespace Equora.App;
 public sealed class DoneStatusConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language) =>
-        value is TaskStatus s and (TaskStatus.Done or TaskStatus.Cancelled);
+        value is TaskStatus.Done;
 
     public object ConvertBack(object value, Type targetType, object parameter, string language) =>
         throw new NotSupportedException();

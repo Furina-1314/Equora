@@ -8,18 +8,22 @@
     mc:Ignorable="d"
     x:Name="Root">
 
-    <Grid>
+    <Grid Background="{ThemeResource EquoraCanvasBrush}" SizeChanged="OnLayoutSizeChanged">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition x:Name="DetailRow" Height="0" />
+        </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="220" />
-            <ColumnDefinition Width="*" MinWidth="280" />
-            <ColumnDefinition Width="360" />
+            <ColumnDefinition x:Name="ListColumn" Width="196" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition x:Name="DetailColumn" Width="320" />
         </Grid.ColumnDefinitions>
 
         <!-- 左栏:智能清单 / 项目 / 标签 -->
-        <ScrollViewer Grid.Column="0" Padding="8,12">
+        <ScrollViewer x:Name="ListSidebar" Grid.Column="0" Padding="0,24" Background="{ThemeResource EquoraPaneBrush}">
             <StackPanel Spacing="4">
-                <TextBlock Text="清单" Style="{StaticResource CaptionTextBlockStyle}"
-                           Margin="8,0,0,4" Opacity="0.6" />
+                <TextBlock Text="任务" Style="{StaticResource EquoraPageTitleStyle}"
+                           Margin="20,0,0,20" />
                 <ListView ItemsSource="{Binding Lists}" SelectionMode="Single"
                           SelectedItem="{Binding SelectedList, Mode=TwoWay}">
                     <ListView.ItemTemplate>
@@ -32,9 +36,8 @@
                     </ListView.ItemTemplate>
                 </ListView>
 
-                <TextBlock Text="项目" Style="{StaticResource CaptionTextBlockStyle}"
-                           Margin="8,16,0,4" Opacity="0.6" />
-                <ListView x:Name="ProjectNav" SelectionMode="Single"
+                <Button Content="项目 · 管理" Click="OnManageProjects" Margin="12,20,12,4" HorizontalAlignment="Stretch" />
+                <ListView x:Name="ProjectNav" ItemsSource="{Binding Projects}" SelectionMode="Single"
                           SelectionChanged="OnProjectSelected">
                     <ListView.ItemTemplate>
                         <DataTemplate>
@@ -46,9 +49,8 @@
                     </ListView.ItemTemplate>
                 </ListView>
 
-                <TextBlock Text="标签" Style="{StaticResource CaptionTextBlockStyle}"
-                           Margin="8,16,0,4" Opacity="0.6" />
-                <ListView x:Name="TagNav" SelectionMode="Single"
+                <Button Content="标签 · 管理" Click="OnManageTags" Margin="12,20,12,4" HorizontalAlignment="Stretch" />
+                <ListView x:Name="TagNav" ItemsSource="{Binding Tags}" SelectionMode="Single"
                           SelectionChanged="OnTagSelected">
                     <ListView.ItemTemplate>
                         <DataTemplate>
@@ -63,36 +65,45 @@
         </ScrollViewer>
 
         <!-- 中栏:搜索 + 操作 + 任务列表 -->
-        <Grid Grid.Column="1" Padding="12,12">
+        <Grid x:Name="TaskWorkspace" Grid.Column="1" Padding="24" RowSpacing="12">
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <Grid Grid.Row="0" ColumnSpacing="8" Margin="0,0,0,8">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <TextBox Grid.Column="0" Header="搜索标题与备注"
-                         Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                         KeyDown="OnSearchKeyDown" />
-                <Button Grid.Column="1" Content="搜索" Style="{StaticResource AccentButtonStyle}"
-                        Command="{Binding RunSearchCommand}" VerticalAlignment="Bottom" />
-                <Button Grid.Column="2" Content="新建" VerticalAlignment="Bottom"
-                        Command="{Binding NewTaskCommand}" />
-                <Button Grid.Column="3" Content="撤销" VerticalAlignment="Bottom"
-                        Command="{Binding UndoCommand}" IsEnabled="{Binding CanUndo}" />
-            </Grid>
+            <StackPanel Spacing="8">
+                <TextBlock Text="{Binding SelectedList.Title}" Style="{StaticResource EquoraPageTitleStyle}" Margin="0" />
+                <StackPanel x:Name="CompactManagement" Orientation="Horizontal" Spacing="8" Visibility="Collapsed"><Button Content="管理项目" Click="OnManageProjects" /><Button Content="管理标签" Click="OnManageTags" /></StackPanel>
+                <ComboBox x:Name="CompactLists" Visibility="Collapsed" ItemsSource="{Binding Lists}" DisplayMemberPath="Title"
+                          SelectedItem="{Binding SelectedList, Mode=TwoWay}" HorizontalAlignment="Stretch" AutomationProperties.Name="选择清单" />
+            </StackPanel>
+            <StackPanel Grid.Row="1" Spacing="12">
+                <Grid ColumnSpacing="8">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                    <TextBox PlaceholderText="搜索当前清单" AutomationProperties.Name="搜索当前清单"
+                             Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             TextChanged="OnSearchTextChanged" KeyDown="OnSearchKeyDown" />
+                    <Button Grid.Column="1" Command="{Binding UndoCommand}" IsEnabled="{Binding CanUndo}" AutomationProperties.Name="撤销">
+                        <FontIcon Glyph="&#xE7A7;" FontSize="16" />
+                    </Button>
+                </Grid>
+                <Grid ColumnSpacing="8">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                    <TextBox x:Name="NewTaskBox" PlaceholderText="添加任务，按 Enter 保存" AutomationProperties.Name="新任务标题"
+                             Text="{Binding NewTaskTitle, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" KeyDown="OnNewTaskKeyDown" />
+                    <Button Grid.Column="1" Click="OnAddTask" Style="{StaticResource AccentButtonStyle}" AutomationProperties.Name="添加任务">
+                        <FontIcon Glyph="&#xE710;" FontSize="16" />
+                    </Button>
+                </Grid>
+            </StackPanel>
 
-            <TextBlock Grid.Row="1" Text="{Binding StatusText}" Opacity="0.7"
-                       Style="{StaticResource CaptionTextBlockStyle}" Margin="0,0,0,8" />
+            <TextBlock Grid.Row="2" Text="{Binding StatusText}" Opacity="0.7"
+                       Style="{StaticResource CaptionTextBlockStyle}" TextWrapping="Wrap" />
 
-            <ListView Grid.Row="2" ItemsSource="{Binding Tasks}" SelectionMode="Single"
-                      SelectedItem="{Binding SelectedTask, Mode=TwoWay}">
+            <ListView x:Name="TaskList" Grid.Row="3" SelectionChanged="OnTaskSelectionChanged" ItemContainerStyle="{StaticResource EquoraTaskItemStyle}" ItemsSource="{Binding Tasks}" SelectionMode="Single"
+                      SelectedItem="{Binding SelectedTask, Mode=OneWay}">
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <Grid ColumnSpacing="8" Padding="0,6">
@@ -103,31 +114,45 @@
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <CheckBox Grid.Column="0" MinWidth="0" Click="OnToggleDoneClick"
+                            <CheckBox Grid.Column="0" MinWidth="32" Click="OnToggleDoneClick" AutomationProperties.Name="完成或重新打开任务"
+                                      Visibility="{Binding IsDeleted, Converter={StaticResource FalseToVisibleConverter}}"
                                       IsChecked="{Binding Status, Converter={StaticResource DoneStatusConverter}, Mode=OneWay}" />
                             <StackPanel Grid.Column="1" Orientation="Vertical" Spacing="2">
-                                <TextBlock Text="{Binding Title}" TextTrimming="CharacterEllipsis" />
+                                <TextBlock FontSize="17" Text="{Binding Title}" TextTrimming="CharacterEllipsis" />
                                 <TextBlock Text="{Binding DueAt, Converter={StaticResource DueTextConverter}}"
                                            Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.6" />
                             </StackPanel>
-                            <Border Grid.Column="2" Width="4" CornerRadius="2"
+                            <Border Grid.Column="2" Width="4" CornerRadius="0"
                                     VerticalAlignment="Stretch"
                                     Background="{Binding Priority, Converter={StaticResource PriorityBrushConverter}}" />
-                            <Button Grid.Column="3" Content="删除" FontSize="12" Padding="8,2"
-                                    Command="{Binding DataContext.DeleteTaskCommand, ElementName=Root}"
-                                    CommandParameter="{Binding}"
-                                    Visibility="{Binding IsDeleted, Converter={StaticResource FalseToVisibleConverter}}" />
+                            <Button Grid.Column="3" AutomationProperties.Name="删除任务" FontSize="12" Padding="8,2"
+                                    Click="OnDeleteTask"
+                                    Visibility="{Binding IsDeleted, Converter={StaticResource FalseToVisibleConverter}}"><FontIcon Glyph="&#xE74D;" FontSize="16" /></Button>
                             <Button Grid.Column="4" Content="恢复" FontSize="12" Padding="8,2"
-                                    Command="{Binding DataContext.RestoreTaskCommand, ElementName=Root}"
-                                    CommandParameter="{Binding}"
+                                    Click="OnRestoreTask"
                                     Visibility="{Binding IsDeleted, Converter={StaticResource TrueToVisibleConverter}}" />
                         </Grid>
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
+            <StackPanel Grid.Row="3" VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="12"
+                        Visibility="{Binding HasTasks, Converter={StaticResource FalseToVisibleConverter}}" IsHitTestVisible="False">
+                <FontIcon Glyph="&#xE8A5;" FontSize="32" Foreground="{ThemeResource EquoraAccentBrush}" />
+                <TextBlock Text="这里还没有任务" FontSize="20" HorizontalAlignment="Center" />
+                <TextBlock Text="添加一项任务，或调整搜索条件。" Opacity="0.65" TextWrapping="Wrap" />
+            </StackPanel>
         </Grid>
 
         <!-- 右栏:详情 -->
-        <controls:TaskDetailPanel Grid.Column="2" x:Name="DetailPanel" />
+        <Border x:Name="DetailHost" Grid.Column="2" BorderBrush="{ThemeResource EquoraDividerBrush}" BorderThickness="1,0,0,0"
+                Background="{ThemeResource EquoraSurfaceBrush}">
+            <Grid>
+                <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
+                <Button x:Name="BackToTasks" Visibility="Collapsed" Margin="24,16,24,0" Click="OnBackToTasks">
+                    <StackPanel Orientation="Horizontal" Spacing="10"><FontIcon Glyph="&#xE72B;" FontSize="16" /><TextBlock Text="返回任务列表" /></StackPanel>
+                </Button>
+                <controls:TaskDetailPanel Grid.Row="1" x:Name="DetailPanel" />
+            </Grid>
+        </Border>
     </Grid>
 </Page>

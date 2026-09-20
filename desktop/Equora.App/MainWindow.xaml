@@ -1,35 +1,70 @@
-<Window
-    x:Class="Equora.App.MainWindow"
+<Window x:Class="Equora.App.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:pages="using:Equora.App.Pages">
-
-    <Grid>
-        <NavigationView
-            x:Name="Nav"
-            IsBackButtonVisible="Auto"
-            IsSettingsVisible="False"
-            SelectionChanged="OnNavSelectionChanged">
-            <NavigationView.MenuItems>
-                <NavigationViewItem Content="首页" Tag="home" Icon="Home" />
-                <NavigationViewItem Content="任务" Tag="tasks" Icon="List" />
-                <NavigationViewItem Content="日历" Tag="calendar" Icon="Calendar" />
-                <!-- Icon 特性只接受 Symbol 枚举成员名;WinAppSDK 的 Symbol 枚举没有
-                     Bullets/Timer,写名字会在运行期抛 XamlParseException,必须用
-                     FontIcon 直接给 Segoe Fluent glyph。 -->
-                <NavigationViewItem Content="四象限" Tag="matrix">
-                    <NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xE8FD;" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-                <NavigationViewItem Content="专注" Tag="focus">
-                    <NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xE916;" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-                <NavigationViewItem Content="设置" Tag="settings" Icon="Setting" />
-            </NavigationView.MenuItems>
-            <Frame x:Name="ContentFrame" />
-        </NavigationView>
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Background="{ThemeResource EquoraSurfaceBrush}">
+        <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
+        <InfoBar x:Name="RestrictionNotice" IsOpen="False" IsClosable="True" Severity="Warning" />
+        <SplitView Grid.Row="1" x:Name="Shell" DisplayMode="CompactInline" IsPaneOpen="True"
+                   OpenPaneLength="208" CompactPaneLength="56"
+                   PaneBackground="{ThemeResource EquoraPaneBrush}">
+            <SplitView.Pane>
+                <Grid BorderBrush="{ThemeResource EquoraDividerBrush}" BorderThickness="0,0,1,0">
+                    <Grid.RowDefinitions><RowDefinition Height="72" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                    <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                        <Button Width="56" Height="48" Padding="0" Background="Transparent" BorderThickness="0"
+                                Click="OnTogglePane" AutomationProperties.Name="展开或收起导航">
+                            <FontIcon Glyph="&#xE700;" FontSize="20" />
+                        </Button>
+                        <TextBlock Text="EQUORA" FontSize="18" CharacterSpacing="120" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <ListView x:Name="Nav" Grid.Row="1" SelectionChanged="OnNavSelectionChanged" SelectionMode="Single">
+                    <ListViewItem Tag="home" AutomationProperties.Name="首页">
+                        <StackPanel Orientation="Horizontal" Spacing="20">
+                            <FontIcon Glyph="&#xE80F;" Width="24" FontSize="18" />
+                            <TextBlock Text="首页" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </ListViewItem>
+                    <ListViewItem Tag="tasks" AutomationProperties.Name="任务">
+                        <StackPanel Orientation="Horizontal" Spacing="20">
+                            <FontIcon Glyph="&#xE8A5;" Width="24" FontSize="18" />
+                            <TextBlock Text="任务" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </ListViewItem>
+                    <ListViewItem Tag="calendar" AutomationProperties.Name="日历">
+                        <StackPanel Orientation="Horizontal" Spacing="20">
+                            <FontIcon Glyph="&#xE787;" Width="24" FontSize="18" />
+                            <TextBlock Text="日历" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </ListViewItem>
+                    <ListViewItem Tag="matrix" AutomationProperties.Name="四象限">
+                        <StackPanel Orientation="Horizontal" Spacing="20">
+                            <FontIcon Glyph="&#xE80A;" Width="24" FontSize="18" />
+                            <TextBlock Text="四象限" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </ListViewItem>
+                    <ListViewItem Tag="focus" AutomationProperties.Name="专注">
+                        <StackPanel Orientation="Horizontal" Spacing="20">
+                            <FontIcon Glyph="&#xE916;" Width="24" FontSize="18" />
+                            <TextBlock Text="专注" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </ListViewItem>
+                    <ListViewItem Tag="restrictions" AutomationProperties.Name="应用与网站限制">
+                        <StackPanel Orientation="Horizontal" Spacing="20"><FontIcon Glyph="&#xE72E;" Width="24" FontSize="18" /><TextBlock Text="使用限制" VerticalAlignment="Center" /></StackPanel>
+                    </ListViewItem>
+                    </ListView>
+                    <ListView x:Name="FooterNav" Grid.Row="2" Margin="0,0,0,12" SelectionChanged="OnFooterSelected">
+                    <ListViewItem Tag="settings" AutomationProperties.Name="设置">
+                        <StackPanel Orientation="Horizontal" Spacing="20">
+                            <FontIcon Glyph="&#xE713;" Width="24" FontSize="18" />
+                            <TextBlock Text="设置" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </ListViewItem>
+                    </ListView>
+                </Grid>
+            </SplitView.Pane>
+            <Frame x:Name="ContentFrame" Background="{ThemeResource EquoraSurfaceBrush}">
+                <Frame.ContentTransitions><TransitionCollection><NavigationThemeTransition><NavigationThemeTransition.DefaultNavigationTransitionInfo><EntranceNavigationTransitionInfo /></NavigationThemeTransition.DefaultNavigationTransitionInfo></NavigationThemeTransition></TransitionCollection></Frame.ContentTransitions>
+            </Frame>
+        </SplitView>
     </Grid>
 </Window>

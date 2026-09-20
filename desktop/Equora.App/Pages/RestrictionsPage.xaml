@@ -1,0 +1,49 @@
+<Page x:Class="Equora.App.Pages.RestrictionsPage" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+ <ScrollViewer HorizontalContentAlignment="Stretch"><StackPanel Padding="32,28" Spacing="20" Background="Transparent">
+  <TextBlock Text="应用与网站限制" Style="{StaticResource EquoraPageTitleStyle}" Margin="0" />
+  <TextBlock Text="按每天的时间段、专注状态或每日使用额度管理分心来源。任一条件满足即限制。" TextWrapping="Wrap" Opacity="0.7" />
+  <InfoBar x:Name="Notice" IsOpen="False" IsClosable="True" />
+  <StackPanel Orientation="Horizontal" Spacing="16"><ToggleSwitch x:Name="MasterSwitch" Header="限制服务" Toggled="OnEnabledChanged" /><Button Content="暂停所有限制 15 分钟" Click="OnAllow" VerticalAlignment="Bottom" /></StackPanel>
+  <TextBlock x:Name="RuntimeStatus" TextWrapping="Wrap" />
+  <Grid ColumnSpacing="20" RowSpacing="20" SizeChanged="OnLayoutSizeChanged">
+   <Grid.ColumnDefinitions><ColumnDefinition x:Name="OverviewColumn" Width="360" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+   <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+  <Border x:Name="RulesPanel" Style="{StaticResource EquoraSectionStyle}"><StackPanel Spacing="12">
+   <TextBlock Text="我的规则" FontSize="20" />
+   <Button Content="新增规则" Click="OnNew" />
+   <ListView x:Name="RulesList" MaxHeight="300" SelectionChanged="OnSelected"><ListView.ItemTemplate><DataTemplate><StackPanel Spacing="4" Padding="0,6"><TextBlock Text="{Binding Name}" FontSize="17" /><TextBlock Text="{Binding Description}" TextWrapping="Wrap" Opacity="0.7" /></StackPanel></DataTemplate></ListView.ItemTemplate></ListView>
+   <TextBlock Text="点击规则修改。每日时长按本地日期重置，只累计非空闲状态下的前台使用时间。" TextWrapping="Wrap" Opacity="0.65" />
+  </StackPanel></Border>
+  <Border x:Name="EditorPanel" Grid.Column="1" Grid.RowSpan="3" Style="{StaticResource EquoraSectionStyle}"><StackPanel Spacing="12">
+   <TextBlock x:Name="EditorTitle" Text="新增规则" FontSize="20" />
+   <ComboBox x:Name="KindChoice" Header="限制对象" SelectedIndex="0" SelectionChanged="OnKindChanged" HorizontalAlignment="Stretch"><x:String>应用程序</x:String><x:String>网站域名</x:String></ComboBox>
+   <StackPanel x:Name="AppPicker" Spacing="10"><Button x:Name="ReadAppsButton" Content="读取已安装的应用" Click="OnReadApps" /><AutoSuggestBox x:Name="InstalledApps" Header="搜索应用" PlaceholderText="输入应用名筛选，也可直接填写进程名" TextChanged="OnAppSearch" SuggestionChosen="OnAppChosen" /></StackPanel>
+   <TextBox x:Name="RuleName" Header="显示名称" PlaceholderText="例如：游戏或社交网站" />
+   <TextBox x:Name="RuleTarget" Header="进程名或域名" PlaceholderText="game.exe / example.com" />
+   <CheckBox x:Name="RuleEnabled" Content="启用这条规则" IsChecked="True" />
+   <CheckBox x:Name="FocusOnly" Content="正在专注时禁止使用（暂停专注时解除）" />
+   <CheckBox x:Name="ScheduleEnabled" Content="每天指定时间段禁止使用" />
+   <StackPanel Spacing="8"><TimePicker x:Name="StartTime" Header="开始时间" ClockIdentifier="24HourClock" Time="09:00:00" /><TimePicker x:Name="EndTime" Header="结束时间" ClockIdentifier="24HourClock" Time="18:00:00" /></StackPanel>
+   <TextBlock Text="支持跨午夜时段；开始与结束相同表示全天限制。" Opacity="0.65" TextWrapping="Wrap" />
+   <NumberBox x:Name="DailyMinutes" Header="每日可用分钟数（0 表示不设额度）" Minimum="0" Maximum="1440" Value="0" SpinButtonPlacementMode="Compact" Width="260" HorizontalAlignment="Left" />
+   <TextBlock x:Name="UsageText" TextWrapping="Wrap" />
+   <StackPanel Orientation="Horizontal" Spacing="8"><Button Content="保存规则" Style="{StaticResource AccentButtonStyle}" Click="OnSave" /><Button x:Name="DeleteRuleButton" Content="删除规则" Click="OnDelete" IsEnabled="False" /></StackPanel>
+  </StackPanel></Border>
+  <Border x:Name="BrowserPanel" Grid.Row="1" Style="{StaticResource EquoraSectionStyle}"><StackPanel Spacing="12">
+   <TextBlock Text="连接浏览器" FontSize="20" />
+   <TextBlock Text="在 Edge / Chrome 的扩展管理页启用开发者模式，加载扩展目录，再将扩展 ID 填入下方连接。" TextWrapping="Wrap" />
+   <Button Content="打开扩展目录" Click="OnOpenExtension" />
+   <TextBox x:Name="ExtensionId" Header="扩展 ID" PlaceholderText="32 位扩展 ID" />
+   <Button Content="连接 Edge 与 Chrome" Click="OnConnectBrowser" />
+   <TextBlock x:Name="BrowserStatus" TextWrapping="Wrap" />
+  </StackPanel></Border>
+  </Grid>
+  <TextBlock Text="请保持 Equora 运行。应用限制会最小化受限窗口，不终止进程；后台运行不计入使用时长。网站限制需要启用浏览器扩展。退出 Equora 后解除限制。" TextWrapping="Wrap" Opacity="0.65" />
+  <Border Style="{StaticResource EquoraSectionStyle}"><StackPanel Spacing="12">
+   <TextBlock Text="隐私与分心提醒" FontSize="20" />
+   <ToggleSwitch x:Name="ActivityToggle" Header="前台应用提醒（不收起窗口）" Toggled="OnActivityToggled" />
+   <TextBox x:Name="BlockedAppsBox" Header="需要提醒的进程名，使用逗号分隔" LostFocus="OnBlockedAppsChanged" />
+   <TextBlock Text="专注时仅识别前台进程名，不读取窗口内容或键盘输入。提醒与上方限制规则独立，可同时使用。" TextWrapping="Wrap" Opacity="0.7" />
+  </StackPanel></Border>
+ </StackPanel></ScrollViewer>
+</Page>

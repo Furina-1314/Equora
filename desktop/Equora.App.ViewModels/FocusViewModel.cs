@@ -10,6 +10,26 @@ public partial class FocusViewModel : ObservableObject
 {
     private readonly IFocusService _focus;
     private readonly ITaskService _tasks;
+    private DateTimeOffset? _pausedAt;
+    [ObservableProperty] private int _rounds = 4;
+    [ObservableProperty] private int _breakMinutes = 5;
+    [ObservableProperty] private bool _isBreak;
+    private bool _breakPaused, _continuing;
+    private DateTimeOffset _breakEnd;
+    private TimeSpan _breakLeft;
+    private int _round = 1, _cycleRounds = 4, _cycleBreak = 5;
+    public string RoundStatus => ModeIndex == 0 ? $"第 {_round} / {(IsRunning ? _cycleRounds : Rounds)} 轮 · {(IsBreak ? "休息" : "专注")}" : ModeDescription;
+    public string ModeDescription => ModeIndex switch { 0 => "番茄钟：按设定轮数自动交替专注和休息，最后一轮结束后停止。", 1 => "深度工作：单次倒计时，到时结束，不自动安排休息。", _ => "正计时：从零累计有效专注时间，由你手动结束。" };
+    public bool IsPomodoro => ModeIndex == 0;
+    public bool IsTimed => ModeIndex != 2;
+    partial void OnModeIndexChanged(int value) { NotifyPhase(); OnPropertyChanged(nameof(IsPomodoro)); OnPropertyChanged(nameof(IsTimed)); OnPropertyChanged(nameof(ModeDescription)); }
+    partial void OnRoundsChanged(int value) => OnPropertyChanged(nameof(RoundStatus));
+    partial void OnIsBreakChanged(bool value) => NotifyPhase();
+    private void NotifyPhase()
+    {
+        OnPropertyChanged(nameof(ClockText)); OnPropertyChanged(nameof(IsRunning)); OnPropertyChanged(nameof(SessionHint));
+        OnPropertyChanged(nameof(PrimaryActionText)); OnPropertyChanged(nameof(PrimaryActionGlyph)); OnPropertyChanged(nameof(RoundStatus));
+    }
 
     public FocusViewModel(IFocusService focus, ITaskService tasks)
     {
@@ -54,29 +74,50 @@ public partial class FocusViewModel : ObservableObject
 
     public IReadOnlyList<string> ModeNames { get; } = new[]
     {
-        "番茄钟", "深度工作", "Flowtime", "正计时", "无计时",
+        "番茄钟", "深度工作", "正计时",
     };
 
     // ---- 派生状态 ----
 
-    public bool IsRunning => Session is { State: SessionStateDto.Running or SessionStateDto.Paused };
+    public bool IsRunning => IsBreak || Session is { State: SessionStateDto.Running or SessionStateDto.Paused };
 
     public string ClockText
     {
         get
         {
-            if (Session is not { } s) return "25:00";
-            var effective = s.Effective(Clock);
+            if (IsBreak) return Format(TimeSpan.FromSeconds(Math.Max(0, Math.Ceiling((_breakPaused ? _breakLeft : _breakEnd - Clock).TotalSeconds))));
+            if (Session is not { } s) return ModeIndex == 2 ? "00:00" : Format(TimeSpan.FromMinutes(PlannedMinutes));
+            var displayClock = s.State == SessionStateDto.Paused ? _pausedAt ?? Clock : Clock;
+            var effective = s.Effective(displayClock);
             if (s.PlannedEnd is { } end && s.Mode is FocusModeDto.Pomodoro or FocusModeDto.Deep)
             {
-                var left = end.ToLocalTime() - Clock.ToLocalTime() + s.Paused;
-                return left > TimeSpan.Zero ? Format(left) : "00:00";
+                var left = end.ToLocalTime() - displayClock.ToLocalTime() + s.Paused;
+                return left > TimeSpan.Zero ? Format(TimeSpan.FromSeconds(Math.Ceiling(left.TotalSeconds))) : "00:00";
             }
             return Format(effective); // Flowtime/正计时/无计时:正向累计
         }
     }
 
-    public string SessionHint => Session switch
+    public string PrimaryActionText => IsBreak ? (_breakPaused ? "继续" : "暂停") : Session?.State switch
+    {
+        SessionStateDto.Running => "暂停", SessionStateDto.Paused => "继续", _ => "开始"
+    };
+    public string PrimaryActionGlyph => Session?.State == SessionStateDto.Running || IsBreak && !_breakPaused ? "\uE769" : "\uE768";
+    [RelayCommand]
+    public void ToggleSession()
+    {
+        if (IsBreak)
+        {
+            if (_breakPaused) _breakEnd = Clock + _breakLeft; else _breakLeft = _breakEnd - Clock;
+            _breakPaused = !_breakPaused; NotifyPhase(); return;
+        }
+        if (Session?.State == SessionStateDto.Running) Pause();
+        else if (Session?.State == SessionStateDto.Paused) Resume();
+        else Start();
+    }
+    partial void OnPlannedMinutesChanged(int value) => OnPropertyChanged(nameof(ClockText));
+
+    public string SessionHint => IsBreak ? (_breakPaused ? "休息已暂停" : "休息中，到时自动开始下一轮") : Session switch
     {
         { State: SessionStateDto.Paused } => "已暂停",
         { Mode: FocusModeDto.Flowtime } => "自由专注 · 完成时记录",
@@ -85,17 +126,42 @@ public partial class FocusViewModel : ObservableObject
         _ => "专注中",
     };
 
-    private static string Format(TimeSpan t) =>
-        $"{(int)t.TotalHours:00}:{t.Minutes:00}:{t.Seconds:00}";
+    private static string Format(TimeSpan t) => t.TotalHours >= 1
+        ? $"{(int)t.TotalHours:00}:{t.Minutes:00}:{t.Seconds:00}"
+        : $"{(int)t.TotalMinutes:00}:{t.Seconds:00}";
 
     partial void OnSessionChanged(FocusSessionDto? value)
     {
+        if (value?.State == SessionStateDto.Paused) _pausedAt ??= Clock;
+        else _pausedAt = null;
+        OnPropertyChanged(nameof(PrimaryActionText));
+        OnPropertyChanged(nameof(PrimaryActionGlyph));
         OnPropertyChanged(nameof(IsRunning));
         OnPropertyChanged(nameof(ClockText));
         OnPropertyChanged(nameof(SessionHint));
     }
 
-    partial void OnClockChanged(DateTimeOffset value) => OnPropertyChanged(nameof(ClockText));
+    partial void OnClockChanged(DateTimeOffset value)
+    {
+        OnPropertyChanged(nameof(ClockText));
+        if (IsBreak && !_breakPaused && value >= _breakEnd)
+        {
+            IsBreak = false; _round++; _continuing = true;
+            try { Start(); } finally { _continuing = false; }
+            NotifyPhase();
+        }
+        else if (Session is { State: SessionStateDto.Running, PlannedEnd: { } end } s &&
+                 s.Mode is FocusModeDto.Pomodoro or FocusModeDto.Deep && value >= end + s.Paused)
+        {
+            var pomodoro = s.Mode == FocusModeDto.Pomodoro;
+            _focus.CompleteFocus(s.Id, "计时完成", -1, now: end + s.Paused);
+            RestoreTaskStatus(); Session = null;
+            if (pomodoro && _round < _cycleRounds)
+            { _breakPaused = false; _breakLeft = TimeSpan.FromMinutes(_cycleBreak); _breakEnd = value + _breakLeft; IsBreak = true; StatusText = "本轮完成，开始休息。"; }
+            else StatusText = pomodoro ? $"已完成全部 {_cycleRounds} 轮番茄钟。" : "深度工作计时完成。";
+            NotifyPhase();
+        }
+    }
 
     // ---- 初始化 ----
 
@@ -133,8 +199,8 @@ public partial class FocusViewModel : ObservableObject
 
     public TimeSpan TodayFocusMinutes()
     {
-        var today = DateTimeOffset.Now.ToLocalTime().Date;
-        var from = new DateTimeOffset(today, TimeZoneInfo.Local.GetUtcOffset(DateTimeOffset.Now));
+        var today = Clock.ToLocalTime().Date;
+        var from = new DateTimeOffset(today, TimeZoneInfo.Local.GetUtcOffset(Clock));
         return _focus.FocusHistory(from, from.AddDays(1))
             .Where(s => s.State == SessionStateDto.Completed)
             .Aggregate(TimeSpan.Zero, (acc, s) => acc + s.Effective());
@@ -147,9 +213,12 @@ public partial class FocusViewModel : ObservableObject
     {
         try
         {
-            var mode = (FocusModeDto)ModeIndex;
-            var minutes = ModeIndex == 2 || ModeIndex == 4 ? 0 : PlannedMinutes;
+            if (IsRunning) return;
+            if (!_continuing) { _round = 1; _cycleRounds = Math.Clamp(Rounds, 1, 20); _cycleBreak = Math.Clamp(BreakMinutes, 1, 60); }
+            var mode = ModeIndex == 2 ? FocusModeDto.Stopwatch : (FocusModeDto)ModeIndex;
+            var minutes = ModeIndex == 2 ? 0 : PlannedMinutes;
             Session = _focus.StartFocus(mode, minutes, Goal, SelectedTaskId, now: Clock);
+            NotifyPhase();
             if (SelectedTaskId is not null)
             {
                 var task = _tasks.GetTask(SelectedTaskId);
@@ -179,19 +248,21 @@ public partial class FocusViewModel : ObservableObject
     [RelayCommand]
     public void Complete(string note = "")
     {
+        if (IsBreak) { IsBreak = false; StatusText = $"番茄钟已结束。今日有效专注 {(int)TodayFocusMinutes().TotalMinutes} 分钟。"; return; }
         if (Session is null) return;
-        var effective = Session.Effective(Clock);
         var closed = _focus.CompleteFocus(Session.Id, note, -1, now: Clock);
+        var effective = closed.Effective();
         RestoreTaskStatus();
         Session = null;
         var today = TodayFocusMinutes();
         StatusText = $"完成:有效专注 {(int)effective.TotalMinutes} 分钟 · 今日累计 " +
-                     $"{(int)today.TotalMinutes} 分钟。建议休息 5 分钟 🌿";
+                     $"{(int)today.TotalMinutes} 分钟。建议休息 5 分钟。";
     }
 
     [RelayCommand]
     public void Abandon()
     {
+        if (IsBreak) { IsBreak = false; StatusText = "番茄钟已结束。"; return; }
         if (Session is null) return;
         _focus.AbandonFocus(Session.Id, now: Clock);
         RestoreTaskStatus();
@@ -262,7 +333,7 @@ public partial class FocusViewModel : ObservableObject
     public void ApplyProfile(FocusProfileDto? p)
     {
         if (p is null) return;
-        ModeIndex = (int)p.Mode;
+        ModeIndex = p.Mode is FocusModeDto.Pomodoro or FocusModeDto.Deep ? (int)p.Mode : 2;
         PlannedMinutes = p.PlannedMinutes;
         SelectedProfile = p;
         StatusText = $"已应用预设「{p.Name}」";

@@ -1,46 +1,36 @@
-<Page
-    x:Class="Equora.App.Pages.SettingsPage"
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-
-    <ScrollViewer Padding="24,16">
-        <StackPanel Spacing="12" MaxWidth="620" HorizontalAlignment="Left">
-            <TextBlock Text="设置" Style="{StaticResource TitleTextBlockStyle}" />
-
-            <TextBlock Text="主题" Style="{StaticResource SubtitleTextBlockStyle}" />
-            <RadioButtons x:Name="ThemeChoice" Header="应用外观(默认跟随系统)"
-                          SelectionChanged="OnThemeChanged">
-                <x:String>跟随系统</x:String>
-                <x:String>浅色</x:String>
-                <x:String>深色</x:String>
-            </RadioButtons>
-
-            <TextBlock Text="数据" Style="{StaticResource SubtitleTextBlockStyle}" Margin="0,12,0,0" />
-            <TextBlock x:Name="AboutText" Opacity="0.7" TextWrapping="Wrap" IsTextSelectionEnabled="True" />
-
-            <StackPanel Orientation="Horizontal" Spacing="8">
-                <Button Content="立即备份" Style="{StaticResource AccentButtonStyle}" Click="OnBackupNow" />
-                <Button Content="打开数据目录" Click="OnOpenDataFolder" />
-            </StackPanel>
-            <TextBlock x:Name="BackupStatus" Opacity="0.7" TextWrapping="Wrap"
-                       Style="{StaticResource CaptionTextBlockStyle}" />
-
-            <TextBlock Text="隐私与活动监测" Style="{StaticResource SubtitleTextBlockStyle}" Margin="0,12,0,0" />
-            <ToggleSwitch x:Name="ActivityToggle" Header="启用前台应用监测(温和提醒)"
-                          OffContent="关闭:不检测任何应用(默认)"
-                          OnContent="开启:仅识别进程名,不采集窗口内容"
-                          Toggled="OnActivityToggled" />
-            <TextBlock x:Name="PrivacyNote" Opacity="0.65" TextWrapping="Wrap" FontSize="12"
-                       Text="说明:监测只在专注页激活,仅读取进程名(如 xxx.exe)用于匹配限制名单;不记录窗口标题、键盘与任何内容。关闭后立即停止检测。受限名单存于本地,可在下方编辑。" />
-            <TextBox x:Name="BlockedAppsBox" Header="受限应用(逗号分隔进程名)" MinWidth="280"
-                     LostFocus="OnBlockedAppsChanged" PlaceholderText="game.exe,steam.exe" />
-            <StackPanel Orientation="Horizontal" Spacing="8">
-                <Button Content="导出 JSON" Click="OnExportJson" />
-                <Button Content="导出 CSV" Click="OnExportCsv" />
-                <Button Content="导入 JSON" Click="OnImportJson" />
-            </StackPanel>
-            <TextBlock x:Name="TransferStatus" Opacity="0.7" TextWrapping="Wrap"
-                       Style="{StaticResource CaptionTextBlockStyle}" />
-        </StackPanel>
-    </ScrollViewer>
+<Page x:Class="Equora.App.Pages.SettingsPage" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+ <ScrollViewer HorizontalContentAlignment="Stretch" HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled"><StackPanel Padding="32,28" Spacing="20" HorizontalAlignment="Stretch">
+  <TextBlock Text="设置" Style="{StaticResource EquoraPageTitleStyle}" Margin="0" />
+  <TextBlock Text="个性化工作空间，管理启动与数据。" Opacity="0.65" />
+  <InfoBar x:Name="SettingsNotice" IsOpen="False" IsClosable="True" />
+  <Border Style="{StaticResource EquoraSectionStyle}"><StackPanel Spacing="16">
+   <TextBlock Text="外观" FontSize="20" />
+   <RadioButtons x:Name="ThemeChoice" Header="主题模式" SelectionChanged="OnThemeChanged"><x:String>跟随系统</x:String><x:String>浅色</x:String><x:String>深色</x:String></RadioButtons>
+   <ComboBox x:Name="AccentChoice" Header="主题色" HorizontalAlignment="Stretch" SelectionChanged="OnAccentChanged">
+    <ComboBoxItem Content="绯红" Tag="#C32F37" /><ComboBoxItem Content="Windows 蓝" Tag="#0078D4" />
+    <ComboBoxItem Content="深青" Tag="#008272" /><ComboBoxItem Content="紫罗兰" Tag="#744DA9" />
+    <ComboBoxItem Content="琥珀" Tag="#A65E00" /><ComboBoxItem Content="石墨" Tag="#52616B" /><ComboBoxItem Content="自定义" Tag="custom" />
+   </ComboBox>
+   <Grid ColumnSpacing="12"><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+    <TextBox x:Name="AccentHex" Header="自定义颜色（#RRGGBB）" MaxLength="7" PlaceholderText="#C32F37" />
+    <Border Grid.Column="1" Width="36" Height="36" VerticalAlignment="Bottom" Background="{ThemeResource EquoraAccentBrush}" />
+    <Button Grid.Column="2" Content="应用" VerticalAlignment="Bottom" Click="OnApplyAccent" />
+   </Grid>
+   <TextBlock Text="更改立即生效并自动保存。高对比度模式遵循 Windows 系统颜色。" TextWrapping="Wrap" Opacity="0.65" />
+  </StackPanel></Border>
+  <Border Style="{StaticResource EquoraSectionStyle}"><StackPanel Spacing="16">
+   <TextBlock Text="数据与备份" FontSize="20" /><TextBlock x:Name="AboutText" TextWrapping="Wrap" IsTextSelectionEnabled="True" Opacity="0.75" />
+   <StackPanel Spacing="8"><Button Content="立即备份（选择位置）" Style="{StaticResource AccentButtonStyle}" Click="OnBackupNow" /><Button Content="打开数据目录" Click="OnOpenDataFolder" /><Button Content="更改数据目录" Click="OnChangeDataDirectory" /></StackPanel>
+   <TextBlock x:Name="BackupStatus" TextWrapping="Wrap" />
+   <StackPanel Orientation="Horizontal" Spacing="8"><Button Content="导出 JSON" Click="OnExportJson" /><Button Content="导出 CSV" Click="OnExportCsv" /><Button Content="导入 JSON" Click="OnImportJson" /></StackPanel>
+   <TextBlock x:Name="TransferStatus" TextWrapping="Wrap" />
+  </StackPanel></Border>
+  <Border Style="{StaticResource EquoraSectionStyle}"><StackPanel Spacing="16">
+   <TextBlock Text="启动与关闭" FontSize="20" />
+   <ComboBox x:Name="CloseChoice" Header="点击窗口关闭按钮时" SelectionChanged="OnCloseChanged"><x:String>退出程序</x:String><x:String>隐藏窗口，在托盘继续运行</x:String></ComboBox>
+   <ToggleSwitch x:Name="StartupToggle" Header="登录 Windows 时自动启动" Toggled="OnStartupChanged" />
+   <TextBlock Text="托盘图标单击可恢复窗口，右键可退出程序。后台运行时专注计时和使用限制继续生效。" TextWrapping="Wrap" Opacity="0.7" />
+   <Button Content="使用帮助与快捷键" Click="OnHelp" />
+  </StackPanel></Border>
+ </StackPanel></ScrollViewer>
 </Page>

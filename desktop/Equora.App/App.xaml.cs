@@ -5,6 +5,7 @@ namespace Equora.App;
 public partial class App : Application
 {
     public static MainWindow? MainWindow { get; private set; }
+    private Mutex? _instance;
 
     public App()
     {
@@ -14,6 +15,8 @@ public partial class App : Application
 
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
+        _instance = new Mutex(false, "Local\\EquoraDesktop" + TrayIcon.InstanceKey, out var first);
+        if (!first) { TrayIcon.ActivateExisting(); _instance.Dispose(); Exit(); return; }
         // 原生日志:文件位于数据目录 logs(未初始化时为空操作)。
         NativeInterop.EquoraCore.InitLog(
             System.IO.Path.Combine(Services.AppPaths.DataDirectory, "logs", "equora.log"));
@@ -27,6 +30,7 @@ public partial class App : Application
         }
 
         MainWindow = new MainWindow();
+        MainWindow.Closed += (_, _) => _instance.Dispose();
         MainWindow.Activate();
     }
 

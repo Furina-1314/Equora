@@ -11,48 +11,24 @@ public sealed partial class FocusPage : Page
 {
     private FocusViewModel ViewModel => AppServices.FocusVm;
 
-    /// <summary>前台监测(温和提醒;隐私开关关闭时不启动)。</summary>
-    private AppMonitor? _monitor;
-
-    private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromSeconds(1) };
-
-
     public FocusPage()
     {
         InitializeComponent();
         DataContext = ViewModel;
         ViewModel.Load();
-_timer.Tick += (_, _) => ViewModel.Clock = DateTimeOffset.Now;
-        _timer.Start();
+        if (!ViewModel.IsRunning) { ViewModel.Rounds = Appearance.Current.PomodoroRounds; ViewModel.BreakMinutes = Appearance.Current.BreakMinutes; }
 
-        Loaded += (_, _) => StartMonitorIfEnabled();
-        Unloaded += (_, _) => _monitor?.Dispose();
     }
 
-    private void StartMonitorIfEnabled()
+    private void OnLayoutSizeChanged(object sender, SizeChangedEventArgs e)
     {
-        var settings = Windows.Storage.ApplicationData.Current.LocalSettings;
-        var enabled = settings.Values["ActivityMonitoring"] is true; // 默认关闭(隐私优先)
-        if (!enabled || _monitor is not null) return;
-
-        var blocked = settings.Values["BlockedApps"] as string ?? "game.exe,steam.exe";
-        _monitor = new AppMonitor(process =>
-        {
-            if (AppRuleMatcher.IsBlocked(process, Array.Empty<string>(),
-                    blocked.Split(',', StringSplitOptions.RemoveEmptyEntries)))
-            {
-                ViewModel.ReportBlockedApp(process);
-            }
-            else
-            {
-                ViewModel.ClearNudge();
-            }
-        })
-        {
-            BlockedApps = blocked.Split(',', StringSplitOptions.RemoveEmptyEntries),
-        };
-        _monitor.Start();
+        if (CapturePanel is null) return;
+        var narrow = e.NewSize.Width < 880;
+        CaptureColumn.Width = new GridLength(narrow ? 0 : 340);
+        Grid.SetColumn(CapturePanel, narrow ? 0 : 1);
+        Grid.SetRow(CapturePanel, narrow ? 1 : 0);
     }
+    private void OnCycleSettingsChanged(object sender, RoutedEventArgs e) => Appearance.Save(Appearance.Current with { PomodoroRounds = Math.Clamp(ViewModel.Rounds, 1, 20), BreakMinutes = Math.Clamp(ViewModel.BreakMinutes, 1, 60) });
 
     private void OnProfileSelected(object sender, SelectionChangedEventArgs e)
     {
@@ -77,6 +53,11 @@ _timer.Tick += (_, _) => ViewModel.Clock = DateTimeOffset.Now;
     {
         ViewModel.Capture(CaptureBox.Text);
         CaptureBox.Text = "";
+    }
+
+    private void OnDiscard(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement { DataContext: DistractionDto d }) ViewModel.DiscardCommand.Execute(d);
     }
 
     private void OnResolveAsTask(object sender, RoutedEventArgs e)

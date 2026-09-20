@@ -7,29 +7,33 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Padding="8,8">
+    <Grid Background="{ThemeResource EquoraSurfaceBrush}" SizeChanged="OnLayoutSizeChanged">
+        <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="240" />
-            <ColumnDefinition Width="*" MinWidth="360" />
+            <ColumnDefinition x:Name="SidebarColumn" Width="240" />
+            <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <ScrollViewer Grid.Column="0" Padding="4,4">
-            <StackPanel Spacing="8">
+        <ScrollViewer x:Name="CalendarSidebar" Grid.Column="0" Grid.RowSpan="2" Padding="20,24" Background="{ThemeResource EquoraPaneBrush}">
+            <StackPanel Spacing="12">
+                <TextBlock Text="日历" Style="{StaticResource EquoraPageTitleStyle}" />
                 <ComboBox Header="视图" SelectedIndex="{Binding ViewModeIndex, Mode=TwoWay}"
-                          SelectionChanged="OnViewModeSelectionChanged">
+                          HorizontalAlignment="Stretch" SelectionChanged="OnViewModeSelectionChanged">
                     <x:String>周视图</x:String>
                     <x:String>日视图</x:String>
                     <x:String>议程</x:String>
                 </ComboBox>
 
                 <StackPanel Orientation="Horizontal" Spacing="6">
-                    <Button Content="◀" Click="OnPrev" />
+                    <Button Click="OnPrev" AutomationProperties.Name="上一时段"><FontIcon Glyph="&#xE76B;" FontSize="14" /></Button>
                     <Button Content="今天" Style="{StaticResource AccentButtonStyle}"
                             Command="{Binding GoTodayCommand}" />
-                    <Button Content="▶" Click="OnNext" />
+                    <Button Click="OnNext" AutomationProperties.Name="下一时段"><FontIcon Glyph="&#xE76C;" FontSize="14" /></Button>
                 </StackPanel>
 
-                <TextBlock Text="未安排任务(拖入日历)" Opacity="0.6"
+                <Button Content="新建时间段" Click="OnNewBlock" Style="{StaticResource AccentButtonStyle}" />
+                <TextBlock Text="点击日历空白处快速新建；右键时间段编辑或删除。" TextWrapping="Wrap" Opacity="0.65" />
+                <TextBlock Text="未安排任务 · 拖入日历" Opacity="0.6"
                            Style="{StaticResource CaptionTextBlockStyle}" Margin="0,8,0,0" />
                 <ListView ItemsSource="{Binding UnscheduledTasks}" CanDragItems="True"
                           DragItemsStarting="OnTaskDragStarting" SelectionMode="Single">
@@ -51,8 +55,10 @@
             </StackPanel>
         </ScrollViewer>
 
-        <Grid Grid.Column="1">
-            <controls:WeekView x:Name="Week" />
+        <Grid x:Name="CalendarBody" Grid.Column="1" Grid.RowSpan="2" Margin="20,24,24,24">
+            <ScrollViewer x:Name="WeekHost" HorizontalScrollBarVisibility="Auto" HorizontalScrollMode="Enabled" VerticalScrollMode="Disabled" VerticalScrollBarVisibility="Disabled">
+                <controls:WeekView x:Name="Week" MinWidth="560" />
+            </ScrollViewer>
             <ListView x:Name="AgendaList" Visibility="Collapsed" SelectionMode="None"
                       Padding="8,0">
                 <ListView.ItemTemplate>

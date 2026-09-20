@@ -33,7 +33,8 @@ public static class SafetyWhitelist
 
     private static bool Matches(string processName, string rule)
     {
-        var p = processName.ToLowerInvariant().TrimEnd(".exe".ToCharArray());
+        var p = Path.GetFileName(processName).ToLowerInvariant();
+        if (p.EndsWith(".exe", StringComparison.Ordinal)) p = p[..^4];
         var r = rule.ToLowerInvariant().Trim();
         return p == r || processName.ToLowerInvariant() == r;
     }

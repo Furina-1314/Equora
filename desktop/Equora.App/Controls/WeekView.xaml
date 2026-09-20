@@ -13,9 +13,9 @@
         </Grid.RowDefinitions>
 
         <!-- 星期标题 -->
-        <Grid x:Name="HeaderGrid" Grid.Row="0" Background="#11000000">
+        <Grid x:Name="HeaderGrid" Grid.Row="0" Background="{ThemeResource EquoraPaneBrush}">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="48" />
+                <ColumnDefinition Width="64" />
                 <ColumnDefinition x:Name="FirstDayColumn" Width="*" />
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="*" />
@@ -27,10 +27,10 @@
         </Grid>
 
         <!-- 主体:左刻度 + 7 日画布 + 时间线覆盖层 -->
-        <ScrollViewer Grid.Row="1" x:Name="Scroller">
+        <ScrollViewer Grid.Row="1" x:Name="Scroller" VerticalScrollBarVisibility="Visible">
             <Grid x:Name="BodyGrid" SizeChanged="OnBodySizeChanged">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="48" />
+                    <ColumnDefinition Width="64" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
@@ -40,7 +40,7 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
-                <StackPanel Grid.Column="0" x:Name="HourAxis" />
+                <Canvas Grid.Column="0" x:Name="HourAxis" />
 
                 <Canvas Grid.Column="1" x:Name="Day0" Background="#05000000"
                         PointerPressed="OnCanvasPointerPressed" PointerMoved="OnCanvasPointerMoved"

@@ -4,24 +4,27 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d">
+    mc:Ignorable="d" x:Name="Root">
 
-    <Grid Padding="24,16">
+    <ScrollViewer HorizontalContentAlignment="Stretch" HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled">
+    <Grid Padding="32,28" ColumnSpacing="24" RowSpacing="24" SizeChanged="OnLayoutSizeChanged">
+        <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" MinWidth="340" />
-            <ColumnDefinition Width="320" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition x:Name="CaptureColumn" Width="340" />
         </Grid.ColumnDefinitions>
 
         <!-- 左:会话 -->
-        <StackPanel Grid.Column="0" Spacing="14" MaxWidth="520" HorizontalAlignment="Left">
-            <TextBlock Text="专注" Style="{StaticResource TitleTextBlockStyle}" />
+        <StackPanel Grid.Column="0" Spacing="20" HorizontalAlignment="Stretch">
+            <TextBlock Text="专注" Style="{StaticResource EquoraPageTitleStyle}" />
             <TextBlock Text="{Binding SessionHint}" Opacity="0.7" />
+            <TextBlock Text="{Binding RoundStatus}" Opacity="0.7" TextWrapping="Wrap" />
 
-            <TextBlock Text="{Binding ClockText}" FontSize="64" FontFamily="Consolas"
+            <TextBlock x:Name="FocusClock" Text="{Binding ClockText}" FontSize="80" FontWeight="Light" Foreground="{ThemeResource EquoraAccentBrush}"
                        HorizontalAlignment="Center" />
 
             <!-- 温和提醒条 -->
-            <Border Background="#18C09030" CornerRadius="6" Padding="10,6"
+            <Border Background="#18C09030" CornerRadius="0" Padding="10,6"
                     Visibility="{Binding NudgeText, Converter={StaticResource NonEmptyToVisibleConverter}}">
                 <TextBlock Text="{Binding NudgeText}" TextWrapping="Wrap" FontSize="13" />
             </Border>
@@ -29,12 +32,17 @@
             <!-- 未开始:配置区 -->
             <StackPanel Spacing="10" Visibility="{Binding IsRunning, Converter={StaticResource FalseToVisibleXConverter}}">
                 <ComboBox Header="模式" SelectedIndex="{Binding ModeIndex, Mode=TwoWay}"
-                          ItemsSource="{Binding ModeNames}" MinWidth="160" />
-                <StackPanel Orientation="Horizontal" Spacing="8">
+                          ItemsSource="{Binding ModeNames}" HorizontalAlignment="Stretch" />
+                <StackPanel Spacing="12">
                     <NumberBox Header="时长(分钟)" Value="{Binding PlannedMinutes, Mode=TwoWay}"
                                Minimum="1" Maximum="240" SpinButtonPlacementMode="Compact"
-                               Width="160" />
-                    <ComboBox Header="关联任务(可选)" MinWidth="200"
+                               Width="160" HorizontalAlignment="Left" Visibility="{Binding IsTimed, Converter={StaticResource TrueToVisibleConverter2}}" />
+                    <StackPanel Spacing="8" Visibility="{Binding IsPomodoro, Converter={StaticResource TrueToVisibleConverter2}}">
+                        <NumberBox Header="番茄钟轮数" Value="{Binding Rounds, Mode=TwoWay}" Minimum="1" Maximum="20" SpinButtonPlacementMode="Compact" LostFocus="OnCycleSettingsChanged" />
+                        <NumberBox Header="轮间休息（分钟）" Value="{Binding BreakMinutes, Mode=TwoWay}" Minimum="1" Maximum="60" SpinButtonPlacementMode="Compact" LostFocus="OnCycleSettingsChanged" />
+                    </StackPanel>
+                    <TextBlock Text="{Binding ModeDescription}" TextWrapping="Wrap" Opacity="0.65" />
+                    <ComboBox Header="关联任务(可选)" HorizontalAlignment="Stretch"
                               ItemsSource="{Binding CandidateTasks}"
                               SelectedValuePath="Id"
                               SelectedValue="{Binding SelectedTaskId, Mode=TwoWay}">
@@ -47,7 +55,7 @@
                 </StackPanel>
                 <TextBox Header="本次目标" Text="{Binding Goal, Mode=TwoWay}"
                          PlaceholderText="开始前写下完成标准" />
-                <ComboBox Header="专注预设" ItemsSource="{Binding Profiles}" MinWidth="200"
+                <ComboBox Header="专注预设" ItemsSource="{Binding Profiles}" HorizontalAlignment="Stretch"
                           SelectionChanged="OnProfileSelected"
                           PlaceholderText="选择预设(可选)">
                     <ComboBox.ItemTemplate>
@@ -56,25 +64,27 @@
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
                 </ComboBox>
-                <Button Content="▶ 开始专注" Style="{StaticResource AccentButtonStyle}"
-                        Command="{Binding StartCommand}" HorizontalAlignment="Left" />
+
             </StackPanel>
 
+            <Button Command="{Binding ToggleSessionCommand}" Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Left" AutomationProperties.Name="{Binding PrimaryActionText}">
+                <StackPanel Orientation="Horizontal" Spacing="8"><FontIcon Glyph="{Binding PrimaryActionGlyph}" FontSize="16" /><TextBlock Text="{Binding PrimaryActionText}" /></StackPanel>
+            </Button>
             <!-- 进行中:控制区 -->
             <StackPanel Orientation="Horizontal" Spacing="8"
                         Visibility="{Binding IsRunning, Converter={StaticResource TrueToVisibleConverter2}}">
-                <Button Content="⏸ 暂停" Command="{Binding PauseCommand}" />
-                <Button Content="▶ 继续" Command="{Binding ResumeCommand}" />
-                <Button Content="✔ 完成" Style="{StaticResource AccentButtonStyle}"
-                        Command="{Binding CompleteCommand}" />
-                <Button Content="✖ 放弃" Command="{Binding AbandonCommand}" />
+
+
+                <Button Style="{StaticResource AccentButtonStyle}"
+                        Command="{Binding CompleteCommand}"><StackPanel Orientation="Horizontal" Spacing="8"><FontIcon Glyph="&#xE73E;" FontSize="14" /><TextBlock Text="完成" /></StackPanel></Button>
+                <Button Command="{Binding AbandonCommand}"><StackPanel Orientation="Horizontal" Spacing="8"><FontIcon Glyph="&#xE71A;" FontSize="14" /><TextBlock Text="结束" /></StackPanel></Button>
             </StackPanel>
 
             <TextBlock Text="{Binding StatusText}" Opacity="0.75" TextWrapping="Wrap" />
         </StackPanel>
 
         <!-- 右:分心捕获 + 待整理 -->
-        <Grid Grid.Column="1" Padding="16,0,0,0">
+        <Grid x:Name="CapturePanel" Grid.Column="1" Padding="24,20" Background="{ThemeResource EquoraPaneBrush}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
@@ -82,7 +92,7 @@
             </Grid.RowDefinitions>
 
             <StackPanel Grid.Row="0" Spacing="8">
-                <TextBlock Text="分心捕获(随时记录,不打断)" FontWeight="SemiBold" />
+                <TextBlock Text="随手记录" FontSize="20" />
                 <TextBox x:Name="CaptureBox" PlaceholderText="想到什么…回车记录"
                          KeyDown="OnCaptureKeyDown" />
                 <Button Content="记录" Click="OnCaptureClick" />
@@ -90,7 +100,7 @@
 
             <TextBlock Grid.Row="1" Text="待整理" FontWeight="SemiBold" Margin="0,14,0,6" />
 
-            <ListView Grid.Row="2" ItemsSource="{Binding Pending}">
+            <ListView Grid.Row="2" MaxHeight="440" ItemsSource="{Binding Pending}">
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <Grid ColumnSpacing="8">
@@ -104,12 +114,12 @@
                             <Button Grid.Column="1" Content="转任务" FontSize="12" Padding="8,2"
                                     Click="OnResolveAsTask" />
                             <Button Grid.Column="2" Content="丢弃" FontSize="12" Padding="8,2"
-                                    Command="{Binding DataContext.DiscardCommand, ElementName=Root}"
-                                    CommandParameter="{Binding}" />
+                                    Click="OnDiscard" />
                         </Grid>
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
         </Grid>
     </Grid>
+    </ScrollViewer>
 </Page>

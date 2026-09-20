@@ -13,17 +13,19 @@
                    Visibility="{Binding IsLoaded, Converter={StaticResource BoolToInvisibleConverter}}" />
 
         <!-- 详情编辑 -->
-        <ScrollViewer Padding="16,12"
+        <ScrollViewer Padding="24,28"
                       Visibility="{Binding IsLoaded, Converter={StaticResource BoolToVisibleConverter}}">
-            <StackPanel Spacing="10">
+            <ContentControl IsEnabled="{Binding CanEdit}" HorizontalContentAlignment="Stretch">
+            <StackPanel Spacing="16">
                 <TextBlock Text="任务详情" Style="{StaticResource SubtitleTextBlockStyle}" />
                 <TextBlock Text="{Binding CreatedInfo}" Opacity="0.6"
                            Style="{StaticResource CaptionTextBlockStyle}" />
 
-                <TextBox Header="标题" Text="{Binding Title, Mode=TwoWay}" />
+                <TextBox x:Name="TaskTitleBox" Header="标题" Text="{Binding Title, Mode=TwoWay}" />
                 <TextBox Header="备注" Text="{Binding Note, Mode=TwoWay}"
                          AcceptsReturn="True" MinHeight="72" TextWrapping="Wrap" />
 
+                <ComboBox Header="项目" ItemsSource="{Binding AllProjects}" DisplayMemberPath="Name" SelectedValuePath="Id" SelectedValue="{Binding SelectedProjectId, Mode=TwoWay}" HorizontalAlignment="Stretch" />
                 <ComboBox Header="状态" SelectedIndex="{Binding StatusIndex, Mode=TwoWay}">
                     <x:String>收集箱</x:String>
                     <x:String>已安排</x:String>
@@ -42,8 +44,8 @@
                 </ComboBox>
 
                 <CheckBox Content="设定截止时间" IsChecked="{Binding HasDue, Mode=TwoWay}" />
-                <StackPanel Orientation="Horizontal" Spacing="8">
-                    <DatePicker Date="{Binding DueDate, Mode=TwoWay}" Header="日期" />
+                <StackPanel Spacing="8">
+                    <CalendarDatePicker Date="{Binding DueDate, Mode=TwoWay}" Header="日期" HorizontalAlignment="Stretch" />
                     <TimePicker Time="{Binding DueTime, Mode=TwoWay}" Header="时间" />
                     <Button Content="保存截止" Click="OnCommitDue" VerticalAlignment="Bottom" />
                 </StackPanel>
@@ -63,11 +65,12 @@
                 </ItemsControl>
 
                 <TextBlock Text="检查项" Style="{StaticResource SubtitleTextBlockStyle}" Margin="0,8,0,0" />
-                <StackPanel Orientation="Horizontal" Spacing="8">
-                    <TextBox x:Name="NewChecklistText" PlaceholderText="添加检查项…" Width="220"
+                <Grid ColumnSpacing="8">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                    <TextBox x:Name="NewChecklistText" PlaceholderText="添加检查项…"
                              KeyDown="OnChecklistKeyDown" />
-                    <Button Content="添加" Click="OnAddChecklist" />
-                </StackPanel>
+                    <Button Grid.Column="1" Content="添加" Click="OnAddChecklist" />
+                </Grid>
                 <ItemsControl ItemsSource="{Binding Checklist}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
@@ -82,13 +85,14 @@
                                           Click="OnToggleChecklist" />
                                 <TextBlock Grid.Column="1" Text="{Binding Content}"
                                            VerticalAlignment="Center" />
-                                <Button Grid.Column="2" Content="×" FontSize="12" Padding="6,2"
-                                        Click="OnRemoveChecklist" />
+                                <Button Grid.Column="2" AutomationProperties.Name="删除检查项" Padding="6,2"
+                                        Click="OnRemoveChecklist"><FontIcon Glyph="&#xE711;" FontSize="12" /></Button>
                             </Grid>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
             </StackPanel>
+            </ContentControl>
         </ScrollViewer>
     </Grid>
 </UserControl>
