@@ -9,6 +9,8 @@ Debug/
 Release/
 Debug-*
 Release-*
+# release-notes.md is documentation, not a build folder (Release-* matches it on case-insensitive filesystems)
+!docs/release-notes.md
 Releases/
 cmake-build-*/
 [Bb]uild/
