@@ -2,6 +2,8 @@
 
 **本地优先的 Windows 日程规划与专注软件。**
 
+[官方网站](https://furina-1314.github.io/Equora/) · [下载安装包](https://github.com/Furina-1314/Equora/releases/latest)
+
 任务、日历、四象限、专注与应用限制,共享同一份本地数据。无账号,无广告,离线可用;数据始终存储在用户自己的设备上。
 
 <p align="center">
