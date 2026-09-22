@@ -1,5 +1,6 @@
 #include "CApiInternal.h"
 
+#include <filesystem>
 #include <fstream>
 
 #include <equora/common/Logger.h>
@@ -80,7 +81,7 @@ int32_t eq_log_init(const char* file_path_utf8, int32_t level) {
         if (file_path_utf8 == nullptr) {
             return static_cast<int32_t>(ErrorCode::InvalidArgument);
         }
-        common::logInit(file_path_utf8,
+        common::logInit(pathFromUtf8(file_path_utf8),
                         static_cast<common::LogLevel>(level < 0 ? 0 : (level > 4 ? 4 : level)));
         return 0;
     });
@@ -101,8 +102,9 @@ int32_t eq_backup_create(EqCore* core, const char* dir_utf8, EqStringHandle** ou
             return fillError(out_error, static_cast<int32_t>(ErrorCode::InvalidArgument),
                              "core/dir/out_path must not be null");
         }
-        const storage::BackupInfo info = storage::BackupManager::create(core->db, dir_utf8);
-        *out_path = new EqStringHandle(info.file.string());
+        const storage::BackupInfo info =
+            storage::BackupManager::create(core->db, pathFromUtf8(dir_utf8));
+        *out_path = new EqStringHandle(utf8FromPath(info.file));
         return 0;
     });
 }
@@ -116,7 +118,7 @@ int32_t eq_backup_verify(const char* path_utf8, int32_t* out_ok, EqError* out_er
                              "path/out_ok must not be null");
         }
         std::string why;
-        *out_ok = storage::BackupManager::verify(path_utf8, &why) ? 1 : 0;
+        *out_ok = storage::BackupManager::verify(pathFromUtf8(path_utf8), &why) ? 1 : 0;
         return 0;
     });
 }
@@ -129,29 +131,32 @@ int32_t eq_backup_restore(EqCore* core, const char* path_utf8, EqError* out_erro
             return fillError(out_error, static_cast<int32_t>(ErrorCode::InvalidArgument),
                              "core/path must not be null");
         }
-        storage::BackupManager::restore(core->db, path_utf8);
+        storage::BackupManager::restore(core->db, pathFromUtf8(path_utf8));
         return 0;
     });
 }
 
 namespace equora::capi {
 
-void writeTextFileOrThrow(const std::string& path, const std::string& content) {
+void writeTextFileOrThrow(const std::filesystem::path& path, const std::string& content) {
     std::ofstream out(path, std::ios::binary | std::ios::trunc);
     if (!out) {
-        throw domain::EquoraError(domain::ErrorCode::IoError, "cannot write: " + path);
+        throw domain::EquoraError(domain::ErrorCode::IoError,
+                                  "cannot write: " + utf8FromPath(path));
     }
     out.write(content.data(), static_cast<std::streamsize>(content.size()));
     out.flush();
     if (!out) {
-        throw domain::EquoraError(domain::ErrorCode::IoError, "write failed: " + path);
+        throw domain::EquoraError(domain::ErrorCode::IoError,
+                                  "write failed: " + utf8FromPath(path));
     }
 }
 
-std::string readTextFileOrThrow(const std::string& path) {
+std::string readTextFileOrThrow(const std::filesystem::path& path) {
     std::ifstream in(path, std::ios::binary);
     if (!in) {
-        throw domain::EquoraError(domain::ErrorCode::IoError, "cannot read: " + path);
+        throw domain::EquoraError(domain::ErrorCode::IoError,
+                                  "cannot read: " + utf8FromPath(path));
     }
     return std::string((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
 }
@@ -168,7 +173,7 @@ int32_t eq_export_tasks_json(EqCore* core, const char* path_utf8, int32_t* out_c
                              "core/path/out_count must not be null");
         }
         *out_count = static_cast<int32_t>(core->tasks.listAll().size());
-        writeTextFileOrThrow(path_utf8, core::exportTasksJson(core->tasks));
+        writeTextFileOrThrow(pathFromUtf8(path_utf8), core::exportTasksJson(core->tasks));
         return 0;
     });
 }
@@ -183,7 +188,7 @@ int32_t eq_export_tasks_csv(EqCore* core, const char* path_utf8, int32_t* out_co
                              "core/path/out_count must not be null");
         }
         *out_count = static_cast<int32_t>(core->tasks.listAll().size());
-        writeTextFileOrThrow(path_utf8, core::exportTasksCsv(core->tasks));
+        writeTextFileOrThrow(pathFromUtf8(path_utf8), core::exportTasksCsv(core->tasks));
         return 0;
     });
 }
@@ -198,7 +203,7 @@ int32_t eq_import_tasks_json(EqCore* core, const char* path_utf8, int32_t* out_i
             return fillError(out_error, static_cast<int32_t>(ErrorCode::InvalidArgument),
                              "core/path/out_imported/out_skipped must not be null");
         }
-        const std::string text = readTextFileOrThrow(path_utf8);
+        const std::string text = readTextFileOrThrow(pathFromUtf8(path_utf8));
         const core::ImportResult result = core::importTasksJson(core->tasks, text);
         *out_imported = result.imported;
         *out_skipped = result.skipped;

@@ -8,6 +8,7 @@
 
 #include <cstring>
 #include <exception>
+#include <filesystem>
 #include <memory>
 #include <string>
 #include <vector>
@@ -131,6 +132,20 @@ int32_t guard(EqError* out_error, Fn&& fn) noexcept {
 }
 
 EqTaskHandle* makeTaskHandle(domain::Task t);
+
+// ABI 传入的文件路径一律是 UTF-8 字节。Windows 上 fstream/path 的 const char*
+// 重载按 ANSI 代码页解释,非 ASCII 路径会被误读成不存在的文件;char8_t 构造
+// 始终按 UTF-8 转成原生宽路径。
+inline std::filesystem::path pathFromUtf8(const char* utf8) {
+    return std::filesystem::path(std::u8string_view(
+        reinterpret_cast<const char8_t*>(utf8), std::strlen(utf8)));
+}
+
+// 把路径转回 ABI 约定的 UTF-8 字符串(如备份结果回传)。
+inline std::string utf8FromPath(const std::filesystem::path& path) {
+    const std::u8string u8 = path.u8string();
+    return std::string(u8.begin(), u8.end());
+}
 
 // 把可选时间字段写进视图(has 标志 + 值)。
 inline void setOptionalView(int64_t& value, int32_t& has,

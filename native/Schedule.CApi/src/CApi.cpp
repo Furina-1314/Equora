@@ -47,7 +47,7 @@ EqCore* eq_core_create(const char* db_path_utf8, const char* device_id_utf8,
                       "db_path_utf8 must not be null");
             return nullptr;
         }
-        auto db = storage::Database::open(db_path_utf8);
+        auto db = storage::Database::open(capi::pathFromUtf8(db_path_utf8));
         storage::applyMigrations(db);
         return new EqCore(std::move(db),
                           device_id_utf8 != nullptr ? device_id_utf8 : "local");

@@ -14,7 +14,7 @@
 
 > **Equora** = **Equ**ilibrium + **H**ora(拉丁语"时间")——在时间中保持平衡,即"衡序"。
 
-当前正式版 [v1.0.0](https://github.com/Furina-1314/Equora/releases/tag/v1.0.0) · 139 项原生、154 项桌面、20 项服务器及 8 项扩展测试通过 · [发布说明](docs/release-notes.md) · [下载安装包](https://github.com/Furina-1314/Equora/releases/latest)
+当前正式版 [v1.0.1](https://github.com/Furina-1314/Equora/releases/tag/v1.0.1) · 140 项原生、154 项桌面、20 项服务器及 8 项扩展测试通过 · [发布说明](docs/release-notes.md) · [下载安装包](https://github.com/Furina-1314/Equora/releases/latest)
 
 ## 功能
 
@@ -61,7 +61,7 @@ cd Equora
 cd native
 cmake --preset win-x64-release
 cmake --build --preset win-x64-release
-ctest --preset win-x64-release    # 139/139 通过
+ctest --preset win-x64-release    # 140/140 通过
 
 # 2. 构建桌面应用(WinUI 3)
 cd ../desktop
@@ -88,11 +88,11 @@ docker compose -f docker/docker-compose.yml up --build
 
 | 测试套件 | 数量 | CI |
 |---|---|---|
-| 原生核心(GoogleTest / C++20) | 139 | [![native-ci](https://github.com/Furina-1314/Equora/actions/workflows/native-ci.yml/badge.svg)](https://github.com/Furina-1314/Equora/actions/workflows/native-ci.yml) |
+| 原生核心(GoogleTest / C++20) | 140 | [![native-ci](https://github.com/Furina-1314/Equora/actions/workflows/native-ci.yml/badge.svg)](https://github.com/Furina-1314/Equora/actions/workflows/native-ci.yml) |
 | 桌面应用(xUnit / C#) | 154 | [![desktop-ci](https://github.com/Furina-1314/Equora/actions/workflows/desktop-ci.yml/badge.svg)](https://github.com/Furina-1314/Equora/actions/workflows/desktop-ci.yml) |
 | 同步服务器(GoogleTest) | 20 | [![server-ci](https://github.com/Furina-1314/Equora/actions/workflows/server-ci.yml/badge.svg)](https://github.com/Furina-1314/Equora/actions/workflows/server-ci.yml) |
 | 浏览器扩展 | 8 | 本地验证 |
-| **合计** | **321** | |
+| **合计** | **322** | |
 
 ## 架构
 

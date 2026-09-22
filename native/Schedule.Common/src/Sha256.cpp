@@ -129,7 +129,7 @@ std::string Sha256::hexOf(const void* data, std::size_t length) {
     return out;
 }
 
-std::string Sha256::hexOfFile(const std::string& path) {
+std::string Sha256::hexOfFile(const std::filesystem::path& path) {
     std::ifstream file(path, std::ios::binary);
     if (!file) return {};
 

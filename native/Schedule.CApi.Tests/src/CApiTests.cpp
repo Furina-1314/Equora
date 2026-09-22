@@ -3,6 +3,8 @@
 #include <gtest/gtest.h>
 
 #include <cstring>
+#include <filesystem>
+#include <fstream>
 #include <set>
 #include <string>
 
@@ -237,6 +239,39 @@ TEST_F(CApiTest, NullArgumentsRejected) {
     EXPECT_EQ(eq_task_get(core_, nullptr, 0, &h, &err), static_cast<int32_t>(2));
     EqTaskList* list = nullptr;
     EXPECT_EQ(eq_task_list_all(nullptr, 0, &list, &err), static_cast<int32_t>(2));
+}
+
+TEST_F(CApiTest, ImportExportIcsThroughNonAsciiUtf8Path) {
+    // ABI 路径按 UTF-8 传递;Windows 窄字符文件接口按 ANSI 代码页解释,中文路径必须仍可读写。
+    // 内容用 LF 行尾 + TAB 折叠,覆盖真实课程表导出文件的非标准折行。
+    const std::filesystem::path dir = std::filesystem::temp_directory_path() /
+                                      std::filesystem::path(u8"衡序-路径测试");
+    std::filesystem::remove_all(dir);
+    std::filesystem::create_directories(dir);
+    const std::u8string icsPath =
+        (dir / std::filesystem::path(u8"课程表-秋季学期.ics")).u8string();
+    {
+        std::ofstream out(std::filesystem::path(icsPath), std::ios::binary);
+        out << "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//test//zh//EN\nBEGIN:VEVENT\n"
+               "UID:%5Bcustom%5D@test\n\t-app\n"
+               "SUMMARY:复变函数与数理方程\nDTSTART:20260914T020000Z\n"
+               "DTEND:20260914T033500Z\nEND:VEVENT\nEND:VCALENDAR\n";
+    }
+    EqError err{};
+    int32_t imported = -1, skipped = -1, failed = -1;
+    ASSERT_EQ(eq_import_ics(core_, reinterpret_cast<const char*>(icsPath.c_str()), &imported,
+                            &skipped, &failed, &err),
+              kOk);
+    EXPECT_EQ(imported, 1);
+    EXPECT_EQ(failed, 0);
+
+    const std::u8string outPath = (dir / std::filesystem::path(u8"导出.ics")).u8string();
+    int32_t count = 0;
+    ASSERT_EQ(eq_export_ics(core_, 0, 4102444800000,  // 1970 → 2100
+                            reinterpret_cast<const char*>(outPath.c_str()), &count, &err),
+              kOk);
+    EXPECT_GT(std::filesystem::file_size(std::filesystem::path(outPath)), 0u);
+    std::filesystem::remove_all(dir);
 }
 
 } // namespace

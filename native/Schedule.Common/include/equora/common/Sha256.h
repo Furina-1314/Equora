@@ -3,6 +3,7 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <filesystem>
 #include <string>
 #include <string_view>
 
@@ -21,7 +22,7 @@ public:
 
     // 一次性便捷接口,返回小写十六进制。
     [[nodiscard]] static std::string hexOf(const void* data, std::size_t length);
-    [[nodiscard]] static std::string hexOfFile(const std::string& path);
+    [[nodiscard]] static std::string hexOfFile(const std::filesystem::path& path);
 
 private:
     void processBlock(const std::uint8_t* block);

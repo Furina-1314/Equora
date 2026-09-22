@@ -21,7 +21,11 @@ using domain::UtcMillis;
 using domain::utc::now;
 
 [[nodiscard]] std::filesystem::path sidecarFor(const std::filesystem::path& dbFile) {
-    return std::filesystem::path(dbFile.string() + ".sha256");
+    // 保持为 path 拼接:".sha256" 是纯 ASCII,任何代码页下字节不变;
+    // 经 .string() 往返会把非 ASCII 目录转成 ANSI 乱码。
+    std::filesystem::path side = dbFile;
+    side += ".sha256";
+    return side;
 }
 
 [[nodiscard]] std::string timestampName(UtcMillis t) {
@@ -39,8 +43,9 @@ void writeSidecar(const std::filesystem::path& file, std::string_view shaHex) {
 // 只读打开并执行 quick_check,校验库结构可读。
 [[nodiscard]] bool quickCheckOk(const std::filesystem::path& file, std::string& why) {
     sqlite3* raw = nullptr;
-    if (sqlite3_open_v2(file.string().c_str(), &raw, SQLITE_OPEN_READONLY, nullptr) !=
-        SQLITE_OK) {
+    const std::u8string utf8Path = file.u8string(); // sqlite 按 UTF-8 解释路径
+    if (sqlite3_open_v2(reinterpret_cast<const char*>(utf8Path.c_str()), &raw,
+                        SQLITE_OPEN_READONLY, nullptr) != SQLITE_OK) {
         why = "cannot open backup read-only";
         if (raw != nullptr) sqlite3_close(raw);
         return false;
@@ -83,7 +88,8 @@ BackupInfo BackupManager::create(const Database& db, const std::filesystem::path
                        domain::Uuid::random().toString().substr(0, 6) + ".db");
 
     sqlite3* dest = nullptr;
-    if (sqlite3_open(info.file.string().c_str(), &dest) != SQLITE_OK) {
+    const std::u8string destUtf8 = info.file.u8string(); // sqlite 按 UTF-8 解释路径
+    if (sqlite3_open(reinterpret_cast<const char*>(destUtf8.c_str()), &dest) != SQLITE_OK) {
         const std::string msg = dest != nullptr ? sqlite3_errmsg(dest) : "open failed";
         if (dest != nullptr) sqlite3_close(dest);
         std::filesystem::remove(info.file, ec);
@@ -112,7 +118,7 @@ BackupInfo BackupManager::create(const Database& db, const std::filesystem::path
     }
     sqlite3_close(dest);
 
-    info.sha256Hex = common::Sha256::hexOfFile(info.file.string());
+    info.sha256Hex = common::Sha256::hexOfFile(info.file);
     if (info.sha256Hex.empty()) {
         std::filesystem::remove(info.file, ec);
         throw EquoraError(ErrorCode::IoError, "backup hashing failed: " + info.file.string());
@@ -141,7 +147,7 @@ bool BackupManager::verify(const std::filesystem::path& backupFile, std::string*
         while (!expected.empty() && (expected.back() == '\n' || expected.back() == '\r')) {
             expected.pop_back();
         }
-        const std::string actual = common::Sha256::hexOfFile(backupFile.string());
+        const std::string actual = common::Sha256::hexOfFile(backupFile);
         if (actual.empty()) {
             why = "cannot read backup for hashing";
             break;
@@ -208,13 +214,15 @@ BackupInfo BackupManager::restore(Database& db, const std::filesystem::path& bac
     // 保护现场:当前库另存为恢复前快照。
     db.close();
     std::error_code ec;
-    const std::filesystem::path preRestore = std::filesystem::path(
-        mainPath.string() + ".pre-restore-" + timestampName(now()) + ".db");
+    std::filesystem::path preRestore = mainPath;
+    preRestore += ".pre-restore-" + timestampName(now()) + ".db";
     if (std::filesystem::exists(mainPath, ec)) {
         copyFileOrThrow(mainPath, preRestore, "preserve current db");
     }
     for (const char* suffix : {"-wal", "-shm"}) {
-        std::filesystem::remove(std::filesystem::path(mainPath.string() + suffix), ec);
+        std::filesystem::path side = mainPath;
+        side += suffix;
+        std::filesystem::remove(side, ec);
     }
 
     try {

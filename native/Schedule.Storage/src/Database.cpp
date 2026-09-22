@@ -55,15 +55,19 @@ Database& Database::operator=(Database&& other) noexcept {
 
 Database Database::open(const std::filesystem::path& file) {
     sqlite3* raw = nullptr;
+    // sqlite3_open_v2 在 Windows 上按 UTF-8 解释路径;path.string() 会转成 ANSI 代码页,
+    // 非 ASCII 路径会打开到错误位置。
+    const std::u8string utf8Path = file.u8string();
     const int rc = sqlite3_open_v2(
-        file.string().c_str(), &raw,
+        reinterpret_cast<const char*>(utf8Path.c_str()), &raw,
         SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FULLMUTEX, nullptr);
     if (rc != SQLITE_OK) {
         const std::string msg =
             raw != nullptr ? sqlite3_errmsg(raw) : "cannot open database file";
         if (raw != nullptr) sqlite3_close(raw);
         throw domain::EquoraError(domain::ErrorCode::StorageError,
-                                  "open '" + file.string() + "' failed: " + msg);
+                                  "open '" + std::string(utf8Path.begin(), utf8Path.end()) +
+                                      "' failed: " + msg);
     }
 
     // 连接级设置:崩溃安全与并发等待。WAL 对 :memory: 库自动退化为 MEMORY。

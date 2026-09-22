@@ -842,7 +842,7 @@ int32_t eq_export_ics(EqCore* core, int64_t from, int64_t to, const char* path_u
                              "core/path/out_count must not be null");
         }
         const std::string text = core::exportIcs(core->calendar, from, to);
-        std::ofstream out(path_utf8, std::ios::binary | std::ios::trunc);
+        std::ofstream out(pathFromUtf8(path_utf8), std::ios::binary | std::ios::trunc);
         if (!out) {
             return fillError(out_error, static_cast<int32_t>(ErrorCode::IoError),
                              "cannot write ics file");
@@ -863,7 +863,7 @@ int32_t eq_import_ics(EqCore* core, const char* path_utf8, int32_t* out_imported
             return fillError(out_error, static_cast<int32_t>(ErrorCode::InvalidArgument),
                              "core/path/out_* must not be null");
         }
-        std::ifstream in(path_utf8, std::ios::binary);
+        std::ifstream in(pathFromUtf8(path_utf8), std::ios::binary);
         if (!in) {
             return fillError(out_error, static_cast<int32_t>(ErrorCode::IoError),
                              "cannot read ics file");
