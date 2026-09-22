@@ -3,16 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>衡序 Equora</title>
+  <title>EQUORA</title>
   <style>
     :root { color-scheme: light dark; font-family: "Segoe UI", "Microsoft YaHei UI", sans-serif; font-size: 14px; --bg: #fafafa; --fg: #202020; --line: #d5d5d5; --muted: #606060; --panel: #fff; --accent: #b52835; }
     @media (prefers-color-scheme: dark) { :root { --bg: #202020; --fg: #f3f3f3; --line: #555; --muted: #c0c0c0; --panel: #2c2c2c; --accent: #ee8992; } }
     * { box-sizing: border-box; }
     body { width: 360px; margin: 0; background: var(--bg); color: var(--fg); }
-    header { display: flex; align-items: center; gap: 12px; padding: 20px; border-bottom: 3px solid var(--accent); }
-    header img { width: 36px; height: 36px; }
-    h1 { margin: 0; font-size: 20px; font-weight: 600; }
-    header p { margin: 3px 0 0; }
+    header { display: flex; align-items: center; min-height: 72px; padding: 20px; border-bottom: 3px solid var(--accent); }
+    .app-wordmark { margin: 0; font-family: "Segoe UI Variable", "Segoe UI", sans-serif; font-size: 18px; font-weight: 400; letter-spacing: .12em; line-height: 1.5; white-space: nowrap; }
     main { padding: 20px; }
     h2 { margin: 0 0 8px; font-size: 16px; font-weight: 600; }
     p { line-height: 1.6; margin: 8px 0; }
@@ -30,7 +28,7 @@
   </style>
 </head>
 <body>
-  <header><img src="icon128.png" alt=""><div><h1>衡序 Equora</h1><p class="muted">网站使用管理</p></div></header>
+  <header><h1 class="app-wordmark">EQUORA</h1></header>
   <main>
     <section aria-label="连接状态">
       <h2 id="status" role="status">正在检查连接…</h2>
