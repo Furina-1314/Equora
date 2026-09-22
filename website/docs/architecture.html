@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#C32F37">
+  <meta name="description" content="衡序的分层架构：WinUI 3 桌面壳、C++20 原生核心与可选的自托管同步服务器。">
+  <meta property="og:title" content="系统架构 — 衡序 Equora 帮助中心">
+  <meta property="og:description" content="衡序的分层架构：WinUI 3 桌面壳、C++20 原生核心与可选的自托管同步服务器。">
+  <meta property="og:type" content="article">
+  <link rel="canonical" href="https://furina-1314.github.io/Equora/docs/architecture.html">
+  <link rel="icon" type="image/svg+xml" href="../assets/equora.svg">
+  <link rel="stylesheet" href="../styles.css">
+  <link rel="stylesheet" href="../help.css">
+  <meta name="help-search-index" content="search-index.json">
+  <script src="../help.js" defer></script>
+  <title>系统架构 — 衡序 Equora 帮助中心</title>
+</head>
+<body>
+  <a class="skip-link" href="#doc-content">跳到主要内容</a>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="../index.html" aria-label="衡序 Equora 首页"><img src="../assets/equora.svg" width="32" height="32" alt=""><span class="app-wordmark">EQUORA</span></a>
+      <button class="menu-toggle" type="button" aria-label="打开导航" aria-expanded="false" aria-controls="navigation">菜单 <span aria-hidden="true">☰</span></button>
+      <nav id="navigation" aria-label="主导航">
+        <a href="../index.html">首页</a><a href="../help.html">帮助中心</a><a href="../docs/release-notes.html">更新日志</a><a href="https://github.com/Furina-1314/Equora" class="repo-link">GitHub <span aria-hidden="true">↗</span></a>
+        <a class="button small" href="https://github.com/Furina-1314/Equora/releases/latest">下载 Equora <span aria-hidden="true">↓</span></a>
+      </nav>
+    </div>
+  </header>
+  <main id="main">
+    <div class="container help-layout">
+      <aside class="help-sidebar" id="help-sidebar" aria-label="文档目录">
+        <div class="sidebar-search">
+          <input type="search" id="doc-search" placeholder="搜索帮助文档…" aria-label="搜索帮助文档" autocomplete="off">
+          <div class="search-results" id="search-results" hidden></div>
+        </div>
+        <nav class="sidebar-nav">
+          <p class="nav-group">使用文档</p>
+          <a class="nav-link" href="../docs/user-guide.html">用户指南</a>
+          <a class="nav-link" href="../docs/usage-help.html">使用帮助与快捷键</a>
+          <a class="nav-link" href="../docs/usage-restrictions.html">应用与网站限制</a>
+          <a class="nav-link" href="../docs/privacy-and-security.html">隐私与安全说明</a>
+          <p class="nav-group">版本与更新</p>
+          <a class="nav-link" href="../docs/release-notes.html">发布说明 · 更新日志</a>
+          <a class="nav-link" href="../docs/v0.2.2.html">v0.2.2 更新说明</a>
+          <a class="nav-link" href="../docs/v0.2.1.html">v0.2.1 更新说明</a>
+          <p class="nav-group">开发者资料</p>
+          <a class="nav-link active" href="../docs/architecture.html">系统架构</a>
+          <a class="nav-link" href="../docs/data-model.html">数据模型</a>
+          <a class="nav-link" href="../docs/third-party-notices.html">第三方开源组件</a>
+          <p class="nav-group">反馈</p>
+          <a class="nav-link external" href="https://github.com/Furina-1314/Equora/issues">问题反馈 <span aria-hidden="true">↗</span></a>
+          <a class="nav-link external" href="https://github.com/Furina-1314/Equora/releases">版本下载 <span aria-hidden="true">↗</span></a>
+        </nav>
+      </aside>
+      <div class="doc-main">
+        <button class="sidebar-toggle" type="button" aria-expanded="false" aria-controls="help-sidebar">文档目录 <span aria-hidden="true">☰</span></button>
+        <nav class="doc-breadcrumb" aria-label="面包屑"><a href="../help.html">帮助中心</a> <span aria-hidden="true">/</span> <span>系统架构</span></nav>
+        <article class="doc-content" id="doc-content" tabindex="-1">
+<h1 id="equora-架构">Equora 架构</h1>
+<blockquote>
+<p>状态:P2(2026-09-18)。本文描述当前实现与目标架构;标注「(后续)」的部分尚未实现。</p>
+</blockquote>
+<h2 id="1-总体分层">1. 总体分层</h2>
+<pre><code class="language-text">┌─────────────────────────────────────────────────────────────┐
+│  桌面前端(C# / WinUI 3)                                    │
+│  Schedule.App / ViewModels / Services / NativeInterop        │
+│  职责:界面、展示状态、导航、动画、无障碍、平台交互              │
+├─────────────── C ABI(稳定边界,equora_capi.dll)─────────────┤
+│  本地核心(C++20)                                            │
+│  ┌────────────────┐  ┌────────────────┐  ┌───────────────┐  │
+│  │ Schedule.CApi  │→ │ Schedule.Core  │→ │ Domain        │  │
+│  │ 导出层/异常边界 │  │ 用例/仓库/规则  │  │ 实体/值对象    │  │
+│  └────────────────┘  └───────┬────────┘  └───────────────┘  │
+│                              ↓                                │
+│                      ┌────────────────┐                       │
+│                      │ Schedule.Storage│ SQLite、事务、迁移     │
+│                      └────────────────┘                       │
+│  (后续)Scheduling 排程 / Sync 同步 / Focus 专注 / Analytics   │
+├─────────────────────────────────────────────────────────────┤
+│  本地文件:SQLite(单一事实源)                                │
+└─────────────────────────────────────────────────────────────┘
+              ↑ 同步协议(HTTPS + JSON,后续)
+┌─────────────────────────────────────────────────────────────┐
+│  云端(后续):Drogon REST API + PostgreSQL(Docker)           │
+└─────────────────────────────────────────────────────────────┘
+</code></pre>
+<h3 id="依赖方向禁止循环">依赖方向(禁止循环)</h3>
+<pre><code class="language-text">Domain ← Storage ← Core ← CApi ← (桌面端 / 测试)
+                    ← (后续)Sync / Scheduling / Focus / Analytics
+</code></pre>
+<ul>
+<li>Domain 是纯 C++:不依赖 SQLite、WinUI、网络库。</li>
+<li>UI 永远不直接执行 SQL,只通过 C ABI。</li>
+<li>云端与桌面端可共享纯领域规则与协议定义,不共享进程状态。</li>
+</ul>
+<h2 id="2-进程与部署形态">2. 进程与部署形态</h2>
+<ul>
+<li><strong>桌面应用</strong>:WinUI 3 进程,加载 <code>equora_capi.dll</code> 与 <code>sqlite3.dll</code>。<br>
+  MSIX 安装(后续),DLL 随包分发。</li>
+<li><strong>本机核心</strong>:与桌面应用同进程(C ABI 直调),无独立服务;<br>
+  「严格限制」阶段才引入可选 Windows Service(P9/P15)。</li>
+<li><strong>浏览器扩展</strong>(后续):独立进程,经 Native Messaging 与桌面程序通信。</li>
+<li><strong>同步服务</strong>(后续):独立 Docker 部署,客户端仅访问 HTTPS API。</li>
+</ul>
+<h2 id="3-c-abi-边界规则必须长期遵守">3. C ABI 边界规则(必须长期遵守)</h2>
+<p>头文件:<code>native/Schedule.CApi/include/equora/capi/equora_capi.h</code></p>
+<ol>
+<li>只用 C 类型、不透明句柄(<code>EqCore</code>/<code>EqTaskHandle</code>/<code>EqTaskList</code>)、UTF-8 字符串、固定布局 DTO(<code>EqError</code>/<code>EqTaskInput</code>/<code>EqTaskView</code>)。</li>
+<li>跨边界禁止:<code>std::string</code>、STL 容器、C++ 异常、智能指针、C++ 类。</li>
+<li>内存所有权:原生分配 → 原生释放(<code>eq_*_destroy</code>);视图指针生命周期绑定所属句柄。</li>
+<li>所有导出函数捕获全部异常,转换为 <code>ErrorCode</code> + <code>EqError</code>(<code>guard</code> 边界)。</li>
+<li>批量优先:<code>eq_task_list_all</code> 一次跨 ABI 取回一批,避免逐条调用。</li>
+<li>版本化:<code>EQUORA_CAPI_VERSION</code> + <code>eq_api_version()</code>;破坏 ABI 必须升版本号。</li>
+<li>冒烟接口:<code>eq_ping</code> 供互操作层自检。</li>
+</ol>
+<h2 id="4-数据流与一致性">4. 数据流与一致性</h2>
+<ul>
+<li>所有写入走「单事务」:业务表 + (后续)<code>SyncOutbox</code> 同事务提交;崩溃后不出现半个操作。</li>
+<li>任务实体带乐观并发字段 <code>revision</code>:更新必须携带基线 revision,不匹配即 <code>Conflict</code>。</li>
+<li>软删除墓碑 <code>deleted_at</code>:列表默认过滤,同步阶段用于防止删除被离线写入复活。</li>
+<li>时间统一 UTC 毫秒(Unix epoch)存储;展示层才做时区转换。</li>
+</ul>
+<h2 id="5-模型扩展路线">5. 模型扩展路线</h2>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>新增模块</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P4</td>
+<td>Storage v2 迁移</td>
+<td>Project/Tag/TaskTag/ChecklistItem 表,智能清单查询</td>
+</tr>
+<tr>
+<td>P6</td>
+<td>Scheduling</td>
+<td>TimeBlock/Event/RRULE 展开、冲突检测、空闲搜索</td>
+</tr>
+<tr>
+<td>P9</td>
+<td>Focus</td>
+<td>FocusSession 状态机、Interruption、DistractionInboxItem</td>
+</tr>
+<tr>
+<td>P12</td>
+<td>Analytics</td>
+<td>本地统计与建议(确定性规则)</td>
+</tr>
+<tr>
+<td>P13+</td>
+<td>Sync</td>
+<td>Outbox/游标/冲突合并,与服务端协议对应</td>
+</tr>
+</tbody>
+</table>
+<h2 id="6-线程模型当前约定">6. 线程模型(当前约定)</h2>
+<ul>
+<li><code>Database</code> 以 <code>SQLITE_OPEN_FULLMUTEX</code> 打开,连接本身可跨线程持有;<br>
+  但当前所有调用都在调用方线程同步完成,无内部后台线程。</li>
+<li>(后续)同步引擎与活动检测引入后台线程时,必须在 C ABI 层聚合到句柄内部加锁,不向调用方暴露锁。</li>
+</ul>
+<h2 id="7-错误处理策略">7. 错误处理策略</h2>
+<table>
+<thead>
+<tr>
+<th>层</th>
+<th>机制</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Domain/Core</td>
+<td><code>EquoraError(code, message)</code> 异常 + <code>ErrorCode</code> 稳定枚举</td>
+</tr>
+<tr>
+<td>Storage</td>
+<td>SQLite 返回码 → <code>StorageError</code>;迁移失败 → <code>MigrationError</code>(已回滚)</td>
+</tr>
+<tr>
+<td>C ABI</td>
+<td>异常 → 错码 + <code>EqError.message</code>(截断 255)</td>
+</tr>
+<tr>
+<td>C#(后续)</td>
+<td>错码 → <code>EquoraException</code>;UI 层用户可读信息</td>
+</tr>
+</tbody>
+</table>
+<h2 id="8-安全基线">8. 安全基线</h2>
+<ul>
+<li>密钥/令牌不入源码、不入日志;桌面令牌走 DPAPI/Windows 凭据(后续)。</li>
+<li>日志脱敏:不记录任务正文与令牌。</li>
+<li>扩展最小权限;Service 最小权限 + IPC 调用方校验(后续)。</li>
+</ul>
+<h2 id="9-构建与质量门">9. 构建与质量门</h2>
+<ul>
+<li>C++:<code>cmake --preset win-x64-release</code> → <code>/W4 /permissive- /utf-8</code>,零警告;<br>
+<code>ctest</code> 全绿(当前 41 例)。</li>
+<li>CI:<code>.github/workflows/native-ci.yml</code>(windows-latest:configure/build/test)。</li>
+<li>依赖经 vcpkg 清单锁定(<code>native/vcpkg.json</code> + baseline commit)。</li>
+</ul>
+        </article>
+        <nav class="doc-pager" aria-label="上一篇与下一篇"><a class="pager-link pager-prev" href="v0.2.1.html"><span>上一篇</span><strong>v0.2.1 更新说明</strong></a>
+          <a class="pager-link pager-next" href="data-model.html"><span>下一篇</span><strong>数据模型</strong></a></nav>
+      </div>
+    </div>
+  </main>
+  <footer class="container footer">
+    <div class="footer-top"><a class="brand" href="../index.html"><img src="../assets/equora.svg" width="28" height="28" alt=""><span class="app-wordmark">EQUORA</span></a><span>在时间中保持平衡。</span><nav aria-label="页脚导航"><a href="../index.html">首页</a><a href="../help.html">帮助中心</a><a href="../docs/release-notes.html">更新日志</a><a href="https://github.com/Furina-1314/Equora/issues">反馈</a></nav></div>
+    <div class="footer-bottom"><span>© 2026 Furina-1314 · Equora</span><span>开源于 MIT · 为专注而设计</span><a href="#main">回到顶部 ↑</a></div>
+  </footer>
+</body>
+</html>

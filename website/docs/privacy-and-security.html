@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#C32F37">
+  <meta name="description" content="衡序的数据存储、备份恢复、导出格式，以及一条清晰的隐私边界。">
+  <meta property="og:title" content="隐私与安全说明 — 衡序 Equora 帮助中心">
+  <meta property="og:description" content="衡序的数据存储、备份恢复、导出格式，以及一条清晰的隐私边界。">
+  <meta property="og:type" content="article">
+  <link rel="canonical" href="https://furina-1314.github.io/Equora/docs/privacy-and-security.html">
+  <link rel="icon" type="image/svg+xml" href="../assets/equora.svg">
+  <link rel="stylesheet" href="../styles.css">
+  <link rel="stylesheet" href="../help.css">
+  <meta name="help-search-index" content="search-index.json">
+  <script src="../help.js" defer></script>
+  <title>隐私与安全说明 — 衡序 Equora 帮助中心</title>
+</head>
+<body>
+  <a class="skip-link" href="#doc-content">跳到主要内容</a>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="../index.html" aria-label="衡序 Equora 首页"><img src="../assets/equora.svg" width="32" height="32" alt=""><span class="app-wordmark">EQUORA</span></a>
+      <button class="menu-toggle" type="button" aria-label="打开导航" aria-expanded="false" aria-controls="navigation">菜单 <span aria-hidden="true">☰</span></button>
+      <nav id="navigation" aria-label="主导航">
+        <a href="../index.html">首页</a><a href="../help.html">帮助中心</a><a href="../docs/release-notes.html">更新日志</a><a href="https://github.com/Furina-1314/Equora" class="repo-link">GitHub <span aria-hidden="true">↗</span></a>
+        <a class="button small" href="https://github.com/Furina-1314/Equora/releases/latest">下载 Equora <span aria-hidden="true">↓</span></a>
+      </nav>
+    </div>
+  </header>
+  <main id="main">
+    <div class="container help-layout">
+      <aside class="help-sidebar" id="help-sidebar" aria-label="文档目录">
+        <div class="sidebar-search">
+          <input type="search" id="doc-search" placeholder="搜索帮助文档…" aria-label="搜索帮助文档" autocomplete="off">
+          <div class="search-results" id="search-results" hidden></div>
+        </div>
+        <nav class="sidebar-nav">
+          <p class="nav-group">使用文档</p>
+          <a class="nav-link" href="../docs/user-guide.html">用户指南</a>
+          <a class="nav-link" href="../docs/usage-help.html">使用帮助与快捷键</a>
+          <a class="nav-link" href="../docs/usage-restrictions.html">应用与网站限制</a>
+          <a class="nav-link active" href="../docs/privacy-and-security.html">隐私与安全说明</a>
+          <p class="nav-group">版本与更新</p>
+          <a class="nav-link" href="../docs/release-notes.html">发布说明 · 更新日志</a>
+          <a class="nav-link" href="../docs/v0.2.2.html">v0.2.2 更新说明</a>
+          <a class="nav-link" href="../docs/v0.2.1.html">v0.2.1 更新说明</a>
+          <p class="nav-group">开发者资料</p>
+          <a class="nav-link" href="../docs/architecture.html">系统架构</a>
+          <a class="nav-link" href="../docs/data-model.html">数据模型</a>
+          <a class="nav-link" href="../docs/third-party-notices.html">第三方开源组件</a>
+          <p class="nav-group">反馈</p>
+          <a class="nav-link external" href="https://github.com/Furina-1314/Equora/issues">问题反馈 <span aria-hidden="true">↗</span></a>
+          <a class="nav-link external" href="https://github.com/Furina-1314/Equora/releases">版本下载 <span aria-hidden="true">↗</span></a>
+        </nav>
+      </aside>
+      <div class="doc-main">
+        <button class="sidebar-toggle" type="button" aria-expanded="false" aria-controls="help-sidebar">文档目录 <span aria-hidden="true">☰</span></button>
+        <nav class="doc-breadcrumb" aria-label="面包屑"><a href="../help.html">帮助中心</a> <span aria-hidden="true">/</span> <span>隐私与安全说明</span></nav>
+        <article class="doc-content" id="doc-content" tabindex="-1">
+<h1 id="equora-隐私与安全说明">Equora 隐私与安全说明</h1>
+<blockquote>
+<p>版本 0.1.0 · 最后更新:2026-09-19</p>
+</blockquote>
+<h2 id="1-隐私承诺">1. 隐私承诺</h2>
+<p>Equora 是<strong>本地优先</strong>软件。你的任务、时间块、专注记录、统计数据默认只存在于你自己的电脑上,不上传、不遥测、不分析。</p>
+<h2 id="2-数据采集清单">2. 数据采集清单</h2>
+<h3 id="21-默认采集本地">2.1 默认采集(本地)</h3>
+<table>
+<thead>
+<tr>
+<th>数据</th>
+<th>用途</th>
+<th>存储位置</th>
+<th>可删除</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>任务/项目/标签内容</td>
+<td>核心功能</td>
+<td>本地 SQLite</td>
+<td>✅ 单条删除/清空</td>
+</tr>
+<tr>
+<td>时间块与日历事件</td>
+<td>排程功能</td>
+<td>本地 SQLite</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>专注会话记录</td>
+<td>统计与复盘</td>
+<td>本地 SQLite</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>分心捕获内容</td>
+<td>你的临时笔记</td>
+<td>本地 SQLite</td>
+<td>✅ 整理后删除</td>
+</tr>
+<tr>
+<td>运行日志(脱敏)</td>
+<td>故障排查</td>
+<td>logs/equora.log</td>
+<td>✅ 删除文件</td>
+</tr>
+</tbody>
+</table>
+<h3 id="22-明确不采集">2.2 明确不采集</h3>
+<p>以下数据<strong>永远不采集</strong>,无论设置如何:</p>
+<ul>
+<li>❌ 键盘输入内容</li>
+<li>❌ 屏幕截图</li>
+<li>❌ 窗口标题或页面内容</li>
+<li>❌ 剪贴板内容</li>
+<li>❌ 完整浏览历史</li>
+<li>❌ 密码或认证信息</li>
+<li>❌ 联系人或通讯录</li>
+</ul>
+<h3 id="23-可选采集默认关闭">2.3 可选采集(默认关闭)</h3>
+<table>
+<thead>
+<tr>
+<th>数据</th>
+<th>条件</th>
+<th>内容</th>
+<th>关闭后</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>前台应用进程名</td>
+<td>用户在设置页主动开启</td>
+<td>仅 xxx.exe 格式进程名</td>
+<td>立即停止检测,无残留</td>
+</tr>
+</tbody>
+</table>
+<p><strong>前台应用监测的工作方式</strong>:通过 Windows API 监听前台窗口变化事件,获取当前进程名(如 <code>game.exe</code>),与受限名单比对。<strong>不读取窗口标题、不读取页面内容、不记录浏览历史。</strong> 关闭后立即停止全部检测。</p>
+<h2 id="3-网络通信">3. 网络通信</h2>
+<h3 id="31-默认状态零网络">3.1 默认状态:零网络</h3>
+<p>同步功能默认关闭。关闭状态下软件<strong>不发起任何网络请求</strong>。</p>
+<h3 id="32-启用同步后">3.2 启用同步后</h3>
+<p>如果你主动启用多设备同步:</p>
+<ul>
+<li>仅与你自己配置的服务器通信(HTTPS)</li>
+<li>传输内容:任务/时间块/专注记录(已加密传输)</li>
+<li>服务器地址与令牌存储在本地,不上传到任何第三方</li>
+<li>浏览器扩展通过 Native Messaging(本机管道)与桌面端通信,不经过互联网</li>
+</ul>
+<h3 id="33-浏览器扩展">3.3 浏览器扩展</h3>
+<ul>
+<li>扩展仅获取<strong>域名</strong>(如 example.com)用于匹配限制名单</li>
+<li><strong>不读取页面内容、不记录浏览历史</strong></li>
+<li>限制规则只在专注期间生效,使用会话规则(浏览器重启自动清空)</li>
+<li>扩展权限最小化:<code>declarativeNetRequest</code>(网络请求拦截)+ <code>nativeMessaging</code>(本机通信)+ <code>storage</code>(本地预算存储)+ <code>tabs</code>(获取当前标签域名)</li>
+</ul>
+<h2 id="4-数据安全">4. 数据安全</h2>
+<h3 id="41-本地数据保护">4.1 本地数据保护</h3>
+<ul>
+<li>数据库存储在用户私有目录(<code>%LOCALAPPDATA%\Equora\</code>),受 Windows 用户账户权限保护</li>
+<li>备份带 SHA-256 校验,恢复前验证完整性</li>
+<li>恢复前自动保护当前数据(防误操作)</li>
+</ul>
+<h3 id="42-传输安全同步启用时">4.2 传输安全(同步启用时)</h3>
+<ul>
+<li>客户端仅通过 HTTPS 与服务器通信</li>
+<li>认证令牌仅在内存和 Windows 安全存储中,不写入源码或日志</li>
+<li>服务器端令牌仅存 SHA-256 哈希,不存明文</li>
+</ul>
+<h3 id="43-限制系统的安全出口">4.3 限制系统的安全出口</h3>
+<p>所有应用/网站限制必须提供:</p>
+<ol>
+<li><strong>安全白名单</strong>:系统设置、安全软件、文件管理器、辅助功能、紧急通信、恢复工具、Equora 自身——这 20+ 关键进程永不被限制,无论配置如何</li>
+<li><strong>紧急解锁</strong>:一键解除全部限制(15 分钟冷却)</li>
+<li><strong>自动解除</strong>:浏览器重启/扩展异常/桌面端崩溃后所有限制自动解除</li>
+<li><strong>设计原则</strong>:宁可放开不可锁死(网络故障时规则撤销而非加强)</li>
+</ol>
+<h2 id="5-数据可携带性">5. 数据可携带性</h2>
+<table>
+<thead>
+<tr>
+<th>导出格式</th>
+<th>覆盖范围</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>JSON</td>
+<td>任务全字段(幂等导入)</td>
+</tr>
+<tr>
+<td>CSV</td>
+<td>任务(Excel 兼容)</td>
+</tr>
+<tr>
+<td>ICS</td>
+<td>日历事件与时间块</td>
+</tr>
+<tr>
+<td>SQLite 备份</td>
+<td>完整数据库快照</td>
+</tr>
+</tbody>
+</table>
+<h2 id="6-数据删除">6. 数据删除</h2>
+<ul>
+<li><strong>单条</strong>:在界面中删除(软删除,回收站可恢复)</li>
+<li><strong>全部任务</strong>:清空回收站</li>
+<li><strong>全部数据</strong>:删除 <code>%LOCALAPPDATA%\Equora\</code> 目录</li>
+<li><strong>活动分析</strong>:设置页关闭后立即停止,已记录数据随任务删除</li>
+</ul>
+<h2 id="7-第三方组件">7. 第三方组件</h2>
+<p>Equora 使用以下开源组件(完整清单见 <code>THIRD-PARTY-NOTICES.md</code>):</p>
+<table>
+<thead>
+<tr>
+<th>组件</th>
+<th>许可证</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SQLite</td>
+<td>Public Domain</td>
+<td>本地数据库</td>
+</tr>
+<tr>
+<td>nlohmann/json</td>
+<td>MIT</td>
+<td>JSON 序列化</td>
+</tr>
+<tr>
+<td>GoogleTest</td>
+<td>BSD-3-Clause</td>
+<td>单元测试</td>
+</tr>
+<tr>
+<td>WinUI 3 / Windows App SDK</td>
+<td>MIT</td>
+<td>用户界面</td>
+</tr>
+<tr>
+<td>CommunityToolkit.Mvvm</td>
+<td>MIT</td>
+<td>MVVM 框架</td>
+</tr>
+<tr>
+<td>Drogon</td>
+<td>MIT</td>
+<td>同步服务器(可选)</td>
+</tr>
+<tr>
+<td>PostgreSQL</td>
+<td>PostgreSQL License</td>
+<td>服务器数据库(可选)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="8-联系">8. 联系</h2>
+<p>发现隐私或安全问题请通过 GitHub Issues 报告:<a href="https://github.com/Furina-1314/Equora/issues">https://github.com/Furina-1314/Equora/issues</a></p>
+        </article>
+        <nav class="doc-pager" aria-label="上一篇与下一篇"><a class="pager-link pager-prev" href="usage-restrictions.html"><span>上一篇</span><strong>应用与网站限制</strong></a>
+          <a class="pager-link pager-next" href="release-notes.html"><span>下一篇</span><strong>发布说明 · 更新日志</strong></a></nav>
+      </div>
+    </div>
+  </main>
+  <footer class="container footer">
+    <div class="footer-top"><a class="brand" href="../index.html"><img src="../assets/equora.svg" width="28" height="28" alt=""><span class="app-wordmark">EQUORA</span></a><span>在时间中保持平衡。</span><nav aria-label="页脚导航"><a href="../index.html">首页</a><a href="../help.html">帮助中心</a><a href="../docs/release-notes.html">更新日志</a><a href="https://github.com/Furina-1314/Equora/issues">反馈</a></nav></div>
+    <div class="footer-bottom"><span>© 2026 Furina-1314 · Equora</span><span>开源于 MIT · 为专注而设计</span><a href="#main">回到顶部 ↑</a></div>
+  </footer>
+</body>
+</html>

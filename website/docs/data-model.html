@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#C32F37">
+  <meta name="description" content="本地 SQLite 数据模型与版本化数据库迁移的设计说明。">
+  <meta property="og:title" content="数据模型 — 衡序 Equora 帮助中心">
+  <meta property="og:description" content="本地 SQLite 数据模型与版本化数据库迁移的设计说明。">
+  <meta property="og:type" content="article">
+  <link rel="canonical" href="https://furina-1314.github.io/Equora/docs/data-model.html">
+  <link rel="icon" type="image/svg+xml" href="../assets/equora.svg">
+  <link rel="stylesheet" href="../styles.css">
+  <link rel="stylesheet" href="../help.css">
+  <meta name="help-search-index" content="search-index.json">
+  <script src="../help.js" defer></script>
+  <title>数据模型 — 衡序 Equora 帮助中心</title>
+</head>
+<body>
+  <a class="skip-link" href="#doc-content">跳到主要内容</a>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="../index.html" aria-label="衡序 Equora 首页"><img src="../assets/equora.svg" width="32" height="32" alt=""><span class="app-wordmark">EQUORA</span></a>
+      <button class="menu-toggle" type="button" aria-label="打开导航" aria-expanded="false" aria-controls="navigation">菜单 <span aria-hidden="true">☰</span></button>
+      <nav id="navigation" aria-label="主导航">
+        <a href="../index.html">首页</a><a href="../help.html">帮助中心</a><a href="../docs/release-notes.html">更新日志</a><a href="https://github.com/Furina-1314/Equora" class="repo-link">GitHub <span aria-hidden="true">↗</span></a>
+        <a class="button small" href="https://github.com/Furina-1314/Equora/releases/latest">下载 Equora <span aria-hidden="true">↓</span></a>
+      </nav>
+    </div>
+  </header>
+  <main id="main">
+    <div class="container help-layout">
+      <aside class="help-sidebar" id="help-sidebar" aria-label="文档目录">
+        <div class="sidebar-search">
+          <input type="search" id="doc-search" placeholder="搜索帮助文档…" aria-label="搜索帮助文档" autocomplete="off">
+          <div class="search-results" id="search-results" hidden></div>
+        </div>
+        <nav class="sidebar-nav">
+          <p class="nav-group">使用文档</p>
+          <a class="nav-link" href="../docs/user-guide.html">用户指南</a>
+          <a class="nav-link" href="../docs/usage-help.html">使用帮助与快捷键</a>
+          <a class="nav-link" href="../docs/usage-restrictions.html">应用与网站限制</a>
+          <a class="nav-link" href="../docs/privacy-and-security.html">隐私与安全说明</a>
+          <p class="nav-group">版本与更新</p>
+          <a class="nav-link" href="../docs/release-notes.html">发布说明 · 更新日志</a>
+          <a class="nav-link" href="../docs/v0.2.2.html">v0.2.2 更新说明</a>
+          <a class="nav-link" href="../docs/v0.2.1.html">v0.2.1 更新说明</a>
+          <p class="nav-group">开发者资料</p>
+          <a class="nav-link" href="../docs/architecture.html">系统架构</a>
+          <a class="nav-link active" href="../docs/data-model.html">数据模型</a>
+          <a class="nav-link" href="../docs/third-party-notices.html">第三方开源组件</a>
+          <p class="nav-group">反馈</p>
+          <a class="nav-link external" href="https://github.com/Furina-1314/Equora/issues">问题反馈 <span aria-hidden="true">↗</span></a>
+          <a class="nav-link external" href="https://github.com/Furina-1314/Equora/releases">版本下载 <span aria-hidden="true">↗</span></a>
+        </nav>
+      </aside>
+      <div class="doc-main">
+        <button class="sidebar-toggle" type="button" aria-expanded="false" aria-controls="help-sidebar">文档目录 <span aria-hidden="true">☰</span></button>
+        <nav class="doc-breadcrumb" aria-label="面包屑"><a href="../help.html">帮助中心</a> <span aria-hidden="true">/</span> <span>数据模型</span></nav>
+        <article class="doc-content" id="doc-content" tabindex="-1">
+<h1 id="equora-数据模型">Equora 数据模型</h1>
+<blockquote>
+<p>状态:P2(2026-09-18)。记录当前 SQLite 模式(v1)与既定的跨设备字段约定。<br>
+结构变更只能通过新增迁移,禁止修改历史迁移。</p>
+</blockquote>
+<h2 id="1-全局约定">1. 全局约定</h2>
+<ul>
+<li><strong>主键</strong>:所有可同步实体使用 UUID v4 文本(小写 8-4-4-4-12),生成于创建端。</li>
+<li><strong>时间</strong>:Unix 纪元 UTC 毫秒(<code>int64</code>)。全天事项的本地日期语义在 P6 引入<br>
+  (<code>due_is_date</code> 类列 + 用户时区快照),避免跨时区漂移。</li>
+<li><strong>可同步实体公共列</strong>(P1 起落地在 tasks,后续实体沿用):</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>列</th>
+<th>类型</th>
+<th>语义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>TEXT PK</td>
+<td>UUID</td>
+</tr>
+<tr>
+<td><code>created_at</code></td>
+<td>INTEGER</td>
+<td>创建时间(UTC ms)</td>
+</tr>
+<tr>
+<td><code>updated_at</code></td>
+<td>INTEGER</td>
+<td>最后修改时间(UTC ms)</td>
+</tr>
+<tr>
+<td><code>revision</code></td>
+<td>INTEGER</td>
+<td>单调递增;乐观并发与同步 <code>base_revision</code> 检查</td>
+</tr>
+<tr>
+<td><code>deleted_at</code></td>
+<td>INTEGER NULL</td>
+<td>软删除墓碑;NULL=未删除</td>
+</tr>
+<tr>
+<td><code>last_device_id</code></td>
+<td>TEXT</td>
+<td>最后修改设备</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>迁移框架</strong>:<code>schema_migrations(version, name, applied_at)</code> 登记表;<br>
+  每个迁移单事务执行,失败整体回滚;版本必须严格递增。</li>
+</ul>
+<h2 id="2-当前模式v1">2. 当前模式(v1)</h2>
+<h3 id="tasks-任务">tasks — 任务</h3>
+<table>
+<thead>
+<tr>
+<th>列</th>
+<th>类型</th>
+<th>约束/默认</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>TEXT</td>
+<td>PK</td>
+<td>UUID</td>
+</tr>
+<tr>
+<td><code>title</code></td>
+<td>TEXT</td>
+<td>NOT NULL</td>
+<td>标题</td>
+</tr>
+<tr>
+<td><code>note</code></td>
+<td>TEXT</td>
+<td>NOT NULL DEFAULT ''</td>
+<td>备注</td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td>INTEGER</td>
+<td>NOT NULL DEFAULT 0</td>
+<td>0 Inbox / 1 Planned / 2 InProgress / 3 Waiting / 4 Done / 5 Cancelled</td>
+</tr>
+<tr>
+<td><code>priority</code></td>
+<td>INTEGER</td>
+<td>NOT NULL DEFAULT 2</td>
+<td>0 None / 1 Low / 2 Normal / 3 High / 4 Urgent</td>
+</tr>
+<tr>
+<td><code>importance</code></td>
+<td>INTEGER</td>
+<td>NOT NULL DEFAULT 0</td>
+<td>0 未设置;1..5(四象限「重要」轴)</td>
+</tr>
+<tr>
+<td><code>due_at</code></td>
+<td>INTEGER</td>
+<td>NULL</td>
+<td>截止时间(UTC ms)</td>
+</tr>
+<tr>
+<td><code>estimate_minutes</code></td>
+<td>INTEGER</td>
+<td>NULL</td>
+<td>预计时长(分钟)</td>
+</tr>
+<tr>
+<td><code>actual_minutes</code></td>
+<td>INTEGER</td>
+<td>NOT NULL DEFAULT 0</td>
+<td>实际累计时长</td>
+</tr>
+<tr>
+<td><code>project_id</code></td>
+<td>TEXT</td>
+<td>NULL</td>
+<td>→ projects.id(P4 启用,暂存)</td>
+</tr>
+<tr>
+<td><code>created_at</code> / <code>updated_at</code> / <code>revision</code> / <code>deleted_at</code> / <code>last_device_id</code></td>
+<td>—</td>
+<td>—</td>
+<td>公共同步列</td>
+</tr>
+</tbody>
+</table>
+<p>索引:<code>idx_tasks_status(status)</code>;部分索引 <code>idx_tasks_active_due(due_at) WHERE deleted_at IS NULL</code>。</p>
+<h2 id="3-计划中的实体按阶段落地">3. 计划中的实体(按阶段落地)</h2>
+<h3 id="p4v2-迁移">P4:v2 迁移</h3>
+<ul>
+<li><strong>projects</strong>:id、名称、颜色、状态(active/archived)、目标、归档时间 + 公共列。</li>
+<li><strong>tags</strong>:id、名称(唯一)、颜色 + 公共列。</li>
+<li><strong>task_tags</strong>(task_id, tag_id) 联合主键。</li>
+<li><strong>checklist_items</strong>:id、task_id、内容、勾选状态、排序 + 公共列。</li>
+<li>智能清单查询(今天/近期/逾期/已安排/无日期/等待中/已完成)以 SQL 视图或参数化查询实现,不另建表。</li>
+</ul>
+<h3 id="p6v3-迁移">P6:v3 迁移</h3>
+<ul>
+<li><strong>time_blocks</strong>:id、task_id(可空,与 event 二选一)、开始/结束时间、<br>
+  计划时长、实际时长、缓冲(前/后)、日历归属 + 公共列。</li>
+<li><strong>events</strong>:非任务日程/会议/全天事项。</li>
+<li><strong>recurrence_rules</strong>:宿主类型(task/event)、RRULE 子集<br>
+  (FREQ=DAILY/WEEKLY/MONTHLY/YEARLY;BYDAY;每月第 N 个/最后一个工作日;<br>
+  完成后 N 天)、例外日期集(<code>excluded_dates</code>)。</li>
+<li><strong>calendars</strong>:名称、颜色、来源(local/ics/caldav)、可见性。</li>
+</ul>
+<h3 id="p9v4-迁移">P9:v4 迁移</h3>
+<ul>
+<li><strong>focus_sessions</strong>:id、task_id、模式(番茄/深度/Flowtime/正计时/无计时)、<br>
+  计划开始/结束、实际开始/结束、暂停累计、状态机终态、目标与完成记录。</li>
+<li><strong>interruptions</strong>:会话 id、时间、原因、来源、处理方式。</li>
+<li><strong>distraction_inbox_items</strong>:即时写入(先持久化后整理),会话 id、内容、整理去向。</li>
+<li><strong>focus_profiles</strong>:允许/限制应用与网站、通知策略、计时参数、强度等级。</li>
+</ul>
+<h3 id="p12v5-迁移">P12:v5 迁移</h3>
+<ul>
+<li><strong>app_usage_records</strong>:前台应用标识、分类、开始/结束、窗口切换计数(仅本地、可关闭)。</li>
+<li><strong>daily_reviews / weekly_reviews</strong>:复盘快照与重点。</li>
+<li><strong>automation_rules</strong>:触发器/条件/动作 JSON、启用状态;<strong>automation_logs</strong> 执行日志。</li>
+</ul>
+<h3 id="p13同步启用">P13+:同步启用</h3>
+<ul>
+<li><strong>sync_outbox</strong>:待上传操作(与业务写同事务产生)。</li>
+<li><strong>sync_state</strong>:服务端游标、上次成功同步时间、账号与设备信息。</li>
+</ul>
+<h2 id="4-服务端对应后续postgresql">4. 服务端对应(后续,PostgreSQL)</h2>
+<ul>
+<li>桌面端实体在服务端镜像存储,附加有序变更流 <code>change_log(seq, entity, op, payload)</code>。</li>
+<li>游标 = <code>change_log.seq</code>;删除以墓碑形式进入变更流。</li>
+<li>冲突策略详见 <code>docs/sync-protocol.md</code>(P13 撰写)。</li>
+</ul>
+<h2 id="5-数据完整性与恢复">5. 数据完整性与恢复</h2>
+<ul>
+<li>写入一律事务;<code>revision</code> 不匹配 → 拒绝(Conflict),调用方重读再试。</li>
+<li>崩溃恢复:WAL + <code>synchronous=NORMAL</code>;启动时 <code>eq_core_create</code> 自动补迁移。</li>
+<li>备份(P4):<code>sqlite3_backup</code> 一致性快照 + SHA-256 校验 + 版本元数据;<br>
+  恢复前先备份当前库。绝不直接复制使用中的库文件。</li>
+</ul>
+        </article>
+        <nav class="doc-pager" aria-label="上一篇与下一篇"><a class="pager-link pager-prev" href="architecture.html"><span>上一篇</span><strong>系统架构</strong></a>
+          <a class="pager-link pager-next" href="third-party-notices.html"><span>下一篇</span><strong>第三方开源组件</strong></a></nav>
+      </div>
+    </div>
+  </main>
+  <footer class="container footer">
+    <div class="footer-top"><a class="brand" href="../index.html"><img src="../assets/equora.svg" width="28" height="28" alt=""><span class="app-wordmark">EQUORA</span></a><span>在时间中保持平衡。</span><nav aria-label="页脚导航"><a href="../index.html">首页</a><a href="../help.html">帮助中心</a><a href="../docs/release-notes.html">更新日志</a><a href="https://github.com/Furina-1314/Equora/issues">反馈</a></nav></div>
+    <div class="footer-bottom"><span>© 2026 Furina-1314 · Equora</span><span>开源于 MIT · 为专注而设计</span><a href="#main">回到顶部 ↑</a></div>
+  </footer>
+</body>
+</html>

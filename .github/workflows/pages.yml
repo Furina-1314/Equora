@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - 'website/**'
+      - 'docs/**'
+      - 'THIRD-PARTY-NOTICES.md'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
 
@@ -26,6 +28,10 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v6
+      - name: Regenerate help center documentation pages
+        run: |
+          python3 -m pip install --quiet markdown
+          python3 website/tools/build_docs.py
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:

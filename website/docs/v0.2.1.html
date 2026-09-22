@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#C32F37">
+  <meta name="description" content="v0.2.1：修复网站临时允许误判，新增暂停限制倒计时提示与回收站永久删除。">
+  <meta property="og:title" content="v0.2.1 更新说明 — 衡序 Equora 帮助中心">
+  <meta property="og:description" content="v0.2.1：修复网站临时允许误判，新增暂停限制倒计时提示与回收站永久删除。">
+  <meta property="og:type" content="article">
+  <link rel="canonical" href="https://furina-1314.github.io/Equora/docs/v0.2.1.html">
+  <link rel="icon" type="image/svg+xml" href="../assets/equora.svg">
+  <link rel="stylesheet" href="../styles.css">
+  <link rel="stylesheet" href="../help.css">
+  <meta name="help-search-index" content="search-index.json">
+  <script src="../help.js" defer></script>
+  <title>v0.2.1 更新说明 — 衡序 Equora 帮助中心</title>
+</head>
+<body>
+  <a class="skip-link" href="#doc-content">跳到主要内容</a>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="../index.html" aria-label="衡序 Equora 首页"><img src="../assets/equora.svg" width="32" height="32" alt=""><span class="app-wordmark">EQUORA</span></a>
+      <button class="menu-toggle" type="button" aria-label="打开导航" aria-expanded="false" aria-controls="navigation">菜单 <span aria-hidden="true">☰</span></button>
+      <nav id="navigation" aria-label="主导航">
+        <a href="../index.html">首页</a><a href="../help.html">帮助中心</a><a href="../docs/release-notes.html">更新日志</a><a href="https://github.com/Furina-1314/Equora" class="repo-link">GitHub <span aria-hidden="true">↗</span></a>
+        <a class="button small" href="https://github.com/Furina-1314/Equora/releases/latest">下载 Equora <span aria-hidden="true">↓</span></a>
+      </nav>
+    </div>
+  </header>
+  <main id="main">
+    <div class="container help-layout">
+      <aside class="help-sidebar" id="help-sidebar" aria-label="文档目录">
+        <div class="sidebar-search">
+          <input type="search" id="doc-search" placeholder="搜索帮助文档…" aria-label="搜索帮助文档" autocomplete="off">
+          <div class="search-results" id="search-results" hidden></div>
+        </div>
+        <nav class="sidebar-nav">
+          <p class="nav-group">使用文档</p>
+          <a class="nav-link" href="../docs/user-guide.html">用户指南</a>
+          <a class="nav-link" href="../docs/usage-help.html">使用帮助与快捷键</a>
+          <a class="nav-link" href="../docs/usage-restrictions.html">应用与网站限制</a>
+          <a class="nav-link" href="../docs/privacy-and-security.html">隐私与安全说明</a>
+          <p class="nav-group">版本与更新</p>
+          <a class="nav-link" href="../docs/release-notes.html">发布说明 · 更新日志</a>
+          <a class="nav-link" href="../docs/v0.2.2.html">v0.2.2 更新说明</a>
+          <a class="nav-link active" href="../docs/v0.2.1.html">v0.2.1 更新说明</a>
+          <p class="nav-group">开发者资料</p>
+          <a class="nav-link" href="../docs/architecture.html">系统架构</a>
+          <a class="nav-link" href="../docs/data-model.html">数据模型</a>
+          <a class="nav-link" href="../docs/third-party-notices.html">第三方开源组件</a>
+          <p class="nav-group">反馈</p>
+          <a class="nav-link external" href="https://github.com/Furina-1314/Equora/issues">问题反馈 <span aria-hidden="true">↗</span></a>
+          <a class="nav-link external" href="https://github.com/Furina-1314/Equora/releases">版本下载 <span aria-hidden="true">↗</span></a>
+        </nav>
+      </aside>
+      <div class="doc-main">
+        <button class="sidebar-toggle" type="button" aria-expanded="false" aria-controls="help-sidebar">文档目录 <span aria-hidden="true">☰</span></button>
+        <nav class="doc-breadcrumb" aria-label="面包屑"><a href="../help.html">帮助中心</a> <span aria-hidden="true">/</span> <span>v0.2.1 更新说明</span></nav>
+        <article class="doc-content" id="doc-content" tabindex="-1">
+<h1 id="equora-v021">Equora v0.2.1</h1>
+<p>本次更新修复浏览器临时允许功能，并完善暂停限制提示和回收站操作。</p>
+<ul>
+<li>修复带路径、端口、查询参数的网站点击“临时允许 5 分钟”时误报“网站地址无效”；兼容旧拦截页。</li>
+<li>扩展提供连接状态面板、复制扩展 ID、网页右上角倒计时；临时允许到期后恢复拦截并禁止重复领取。</li>
+<li>点击“暂停所有限制 15 分钟”后，应用顶部显示黄色警告及倒计时，切换页面仍可见；到期自动隐藏，恢复限制状态。</li>
+<li>回收站支持永久删除。任务删除及永久删除均要求二次确认，取消不会修改任务；永久删除无法撤销。</li>
+</ul>
+<h2 id="安装与升级">安装与升级</h2>
+<ul>
+<li><code>Equora-v0.2.1-win-x64-Setup.exe</code>：可选择安装目录，适合大多数用户；使用与旧版相同的安装目录升级。</li>
+<li><code>Equora-v0.2.1-win-x64.msix</code>：由 Windows 管理安装目录，版本号为 0.2.1.0，保持原包标识及签名证书以支持升级。</li>
+<li>两种安装包均包含运行时和完整浏览器扩展。</li>
+<li>MSIX 首次安装需信任随附 <code>Equora-v0.2.1.cer</code> 公钥证书；已信任旧版证书无需重复导入。EXE 无需此步骤。</li>
+</ul>
+<p>扩展请使用 <code>Equora-v0.2.1-BrowserExtension.zip</code> 覆盖原加载目录，再在 <code>edge://extensions</code> / <code>chrome://extensions</code> 重新加载扩展，并刷新旧拦截页及已打开的网站。保持原目录可保留扩展 ID 和临时允许的使用记录；更换目录后需在桌面端重新连接扩展 ID。</p>
+<p>永久删除会删除关联的日历时间块、清单项和任务标签关联；保留专注历史并解除其任务关联。永久删除会清空当前任务撤销栈，避免撤销已不存在的任务。旧备份不会被修改。</p>
+<p>附件附有 SHA256SUMS.txt，可核对完整性。</p>
+        </article>
+        <nav class="doc-pager" aria-label="上一篇与下一篇"><a class="pager-link pager-prev" href="v0.2.2.html"><span>上一篇</span><strong>v0.2.2 更新说明</strong></a>
+          <a class="pager-link pager-next" href="architecture.html"><span>下一篇</span><strong>系统架构</strong></a></nav>
+      </div>
+    </div>
+  </main>
+  <footer class="container footer">
+    <div class="footer-top"><a class="brand" href="../index.html"><img src="../assets/equora.svg" width="28" height="28" alt=""><span class="app-wordmark">EQUORA</span></a><span>在时间中保持平衡。</span><nav aria-label="页脚导航"><a href="../index.html">首页</a><a href="../help.html">帮助中心</a><a href="../docs/release-notes.html">更新日志</a><a href="https://github.com/Furina-1314/Equora/issues">反馈</a></nav></div>
+    <div class="footer-bottom"><span>© 2026 Furina-1314 · Equora</span><span>开源于 MIT · 为专注而设计</span><a href="#main">回到顶部 ↑</a></div>
+  </footer>
+</body>
+</html>

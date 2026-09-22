@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#C32F37">
+  <meta name="description" content="衡序使用的第三方开源组件完整清单与许可证信息。">
+  <meta property="og:title" content="第三方开源组件 — 衡序 Equora 帮助中心">
+  <meta property="og:description" content="衡序使用的第三方开源组件完整清单与许可证信息。">
+  <meta property="og:type" content="article">
+  <link rel="canonical" href="https://furina-1314.github.io/Equora/docs/third-party-notices.html">
+  <link rel="icon" type="image/svg+xml" href="../assets/equora.svg">
+  <link rel="stylesheet" href="../styles.css">
+  <link rel="stylesheet" href="../help.css">
+  <meta name="help-search-index" content="search-index.json">
+  <script src="../help.js" defer></script>
+  <title>第三方开源组件 — 衡序 Equora 帮助中心</title>
+</head>
+<body>
+  <a class="skip-link" href="#doc-content">跳到主要内容</a>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="../index.html" aria-label="衡序 Equora 首页"><img src="../assets/equora.svg" width="32" height="32" alt=""><span class="app-wordmark">EQUORA</span></a>
+      <button class="menu-toggle" type="button" aria-label="打开导航" aria-expanded="false" aria-controls="navigation">菜单 <span aria-hidden="true">☰</span></button>
+      <nav id="navigation" aria-label="主导航">
+        <a href="../index.html">首页</a><a href="../help.html">帮助中心</a><a href="../docs/release-notes.html">更新日志</a><a href="https://github.com/Furina-1314/Equora" class="repo-link">GitHub <span aria-hidden="true">↗</span></a>
+        <a class="button small" href="https://github.com/Furina-1314/Equora/releases/latest">下载 Equora <span aria-hidden="true">↓</span></a>
+      </nav>
+    </div>
+  </header>
+  <main id="main">
+    <div class="container help-layout">
+      <aside class="help-sidebar" id="help-sidebar" aria-label="文档目录">
+        <div class="sidebar-search">
+          <input type="search" id="doc-search" placeholder="搜索帮助文档…" aria-label="搜索帮助文档" autocomplete="off">
+          <div class="search-results" id="search-results" hidden></div>
+        </div>
+        <nav class="sidebar-nav">
+          <p class="nav-group">使用文档</p>
+          <a class="nav-link" href="../docs/user-guide.html">用户指南</a>
+          <a class="nav-link" href="../docs/usage-help.html">使用帮助与快捷键</a>
+          <a class="nav-link" href="../docs/usage-restrictions.html">应用与网站限制</a>
+          <a class="nav-link" href="../docs/privacy-and-security.html">隐私与安全说明</a>
+          <p class="nav-group">版本与更新</p>
+          <a class="nav-link" href="../docs/release-notes.html">发布说明 · 更新日志</a>
+          <a class="nav-link" href="../docs/v0.2.2.html">v0.2.2 更新说明</a>
+          <a class="nav-link" href="../docs/v0.2.1.html">v0.2.1 更新说明</a>
+          <p class="nav-group">开发者资料</p>
+          <a class="nav-link" href="../docs/architecture.html">系统架构</a>
+          <a class="nav-link" href="../docs/data-model.html">数据模型</a>
+          <a class="nav-link active" href="../docs/third-party-notices.html">第三方开源组件</a>
+          <p class="nav-group">反馈</p>
+          <a class="nav-link external" href="https://github.com/Furina-1314/Equora/issues">问题反馈 <span aria-hidden="true">↗</span></a>
+          <a class="nav-link external" href="https://github.com/Furina-1314/Equora/releases">版本下载 <span aria-hidden="true">↗</span></a>
+        </nav>
+      </aside>
+      <div class="doc-main">
+        <button class="sidebar-toggle" type="button" aria-expanded="false" aria-controls="help-sidebar">文档目录 <span aria-hidden="true">☰</span></button>
+        <nav class="doc-breadcrumb" aria-label="面包屑"><a href="../help.html">帮助中心</a> <span aria-hidden="true">/</span> <span>第三方开源组件</span></nav>
+        <article class="doc-content" id="doc-content" tabindex="-1">
+<h1 id="equora-第三方组件声明">Equora 第三方组件声明</h1>
+<p>本项目使用以下第三方开源组件。感谢所有贡献者。</p>
+<h2 id="原生核心c">原生核心(C++)</h2>
+<table>
+<thead>
+<tr>
+<th>组件</th>
+<th>版本</th>
+<th>许可证</th>
+<th>用途</th>
+<th>许可证原文</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SQLite</td>
+<td>3.53.4</td>
+<td>Public Domain</td>
+<td>本地数据库引擎</td>
+<td><a href="https://www.sqlite.org/copyright.html">sqlite.org/copyright.html</a></td>
+</tr>
+<tr>
+<td>nlohmann-json</td>
+<td>(vcpkg 清单)</td>
+<td>MIT</td>
+<td>JSON 序列化/反序列化</td>
+<td><a href="https://github.com/nlohmann/json/blob/develop/LICENSE.MIT">GitHub</a></td>
+</tr>
+<tr>
+<td>GoogleTest</td>
+<td>1.18.0</td>
+<td>BSD-3-Clause</td>
+<td>C++ 单元测试框架</td>
+<td><a href="https://github.com/google/googletest/blob/main/LICENSE">GitHub</a></td>
+</tr>
+</tbody>
+</table>
+<h2 id="桌面应用c">桌面应用(C#)</h2>
+<table>
+<thead>
+<tr>
+<th>组件</th>
+<th>版本</th>
+<th>许可证</th>
+<th>用途</th>
+<th>许可证原文</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>WinUI 3 / Windows App SDK</td>
+<td>1.8.x</td>
+<td>MIT</td>
+<td>用户界面框架</td>
+<td><a href="https://github.com/microsoft/WindowsAppSDK/blob/main/LICENSE">GitHub</a></td>
+</tr>
+<tr>
+<td>CommunityToolkit.Mvvm</td>
+<td>8.4.x</td>
+<td>MIT</td>
+<td>MVVM 辅助库</td>
+<td><a href="https://github.com/CommunityToolkit/dotnet/blob/main/License.md">GitHub</a></td>
+</tr>
+<tr>
+<td>Microsoft.NET.Test.Sdk</td>
+<td>17.x</td>
+<td>MIT</td>
+<td>测试 SDK</td>
+<td><a href="https://www.nuget.org/packages/Microsoft.NET.Test.Sdk">NuGet</a></td>
+</tr>
+<tr>
+<td>xUnit</td>
+<td>2.x</td>
+<td>Apache-2.0</td>
+<td>C# 测试框架</td>
+<td><a href="https://github.com/xunit/xunit/blob/main/LICENSE">GitHub</a></td>
+</tr>
+</tbody>
+</table>
+<h2 id="同步服务器可选c">同步服务器(可选,C++)</h2>
+<table>
+<thead>
+<tr>
+<th>组件</th>
+<th>版本</th>
+<th>许可证</th>
+<th>用途</th>
+<th>许可证原文</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Drogon</td>
+<td>(vcpkg 清单)</td>
+<td>MIT</td>
+<td>HTTP 服务器框架</td>
+<td><a href="https://github.com/drogonframework/drogon/blob/master/LICENSE">GitHub</a></td>
+</tr>
+<tr>
+<td>PostgreSQL</td>
+<td>16</td>
+<td>PostgreSQL License</td>
+<td>服务器数据库</td>
+<td><a href="https://www.postgresql.org/about/licence/">postgresql.org</a></td>
+</tr>
+<tr>
+<td>libpq</td>
+<td>(vcpkg 清单) PostgreSQL License</td>
+<td>PostgreSQL C 客户端库</td>
+<td><a href="https://www.postgresql.org/about/licence/">postgresql.org</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="构建工具">构建工具</h2>
+<table>
+<thead>
+<tr>
+<th>工具</th>
+<th>许可证</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CMake</td>
+<td>BSD-3-Clause</td>
+<td>构建系统</td>
+</tr>
+<tr>
+<td>vcpkg</td>
+<td>MIT</td>
+<td>C++ 依赖管理</td>
+</tr>
+<tr>
+<td>Visual Studio 2026</td>
+<td>(商业许可)</td>
+<td>编译器与 IDE</td>
+</tr>
+<tr>
+<td>.NET SDK 10</td>
+<td>MIT</td>
+<td>C# 编译与运行时</td>
+</tr>
+</tbody>
+</table>
+<h2 id="声明">声明</h2>
+<ul>
+<li>本项目不修改任何第三方组件源码(仅通过官方接口使用)。</li>
+<li>所有第三方组件的版权与许可归属其原作者。</li>
+<li>完整许可文本请访问各组件的许可证原文链接。</li>
+<li>如有遗漏,请通过 <a href="https://github.com/Furina-1314/Equora/issues">GitHub Issues</a> 报告。</li>
+</ul>
+        </article>
+        <nav class="doc-pager" aria-label="上一篇与下一篇"><a class="pager-link pager-prev" href="data-model.html"><span>上一篇</span><strong>数据模型</strong></a>
+          <span class="pager-link pager-next" aria-hidden="true"></span></nav>
+      </div>
+    </div>
+  </main>
+  <footer class="container footer">
+    <div class="footer-top"><a class="brand" href="../index.html"><img src="../assets/equora.svg" width="28" height="28" alt=""><span class="app-wordmark">EQUORA</span></a><span>在时间中保持平衡。</span><nav aria-label="页脚导航"><a href="../index.html">首页</a><a href="../help.html">帮助中心</a><a href="../docs/release-notes.html">更新日志</a><a href="https://github.com/Furina-1314/Equora/issues">反馈</a></nav></div>
+    <div class="footer-bottom"><span>© 2026 Furina-1314 · Equora</span><span>开源于 MIT · 为专注而设计</span><a href="#main">回到顶部 ↑</a></div>
+  </footer>
+</body>
+</html>

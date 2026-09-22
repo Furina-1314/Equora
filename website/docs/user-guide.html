@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#C32F37">
+  <meta name="description" content="从安装到核心功能：任务管理、日历时间块、四象限、快速收集与专注会话的完整使用说明。">
+  <meta property="og:title" content="用户指南 — 衡序 Equora 帮助中心">
+  <meta property="og:description" content="从安装到核心功能：任务管理、日历时间块、四象限、快速收集与专注会话的完整使用说明。">
+  <meta property="og:type" content="article">
+  <link rel="canonical" href="https://furina-1314.github.io/Equora/docs/user-guide.html">
+  <link rel="icon" type="image/svg+xml" href="../assets/equora.svg">
+  <link rel="stylesheet" href="../styles.css">
+  <link rel="stylesheet" href="../help.css">
+  <meta name="help-search-index" content="search-index.json">
+  <script src="../help.js" defer></script>
+  <title>用户指南 — 衡序 Equora 帮助中心</title>
+</head>
+<body>
+  <a class="skip-link" href="#doc-content">跳到主要内容</a>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="../index.html" aria-label="衡序 Equora 首页"><img src="../assets/equora.svg" width="32" height="32" alt=""><span class="app-wordmark">EQUORA</span></a>
+      <button class="menu-toggle" type="button" aria-label="打开导航" aria-expanded="false" aria-controls="navigation">菜单 <span aria-hidden="true">☰</span></button>
+      <nav id="navigation" aria-label="主导航">
+        <a href="../index.html">首页</a><a href="../help.html">帮助中心</a><a href="../docs/release-notes.html">更新日志</a><a href="https://github.com/Furina-1314/Equora" class="repo-link">GitHub <span aria-hidden="true">↗</span></a>
+        <a class="button small" href="https://github.com/Furina-1314/Equora/releases/latest">下载 Equora <span aria-hidden="true">↓</span></a>
+      </nav>
+    </div>
+  </header>
+  <main id="main">
+    <div class="container help-layout">
+      <aside class="help-sidebar" id="help-sidebar" aria-label="文档目录">
+        <div class="sidebar-search">
+          <input type="search" id="doc-search" placeholder="搜索帮助文档…" aria-label="搜索帮助文档" autocomplete="off">
+          <div class="search-results" id="search-results" hidden></div>
+        </div>
+        <nav class="sidebar-nav">
+          <p class="nav-group">使用文档</p>
+          <a class="nav-link active" href="../docs/user-guide.html">用户指南</a>
+          <a class="nav-link" href="../docs/usage-help.html">使用帮助与快捷键</a>
+          <a class="nav-link" href="../docs/usage-restrictions.html">应用与网站限制</a>
+          <a class="nav-link" href="../docs/privacy-and-security.html">隐私与安全说明</a>
+          <p class="nav-group">版本与更新</p>
+          <a class="nav-link" href="../docs/release-notes.html">发布说明 · 更新日志</a>
+          <a class="nav-link" href="../docs/v0.2.2.html">v0.2.2 更新说明</a>
+          <a class="nav-link" href="../docs/v0.2.1.html">v0.2.1 更新说明</a>
+          <p class="nav-group">开发者资料</p>
+          <a class="nav-link" href="../docs/architecture.html">系统架构</a>
+          <a class="nav-link" href="../docs/data-model.html">数据模型</a>
+          <a class="nav-link" href="../docs/third-party-notices.html">第三方开源组件</a>
+          <p class="nav-group">反馈</p>
+          <a class="nav-link external" href="https://github.com/Furina-1314/Equora/issues">问题反馈 <span aria-hidden="true">↗</span></a>
+          <a class="nav-link external" href="https://github.com/Furina-1314/Equora/releases">版本下载 <span aria-hidden="true">↗</span></a>
+        </nav>
+      </aside>
+      <div class="doc-main">
+        <button class="sidebar-toggle" type="button" aria-expanded="false" aria-controls="help-sidebar">文档目录 <span aria-hidden="true">☰</span></button>
+        <nav class="doc-breadcrumb" aria-label="面包屑"><a href="../help.html">帮助中心</a> <span aria-hidden="true">/</span> <span>用户指南</span></nav>
+        <article class="doc-content" id="doc-content" tabindex="-1">
+<h1 id="衡序-equora-用户指南">衡序 Equora 用户指南</h1>
+<blockquote>
+<p>版本 0.1.0 · 适用 Windows 10 1809+ / Windows 11</p>
+</blockquote>
+<h2 id="1-快速开始">1. 快速开始</h2>
+<h3 id="11-安装">1.1 安装</h3>
+<p>下载 MSIX 安装包(或解压版),双击安装。首次启动自动创建本地数据库:</p>
+<pre><code>%LOCALAPPDATA%\Equora\equora.db
+</code></pre>
+<p>无需账号、无需联网,安装后即可完整使用全部核心功能。</p>
+<h3 id="12-三分钟上手">1.2 三分钟上手</h3>
+<ol>
+<li><strong>收集</strong>:按 <code>Ctrl+Shift+Space</code> 打开快速输入,输入「明天下午3点开会一小时 #工作 !高」回车。识别结果预览确认后自动创建任务并设置截止时间、标签和优先级。</li>
+<li><strong>整理</strong>:在任务页用智能清单(收集箱/今天/逾期/无日期)过滤,选中任务后在右侧详情栏编辑。</li>
+<li><strong>排程</strong>:把左侧「未安排任务」拖入日历周视图,自动创建时间块。</li>
+<li><strong>专注</strong>:在任务上启动专注(番茄钟/深度/Flowtime),计时中按 <code>Ctrl+Shift+Space</code> 记录分心想法——不打断当前焦点。</li>
+<li><strong>回顾</strong>:专注结束后看到今日累计时长与休息建议。</li>
+</ol>
+<h2 id="2-核心功能">2. 核心功能</h2>
+<h3 id="21-任务管理三栏">2.1 任务管理(三栏)</h3>
+<table>
+<thead>
+<tr>
+<th>左栏</th>
+<th>中栏</th>
+<th>右栏</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>9 个智能清单<br/>项目列表<br/>标签列表</td>
+<td>搜索框 + 任务列表<br/>(完成/删除/恢复)</td>
+<td>详情编辑<br/>(标题/备注/状态/优先级/<br/>截止/时长/标签/检查项)</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>智能清单</strong>:收集箱、今天、近期 7 天、已逾期、无日期、等待中、已完成、全部、回收站</li>
+<li><strong>搜索</strong>:标题与备注子串匹配,大小写不敏感</li>
+<li><strong>撤销</strong>:所有操作可撤销(上限 100 步);回收站条目可恢复</li>
+<li><strong>快捷键</strong>:<code>Ctrl+N</code> 新建任务 · <code>Ctrl+K</code> 命令面板 · <code>Ctrl+Shift+Space</code> 快速收集</li>
+</ul>
+<h3 id="22-日历与时间块">2.2 日历与时间块</h3>
+<ul>
+<li>周/日视图:拖拽空白创建、拖动移动、底部手柄缩放(15 分钟吸附)</li>
+<li>当前时间线(红色横线,每分钟刷新)</li>
+<li>工作时间底纹(工作日 09:00–18:00)</li>
+<li>冲突检测:重叠时间块红描边,侧栏可查看冲突对详情</li>
+<li>重复规则:支持每周 X / 每天 / 每月第 N 个星期 X / 最后一个星期 X</li>
+<li>ICS 导入导出:设置页一键操作</li>
+</ul>
+<h3 id="23-四象限">2.3 四象限</h3>
+<ul>
+<li>可解释归类:重要 = 重要性 ≥ 3,紧急 = 3 天内截止</li>
+<li>拖拽换象限自动调整重要性/截止时间(全部可撤销)</li>
+<li><strong>今日三件要事</strong>:从 Q1/Q2 双击设为要事(上限 3 件)</li>
+<li>容量提示:各象限计数与估时合计</li>
+</ul>
+<h3 id="24-快速收集自然语言">2.4 快速收集(自然语言)</h3>
+<table>
+<thead>
+<tr>
+<th>输入示例</th>
+<th>识别结果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>明天下午3点开会一小时</td>
+<td>截止=明天 15:00,估时=60 分钟</td>
+</tr>
+<tr>
+<td>每周五17点提醒写周报</td>
+<td>截止=本周五 17:00,重复=每周五</td>
+</tr>
+<tr>
+<td>下周三前完成设计稿 #产品 !高</td>
+<td>截止=下周三,标签=产品,优先级=高</td>
+</tr>
+<tr>
+<td>今晚安排45分钟复习电路</td>
+<td>截止=今晚,估时=45 分钟</td>
+</tr>
+<tr>
+<td>和 @设计 组对齐 14:30</td>
+<td>项目=设计,截止=14:30</td>
+</tr>
+</tbody>
+</table>
+<p><strong>识别不出的内容保留为标题,绝不丢弃。</strong></p>
+<h3 id="25-专注会话">2.5 专注会话</h3>
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>番茄钟</td>
+<td>25 分钟 + 5 分钟休息(可自定义)</td>
+</tr>
+<tr>
+<td>深度工作</td>
+<td>60–120 分钟长块</td>
+</tr>
+<tr>
+<td>Flowtime</td>
+<td>自由计时,完成时记录实际时长</td>
+</tr>
+<tr>
+<td>正计时</td>
+<td>向上累计</td>
+</tr>
+<tr>
+<td>无计时</td>
+<td>沉浸模式,不看时间</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>关联任务开始/结束时自动流转任务状态</li>
+<li><strong>分心捕获</strong>:专注中按 <code>Ctrl+Shift+Space</code> 记录,不切焦点;结束后一键转任务</li>
+<li><strong>崩溃恢复</strong>:软件崩溃后重启自动收尾未闭合会话</li>
+<li><strong>前台应用温和提醒</strong>(默认关闭):仅识别进程名(如 game.exe),不采集窗口内容</li>
+</ul>
+<h3 id="26-网站限制浏览器扩展">2.6 网站限制(浏览器扩展)</h3>
+<ul>
+<li>专注期间按桌面端下发的名单<strong>温和限制</strong>网站</li>
+<li>扩展不持久化规则 → 浏览器重启/扩展异常后自动解除,绝不永久阻断</li>
+<li>拦截页提供「返回任务」和「允许 5 分钟」</li>
+<li>白名单域名优先于限制名单</li>
+</ul>
+<h2 id="3-数据安全">3. 数据安全</h2>
+<h3 id="31-你的数据在哪里">3.1 你的数据在哪里</h3>
+<p>所有数据存储在本地 <code>%LOCALAPPDATA%\Equora\</code>:</p>
+<table>
+<thead>
+<tr>
+<th>文件</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>equora.db</code></td>
+<td>主数据库(SQLite,WAL 模式)</td>
+</tr>
+<tr>
+<td><code>backups/</code></td>
+<td>自动/手动备份(带 SHA-256 校验)</td>
+</tr>
+<tr>
+<td><code>logs/equora.log</code></td>
+<td>运行日志(脱敏,不含任务正文)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="32-备份与恢复">3.2 备份与恢复</h3>
+<ul>
+<li>设置页「立即备份」:创建一致性快照(在线,不需要关闭软件)</li>
+<li>每个备份带校验和,恢复前自动验证</li>
+<li>恢复前自动保护当前数据库(<code>.pre-restore</code> 快照)</li>
+</ul>
+<h3 id="33-导出">3.3 导出</h3>
+<ul>
+<li><strong>JSON</strong>:任务全字段(幂等导入,按 ID 跳过已存在)</li>
+<li><strong>CSV</strong>:Excel 兼容(UTF-8 BOM,中文可直接打开)</li>
+<li><strong>ICS</strong>:日历标准格式(事件 + 时间块)</li>
+</ul>
+<h3 id="34-隐私边界">3.4 隐私边界</h3>
+<table>
+<thead>
+<tr>
+<th>绝不采集</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>键盘输入</td>
+<td>不做键盘记录</td>
+</tr>
+<tr>
+<td>屏幕截图</td>
+<td>不截屏</td>
+</tr>
+<tr>
+<td>窗口标题/内容</td>
+<td>仅进程名(xxx.exe),且默认关闭</td>
+</tr>
+<tr>
+<td>剪贴板内容</td>
+<td>不读取</td>
+</tr>
+<tr>
+<td>浏览历史</td>
+<td>仅匹配域名,不记录页面</td>
+</tr>
+</tbody>
+</table>
+<h2 id="4-多设备同步可选">4. 多设备同步(可选)</h2>
+<p>同步默认关闭。启用后:</p>
+<ol>
+<li>部署同步服务器(Docker Compose,见 <code>server/README.md</code>)</li>
+<li>设置页填入服务器地址与令牌</li>
+<li>软件在后台自动推送/拉取(指数退避重试)</li>
+</ol>
+<p><strong>冲突处理</strong>:并发修改同一任务时,后到方自动进入「冲突中心」,可查看双方版本并选择保留本地/采纳服务端/手动合并。删除与修改冲突默认保留删除(可恢复)。</p>
+<h2 id="5-常见问题">5. 常见问题</h2>
+<p><strong>Q: 软件崩溃后会话丢失吗?</strong><br>
+A: 不会。专注会话和分心记录在每一步都立即写入数据库;重启后自动收尾。</p>
+<p><strong>Q: 备份文件可以复制到另一台电脑用吗?</strong><br>
+A: 可以。备份是完整 SQLite 快照,复制到新机器后在设置页恢复即可。</p>
+<p><strong>Q: 网站限制会永久阻断我吗?</strong><br>
+A: 不会。限制只在专注会话期间生效,使用浏览器会话规则(重启即清空)。即使桌面端异常,浏览器重启后所有限制自动解除。</p>
+<p><strong>Q: 忘记了紧急解锁怎么办?</strong><br>
+A: 紧急解锁冷却 15 分钟,过期后可再次触发。所有限制都以「宁可放开不可锁死」为设计原则。</p>
+<h2 id="6-键盘快捷键">6. 键盘快捷键</h2>
+<table>
+<thead>
+<tr>
+<th>快捷键</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Ctrl+Shift+Space</code></td>
+<td>快速收集 / 分心捕获(全局)</td>
+</tr>
+<tr>
+<td><code>Ctrl+N</code></td>
+<td>新建任务</td>
+</tr>
+<tr>
+<td><code>Ctrl+K</code></td>
+<td>命令面板</td>
+</tr>
+<tr>
+<td><code>T</code></td>
+<td>日历回到今天</td>
+</tr>
+<tr>
+<td><code>Space</code></td>
+<td>开始/暂停专注</td>
+</tr>
+<tr>
+<td><code>Ctrl+Z</code></td>
+<td>撤销</td>
+</tr>
+<tr>
+<td><code>Enter</code></td>
+<td>编辑当前选中项</td>
+</tr>
+</tbody>
+</table>
+        </article>
+        <nav class="doc-pager" aria-label="上一篇与下一篇"><span class="pager-link pager-prev" aria-hidden="true"></span>
+          <a class="pager-link pager-next" href="usage-help.html"><span>下一篇</span><strong>使用帮助与快捷键</strong></a></nav>
+      </div>
+    </div>
+  </main>
+  <footer class="container footer">
+    <div class="footer-top"><a class="brand" href="../index.html"><img src="../assets/equora.svg" width="28" height="28" alt=""><span class="app-wordmark">EQUORA</span></a><span>在时间中保持平衡。</span><nav aria-label="页脚导航"><a href="../index.html">首页</a><a href="../help.html">帮助中心</a><a href="../docs/release-notes.html">更新日志</a><a href="https://github.com/Furina-1314/Equora/issues">反馈</a></nav></div>
+    <div class="footer-bottom"><span>© 2026 Furina-1314 · Equora</span><span>开源于 MIT · 为专注而设计</span><a href="#main">回到顶部 ↑</a></div>
+  </footer>
+</body>
+</html>
