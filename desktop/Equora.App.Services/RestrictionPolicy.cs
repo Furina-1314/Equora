@@ -140,7 +140,7 @@ public sealed class RestrictionStore(string directory)
             {
                 try { File.WriteAllText(temp, json); Replace(temp, path); return; }
                 // 目标文件被读方或杀毒软件短暂占用时，替换会被拒绝；短暂重试即可成功。
-                catch (Exception ex) when (attempt < 3 && ex is IOException or UnauthorizedAccessException) { Thread.Sleep(15); }
+                catch (Exception ex) when (attempt < 9 && ex is IOException or UnauthorizedAccessException) { Thread.Sleep(15); }
             }
         }
         finally { TryDelete(temp); }

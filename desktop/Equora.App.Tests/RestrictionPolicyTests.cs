@@ -59,17 +59,23 @@ public class RestrictionPolicyTests
     public async Task WriteRetriesWhenDestinationIsBrieflyHeldOpen()
     {
         var directory = Path.Combine(Path.GetTempPath(), "equora-rules-" + Guid.NewGuid().ToString("N"));
+        Task? release = null;
         try
         {
             var store = new RestrictionStore(directory);
             store.Pulse(false, null);
             var path = Path.Combine(directory, "restriction-heartbeat.json");
             var hold = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
-            _ = Task.Run(async () => { await Task.Delay(10); await hold.DisposeAsync(); });
+            release = Task.Run(async () => { await Task.Delay(10); await hold.DisposeAsync(); });
             store.Pulse(true, null);
             Assert.True(new RestrictionStore(directory).IsDesktopActive(DateTimeOffset.Now));
         }
-        finally { if (Directory.Exists(directory)) Directory.Delete(directory, true); }
+        finally
+        {
+            // 清理前必须等占用句柄释放完毕，否则临时目录删除会与他人打开的文件竞争。
+            if (release is not null) await release;
+            if (Directory.Exists(directory)) Directory.Delete(directory, true);
+        }
     }
     [Fact]
     public void WriteReplacesFileWhileReaderHoldsItOpenWithDeleteSharing()
