@@ -118,7 +118,14 @@ public sealed class RestrictionStore(string directory)
 
     private T? Read<T>(string name)
     {
-        try { return JsonSerializer.Deserialize<T>(File.ReadAllText(Path.Combine(directory, name)), JsonOptions); }
+        try
+        {
+            // FileShare.Delete 允许并发的原子替换继续进行，读取方拿到的是旧流的内容。
+            using var stream = new FileStream(Path.Combine(directory, name), FileMode.Open,
+                FileAccess.Read, FileShare.Read | FileShare.Delete);
+            using var reader = new StreamReader(stream);
+            return JsonSerializer.Deserialize<T>(reader.ReadToEnd(), JsonOptions);
+        }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException) { return default; }
     }
     private void Write<T>(string name, T value)
@@ -126,8 +133,34 @@ public sealed class RestrictionStore(string directory)
         Directory.CreateDirectory(directory);
         var path = Path.Combine(directory, name);
         var temp = path + "." + Guid.NewGuid().ToString("N") + ".tmp";
-        try { File.WriteAllText(temp, JsonSerializer.Serialize(value, JsonOptions)); File.Move(temp, path, true); }
-        finally { if (File.Exists(temp)) File.Delete(temp); }
+        try
+        {
+            var json = JsonSerializer.Serialize(value, JsonOptions);
+            for (var attempt = 0; ; attempt++)
+            {
+                try { File.WriteAllText(temp, json); Replace(temp, path); return; }
+                // 目标文件被读方或杀毒软件短暂占用时，替换会被拒绝；短暂重试即可成功。
+                catch (Exception ex) when (attempt < 3 && ex is IOException or UnauthorizedAccessException) { Thread.Sleep(15); }
+            }
+        }
+        finally { TryDelete(temp); }
+    }
+    // Move 的覆盖替换在目标文件被任何句柄打开时都会被 Windows 拒绝(即使读方共享了 Delete)。
+    // 读方以 FileShare.Delete 打开时，可先把旧文件改名让位、再把新文件移入空出的路径。
+    private static void Replace(string temp, string path)
+    {
+        try { File.Move(temp, path, true); }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            var retired = path + "." + Guid.NewGuid().ToString("N") + ".old";
+            File.Move(path, retired);
+            try { File.Move(temp, path); }
+            finally { TryDelete(retired); }
+        }
+    }
+    private static void TryDelete(string path)
+    {
+        try { File.Delete(path); } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
     }
     public sealed record DailyUsage(string Date, Dictionary<string, double> Seconds);
 }

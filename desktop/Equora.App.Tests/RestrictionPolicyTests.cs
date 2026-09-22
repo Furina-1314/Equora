@@ -55,4 +55,39 @@ public class RestrictionPolicyTests
         }
         finally { if (Directory.Exists(directory)) Directory.Delete(directory, true); }
     }
+    [Fact]
+    public async Task WriteRetriesWhenDestinationIsBrieflyHeldOpen()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), "equora-rules-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var store = new RestrictionStore(directory);
+            store.Pulse(false, null);
+            var path = Path.Combine(directory, "restriction-heartbeat.json");
+            var hold = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+            _ = Task.Run(async () => { await Task.Delay(10); await hold.DisposeAsync(); });
+            store.Pulse(true, null);
+            Assert.True(new RestrictionStore(directory).IsDesktopActive(DateTimeOffset.Now));
+        }
+        finally { if (Directory.Exists(directory)) Directory.Delete(directory, true); }
+    }
+    [Fact]
+    public void WriteReplacesFileWhileReaderHoldsItOpenWithDeleteSharing()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), "equora-rules-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var store = new RestrictionStore(directory);
+            store.Pulse(false, null);
+            var path = Path.Combine(directory, "restriction-heartbeat.json");
+            using (var hold = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete))
+            {
+                store.Pulse(false, DateTimeOffset.Now.AddMinutes(1));
+                using var reader = new StreamReader(hold);
+                Assert.NotEmpty(reader.ReadToEnd());
+            }
+            Assert.NotNull(new RestrictionStore(directory).Heartbeat!.AllowUntil);
+        }
+        finally { if (Directory.Exists(directory)) Directory.Delete(directory, true); }
+    }
 }

@@ -15,6 +15,7 @@ internal sealed class RestrictionRuntime : IDisposable
     private DateTimeOffset _last = DateTimeOffset.Now;
     private DateTimeOffset _lastSave = DateTimeOffset.Now;
     private string? _lastProcess;
+    private bool _degraded;
     private readonly RestrictionPause _pause = new();
     private DateTimeOffset? _allowUntil => _pause.Until;
     public event Action? PauseChanged;
@@ -58,6 +59,7 @@ internal sealed class RestrictionRuntime : IDisposable
         {
             var focusing = AppServices.FocusVm.Session?.State == SessionStateDto.Running;
             Store.Pulse(focusing, _allowUntil);
+            if (_degraded) { _degraded = false; Status = Configuration.Enabled ? "限制服务已恢复" : "限制服务未启用"; }
             var rules = Configuration.Rules.Where(r => r.Enabled && r.Kind == "app").ToList();
             var (window, process) = ForegroundAccess.Current();
             if (Appearance.Current.ActivityMonitoring && focusing && process != _lastProcess)
@@ -85,7 +87,7 @@ internal sealed class RestrictionRuntime : IDisposable
                 break;
             }
         }
-        catch (Exception ex) { Status = $"限制服务暂不可用：{ex.Message}"; }
+        catch (Exception ex) { _degraded = true; Status = $"限制服务暂不可用：{ex.Message}"; }
         finally { _last = now; }
     }
 
@@ -99,7 +101,7 @@ internal sealed class RestrictionRuntime : IDisposable
     public void Dispose()
     {
         _timer.Stop();
-        try { Flush(_last); Store.Pulse(false, DateTimeOffset.Now.AddMinutes(1)); } catch (IOException) { }
+        try { Flush(_last); Store.Pulse(false, DateTimeOffset.Now.AddMinutes(1)); } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
         Current = null;
     }
 }
