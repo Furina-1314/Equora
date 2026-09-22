@@ -378,6 +378,10 @@ const std::vector<Migration>& builtInMigrations() {
         Migration{6, kV6Name,
                   std::vector<std::string_view>(std::begin(kV6Statements),
                                                 std::end(kV6Statements))},
+        Migration{7, "time block titles and batches", {
+            "ALTER TABLE time_blocks ADD COLUMN title TEXT NOT NULL DEFAULT '';",
+            "ALTER TABLE time_blocks ADD COLUMN batch_id TEXT NOT NULL DEFAULT '';",
+            "CREATE INDEX idx_time_blocks_batch ON time_blocks(batch_id) WHERE deleted_at IS NULL;"}},
     };
     return kMigrations;
 }

@@ -6,7 +6,7 @@ namespace Equora.App.Tests;
 
 public class SemesterTests
 {
-    private static SemesterSettings Semester => new() { Enabled = true, Name = "秋季学期",
+    private static readonly SemesterSettings Semester = new() { Enabled = true, Name = "秋季学期",
         StartDate = new(2026, 9, 2), EndDate = new(2026, 9, 22) };
 
     [Fact]

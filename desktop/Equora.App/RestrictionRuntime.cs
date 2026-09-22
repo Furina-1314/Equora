@@ -98,8 +98,11 @@ internal sealed class RestrictionRuntime : IDisposable
         _lastSave = now;
     }
     public void FlushUsage() => Flush(DateTimeOffset.Now);
+    private bool _disposed;
     public void Dispose()
     {
+        if (_disposed) return;
+        _disposed = true;
         _timer.Stop();
         try { Flush(_last); Store.Pulse(false, DateTimeOffset.Now.AddMinutes(1)); } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
         Current = null;

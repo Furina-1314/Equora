@@ -56,6 +56,8 @@ struct EqBlockHandle {
         view.buffer_minutes = value.bufferMinutes;
         view.actual_minutes = value.actualMinutes;
         view.note = value.note.c_str();
+        view.title = value.title.c_str();
+        view.batch_id = value.batchId.c_str();
         view.created_at = value.createdAt;
         view.updated_at = value.updatedAt;
         view.revision = value.revision;
@@ -166,6 +168,8 @@ domain::TimeBlock blockFromInput(const EqBlockInput& in) {
     b.actualMinutes = in.actual_minutes;
     b.note = in.note != nullptr ? in.note : "";
     b.revision = in.revision;
+    b.title = in.title != nullptr ? in.title : "";
+    b.batchId = in.batch_id != nullptr ? in.batch_id : "";
     return b;
 }
 
@@ -264,6 +268,40 @@ const EqCalendarView* eq_calendar_list_get(const EqCalendarList* list, int32_t i
 void eq_calendar_list_destroy(EqCalendarList* list) { delete list; }
 
 // ---- 时间块 ----
+
+int32_t eq_block_apply_batch(EqCore* core, const EqBlockInput* inputs, int32_t count,
+                             int32_t deleted, int32_t affect_tasks, EqError* out_error) {
+    using namespace equora;
+    using namespace equora::capi;
+    return guard(out_error, [&]() -> int32_t {
+        if (!core || !inputs || count <= 0 || count > 10000)
+            return fillError(out_error, static_cast<int32_t>(ErrorCode::InvalidArgument), "invalid batch");
+        auto tx = core->db.beginTransaction();
+        for (int32_t i = 0; i < count; ++i) {
+            auto block = blockFromInput(inputs[i]);
+            if (affect_tasks && block.taskId.has_value()) {
+                if (deleted) (void)core->tasks.setDeleted(*block.taskId, true, false);
+                else {
+                    auto task = core->tasks.findById(*block.taskId);
+                    if (!task) throw domain::EquoraError(ErrorCode::NotFound, "linked task not found");
+                    task->title = block.title;
+                    (void)core->tasks.update(*task, false);
+                }
+            }
+            if (deleted) {
+                auto st = core->db.prepare("UPDATE time_blocks SET deleted_at = ?, updated_at = ?, revision = revision + 1 WHERE id = ? AND revision = ? AND deleted_at IS NULL");
+                const auto now = domain::utc::now();
+                st.bind(1, now).bind(2, now).bind(3, block.id).bind(4, block.revision);
+                st.step();
+                if (core->db.changes() != 1) throw domain::EquoraError(ErrorCode::Conflict, "time block changed; refresh before retry");
+            } else {
+                (void)core->calendar.update(std::move(block), false);
+            }
+        }
+        tx.commit();
+        return 0;
+    });
+}
 
 const EqBlockView* eq_block_view(const EqBlockHandle* handle) {
     return handle != nullptr ? &handle->view : nullptr;

@@ -2,6 +2,7 @@ namespace Equora.App.Services;
 
 public sealed record SemesterSettings
 {
+    public string Id { get; init; } = Guid.NewGuid().ToString();
     public bool Enabled { get; init; }
     public string Name { get; init; } = "新学期";
     public DateOnly StartDate { get; init; } = DateOnly.FromDateTime(DateTime.Today);
@@ -58,5 +59,19 @@ public sealed record SemesterSettings
         }
         if (result.Count == 0) throw new ArgumentException("所选周次和星期在学期日期范围内没有可添加的时间段。");
         return result;
+    }
+}
+
+public static class SemesterLifecycle
+{
+    public static AppPreferences ArchiveExpired(AppPreferences preferences, DateOnly today)
+    {
+        var semester = preferences.Semester;
+        if (string.IsNullOrWhiteSpace(semester.Name) || semester.EndDate >= today) return preferences;
+        return preferences with {
+            ArchivedSemesters = preferences.ArchivedSemesters.Any(s => s.Id == semester.Id)
+                ? preferences.ArchivedSemesters : preferences.ArchivedSemesters.Append(semester).ToArray(),
+            Semester = new SemesterSettings { Enabled = semester.Enabled, Name = "", StartDate = today, EndDate = today.AddDays(125) }
+        };
     }
 }

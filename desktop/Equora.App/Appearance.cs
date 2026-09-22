@@ -9,6 +9,15 @@ internal static class Appearance
 {
     private static readonly PreferencesStore Store = new(Path.Combine(AppPaths.DataDirectory, "preferences.json"));
     public static AppPreferences Current { get; private set; } = Store.Load();
+    public static event Action? SemesterChanged;
+
+    public static void ArchiveExpiredSemester()
+    {
+        var next = SemesterLifecycle.ArchiveExpired(Current, DateOnly.FromDateTime(DateTime.Today));
+        if (ReferenceEquals(next, Current)) return;
+        Save(next);
+        SemesterChanged?.Invoke();
+    }
 
     public static bool TryColor(string value, out Color color)
     {

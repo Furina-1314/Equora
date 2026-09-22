@@ -15,6 +15,7 @@ public sealed partial class AppDataService
     public TimeBlockDto? GetBlock(string id, bool includeDeleted = false) =>
         _core.GetBlock(id, includeDeleted);
     public TimeBlockDto UpdateBlock(TimeBlockDto block) => _core.UpdateBlock(block);
+    public void ApplyBlockBatch(IReadOnlyList<TimeBlockDto> blocks, bool delete, bool affectTasks = false) => _core.ApplyBlockBatch(blocks, delete, affectTasks);
     public void DeleteBlock(string id) => _core.DeleteBlock(id);
     public IReadOnlyList<TimeBlockDto> BlocksInRange(DateTimeOffset from, DateTimeOffset to) =>
         _core.BlocksInRange(from, to);

@@ -28,7 +28,7 @@ public:
     [[nodiscard]] domain::TimeBlock createBlock(domain::TimeBlock draft) const;
     [[nodiscard]] std::optional<domain::TimeBlock> findBlock(const std::string& id,
                                                              bool includeDeleted = false) const;
-    [[nodiscard]] domain::TimeBlock update(domain::TimeBlock block) const; // 乐观并发
+    [[nodiscard]] domain::TimeBlock update(domain::TimeBlock block, bool ownTransaction = true) const; // 乐观并发
     void deleteBlock(const std::string& id) const;                         // 软删除
     // 与窗口 [from,to) 相交的未删除块(start < to AND end > from)。
     [[nodiscard]] std::vector<domain::TimeBlock> blocksInRange(domain::UtcMillis from,

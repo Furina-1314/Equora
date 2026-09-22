@@ -10,9 +10,8 @@ internal static class TimeBlockEditor
         var existing = id is null ? null : AppServices.Data.GetBlock(id);
         if (existing is not null) { start = existing.StartAt.ToLocalTime(); end = existing.EndAt.ToLocalTime(); }
         var task = new CheckBox { Content = "同时创建任务", IsChecked = createTask, Visibility = id is null ? Visibility.Visible : Visibility.Collapsed };
-        var title = new TextBox { Header = "任务标题", Visibility = createTask ? Visibility.Visible : Visibility.Collapsed };
-        task.Checked += (_, _) => title.Visibility = Visibility.Visible;
-        task.Unchecked += (_, _) => title.Visibility = Visibility.Collapsed;
+        var title = new TextBox { Header = "时间段标题", Text = existing?.Title ?? "", PlaceholderText = "不添加到任务列表也可以设置标题" };
+        Microsoft.UI.Xaml.Automation.AutomationProperties.SetAutomationId(title, "BlockTitle");
         var note = new TextBox { Header = "备注", Text = existing?.Note ?? "", AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 70 };
         var fromDate = new CalendarDatePicker { Header = "开始日期", Date = start };
         var fromTime = new TimePicker { Header = "开始时间", ClockIdentifier = "24HourClock", Time = start.TimeOfDay };
@@ -34,7 +33,7 @@ internal static class TimeBlockEditor
                 var from = fromDate.Date.Value.Date + fromTime.Time;
                 var to = toDate.Date.Value.Date + toTime.Time;
                 if (TimeZoneInfo.Local.IsInvalidTime(from) || TimeZoneInfo.Local.IsInvalidTime(to)) throw new ArgumentException("该时间在本地夏令时切换中不存在。");
-                AppServices.Calendar.SaveTimeBlock(id, new DateTimeOffset(from, TimeZoneInfo.Local.GetUtcOffset(from)), new DateTimeOffset(to, TimeZoneInfo.Local.GetUtcOffset(to)), note.Text, color.Text.Trim(), id is null && task.IsChecked == true ? title.Text : null);
+                AppServices.Calendar.SaveTimeBlock(id, new DateTimeOffset(from, TimeZoneInfo.Local.GetUtcOffset(from)), new DateTimeOffset(to, TimeZoneInfo.Local.GetUtcOffset(to)), note.Text, color.Text.Trim(), id is null && task.IsChecked == true ? title.Text : null, title.Text);
             }
             catch (Exception ex) { error.Text = ex.Message; e.Cancel = true; }
         };

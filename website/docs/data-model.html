@@ -43,6 +43,7 @@
           <a class="nav-link" href="../docs/privacy-and-security.html">隐私与安全说明</a>
           <p class="nav-group">版本与更新</p>
           <a class="nav-link" href="../docs/release-notes.html">发布说明 · 更新日志</a>
+          <a class="nav-link" href="../docs/v1.0.0.html">v1.0.0 正式版</a>
           <a class="nav-link" href="../docs/v0.2.2.html">v0.2.2 更新说明</a>
           <a class="nav-link" href="../docs/v0.2.1.html">v0.2.1 更新说明</a>
           <p class="nav-group">开发者资料</p>
@@ -247,6 +248,10 @@
 <li>备份(P4):<code>sqlite3_backup</code> 一致性快照 + SHA-256 校验 + 版本元数据;<br>
   恢复前先备份当前库。绝不直接复制使用中的库文件。</li>
 </ul>
+<h2 id="v100数据库-v7-与学期历史">v1.0.0：数据库 v7 与学期历史</h2>
+<p><code>time_blocks</code> 新增 <code>title TEXT NOT NULL DEFAULT ''</code> 和 <code>batch_id TEXT NOT NULL DEFAULT ''</code>，并为未删除条目的批次建立索引。旧记录保持原备注，两个新字段默认为空，不推测旧批次。标题参与日历呈现和 ICS 导出。</p>
+<p>每次学期批量创建使用唯一批次 ID，各条时间段仍可独立修改。批量编辑/删除使用单个事务和 revision 检查，并可原子地同步关联任务标题或软删除关联任务。C ABI 升级至 v3。</p>
+<p><code>preferences.json</code> 保存当前 <code>Semester</code> 和 <code>ArchivedSemesters</code>，以学期 ID 区分历史。结束日期次日归档，保留原有时间段，等待设置新学期。</p>
         </article>
         <nav class="doc-pager" aria-label="上一篇与下一篇"><a class="pager-link pager-prev" href="architecture.html"><span>上一篇</span><strong>系统架构</strong></a>
           <a class="pager-link pager-next" href="third-party-notices.html"><span>下一篇</span><strong>第三方开源组件</strong></a></nav>

@@ -11,6 +11,12 @@ public sealed partial class MainWindow : Window
     private bool _exiting;
     private readonly DispatcherTimer _clock = new() { Interval = TimeSpan.FromSeconds(1) };
     public void ExitApplication() { _exiting = true; Close(); }
+    public void PrepareDataReset()
+    {
+        _clock.Stop();
+        _restrictions.Dispose();
+        AppServices.Data.Dispose();
+    }
     public void RestoreWindow() { AppWindow.Show(); Activate(); }
 
     public MainWindow()
@@ -27,7 +33,8 @@ public sealed partial class MainWindow : Window
         _restrictions.PauseChanged += UpdatePauseNotice;
         try { _tray = new TrayIcon(WinRT.Interop.WindowNative.GetWindowHandle(this), Path.Combine(AppContext.BaseDirectory, "Assets", "Equora.ico"), RestoreWindow, ExitApplication); }
         catch (Exception ex) { RestrictionNotice.Message = ex.Message; RestrictionNotice.IsOpen = true; }
-        _clock.Tick += (_, _) => { AppServices.FocusVm.Clock = DateTimeOffset.Now; UpdatePauseNotice(); };
+        _clock.Tick += (_, _) => { AppServices.FocusVm.Clock = DateTimeOffset.Now; UpdatePauseNotice();
+            try { Appearance.ArchiveExpiredSemester(); } catch (Exception ex) { RestrictionNotice.Message = ex.Message; RestrictionNotice.IsOpen = true; } };
         _clock.Start();
         AppWindow.Closing += (_, e) =>
         {

@@ -13,7 +13,7 @@ public class PreferencesStoreTests
         {
             var expected = new AppPreferences { Theme = 2, Accent = "#0078D4", ActivityMonitoring = true, BlockedApps = "test.exe" };
             new PreferencesStore(path).Save(expected);
-            Assert.Equal(expected, new PreferencesStore(path).Load());
+            Assert.Equivalent(expected, new PreferencesStore(path).Load());
         }
         finally { File.Delete(path); }
     }

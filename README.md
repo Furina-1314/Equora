@@ -14,14 +14,14 @@
 
 > **Equora** = **Equ**ilibrium + **H**ora(拉丁语"时间")——在时间中保持平衡,即"衡序"。
 
-当前版本 [v0.2.2](https://github.com/Furina-1314/Equora/releases/tag/v0.2.2) · 138 项原生、140 项桌面、20 项服务器及 8 项扩展测试通过 · [发布说明](docs/release-notes.md) · [下载安装包](https://github.com/Furina-1314/Equora/releases/latest)
+当前正式版 [v1.0.0](https://github.com/Furina-1314/Equora/releases/tag/v1.0.0) · 139 项原生、154 项桌面、20 项服务器及 8 项扩展测试通过 · [发布说明](docs/release-notes.md) · [下载安装包](https://github.com/Furina-1314/Equora/releases/latest)
 
 ## 功能
 
 | 模块 | 能力 |
 |---|---|
 | 任务管理 | 三栏布局,九个智能清单,项目与标签,全文搜索,撤销栈,回收站恢复与确认后永久删除 |
-| 日历 | 周视图时间块,拖拽创建、移动与缩放,冲突检测,重复规则,ICS 导入导出;学期周次与每周/指定周次批量安排,生成任务可独立编辑 |
+| 日历 | 周视图时间块,拖拽创建、移动与缩放,冲突检测,重复规则,ICS 导入导出;独立标题、可选创建任务、跨周批量编辑/删除、学期自动归档 |
 | 四象限 | 重要/紧急矩阵,拖拽换象限,今日要事,容量提示 |
 | 快速收集 | 全局快捷键 `Ctrl+Shift+Space`,中文自然语言解析(日期、时长、标签、优先级),预览确认 |
 | 专注 | 番茄钟、深度工作、正计时三种模式,暂停与继续,工作/休息轮次,分心捕获,崩溃恢复 |
@@ -61,12 +61,12 @@ cd Equora
 cd native
 cmake --preset win-x64-release
 cmake --build --preset win-x64-release
-ctest --preset win-x64-release    # 138/138 通过
+ctest --preset win-x64-release    # 139/139 通过
 
 # 2. 构建桌面应用(WinUI 3)
 cd ../desktop
 dotnet build Equora.slnx -c Release
-dotnet test Equora.App.Tests -c Release --no-build   # 140/140 通过
+dotnet test Equora.App.Tests -c Release --no-build   # 154/154 通过
 
 # 3. 运行
 dotnet run --project Equora.App -c Release
@@ -88,11 +88,11 @@ docker compose -f docker/docker-compose.yml up --build
 
 | 测试套件 | 数量 | CI |
 |---|---|---|
-| 原生核心(GoogleTest / C++20) | 138 | [![native-ci](https://github.com/Furina-1314/Equora/actions/workflows/native-ci.yml/badge.svg)](https://github.com/Furina-1314/Equora/actions/workflows/native-ci.yml) |
-| 桌面应用(xUnit / C#) | 140 | [![desktop-ci](https://github.com/Furina-1314/Equora/actions/workflows/desktop-ci.yml/badge.svg)](https://github.com/Furina-1314/Equora/actions/workflows/desktop-ci.yml) |
+| 原生核心(GoogleTest / C++20) | 139 | [![native-ci](https://github.com/Furina-1314/Equora/actions/workflows/native-ci.yml/badge.svg)](https://github.com/Furina-1314/Equora/actions/workflows/native-ci.yml) |
+| 桌面应用(xUnit / C#) | 154 | [![desktop-ci](https://github.com/Furina-1314/Equora/actions/workflows/desktop-ci.yml/badge.svg)](https://github.com/Furina-1314/Equora/actions/workflows/desktop-ci.yml) |
 | 同步服务器(GoogleTest) | 20 | [![server-ci](https://github.com/Furina-1314/Equora/actions/workflows/server-ci.yml/badge.svg)](https://github.com/Furina-1314/Equora/actions/workflows/server-ci.yml) |
 | 浏览器扩展 | 8 | 本地验证 |
-| **合计** | **306** | |
+| **合计** | **321** | |
 
 ## 架构
 
@@ -100,7 +100,7 @@ docker compose -f docker/docker-compose.yml up --build
 ┌─────────────────────────────────────────────────────┐
 │  桌面前端(C# / WinUI 3 / MVVM)                    │
 │  Equora.App / ViewModels / Services / NativeInterop │
-├────────── 稳定 C ABI v2(equora_capi.dll)──────────┤
+├────────── 稳定 C ABI v3(equora_capi.dll)──────────┤
 │  本地核心(C++20, 零警告 /W4)                      │
 │  ┌──────────┐ ┌──────────┐ ┌───────────────┐      │
 │  │ Domain   │ │ Storage  │ │ Scheduling    │      │
@@ -111,7 +111,7 @@ docker compose -f docker/docker-compose.yml up --build
 │  │ 仓库/用例 │ │ Outbox/退避│ │ 日志/SHA-256  │      │
 │  └──────────┘ └──────────┘ └───────────────┘      │
 ├─────────────────────────────────────────────────────┤
-│  本地 SQLite(WAL, 6 个版本化迁移)                │
+│  本地 SQLite(WAL, 7 个版本化迁移)                │
 └─────────────────────────────────────────────────────┘
               ↑ HTTPS + JSON 协议 v1(可选)
 ┌─────────────────────────────────────────────────────┐

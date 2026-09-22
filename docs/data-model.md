@@ -93,3 +93,11 @@
 - 崩溃恢复:WAL + `synchronous=NORMAL`;启动时 `eq_core_create` 自动补迁移。
 - 备份(P4):`sqlite3_backup` 一致性快照 + SHA-256 校验 + 版本元数据;
   恢复前先备份当前库。绝不直接复制使用中的库文件。
+
+## v1.0.0：数据库 v7 与学期历史
+
+`time_blocks` 新增 `title TEXT NOT NULL DEFAULT ''` 和 `batch_id TEXT NOT NULL DEFAULT ''`，并为未删除条目的批次建立索引。旧记录保持原备注，两个新字段默认为空，不推测旧批次。标题参与日历呈现和 ICS 导出。
+
+每次学期批量创建使用唯一批次 ID，各条时间段仍可独立修改。批量编辑/删除使用单个事务和 revision 检查，并可原子地同步关联任务标题或软删除关联任务。C ABI 升级至 v3。
+
+`preferences.json` 保存当前 `Semester` 和 `ArchivedSemesters`，以学期 ID 区分历史。结束日期次日归档，保留原有时间段，等待设置新学期。

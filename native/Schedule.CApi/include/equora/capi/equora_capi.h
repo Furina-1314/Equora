@@ -25,7 +25,7 @@ extern "C" {
 #define EQUORA_API __attribute__((visibility("default")))
 #endif
 
-#define EQUORA_CAPI_VERSION 2
+#define EQUORA_CAPI_VERSION 3
 
 // 错误对象:调用方栈分配;code 与 domain::ErrorCode 取值一致。
 typedef struct EqError {
@@ -359,6 +359,8 @@ typedef struct EqBlockInput {
     int32_t actual_minutes;
     const char* note;
     int64_t revision;
+    const char* title;
+    const char* batch_id;
 } EqBlockInput;
 
 typedef struct EqBlockView {
@@ -376,12 +378,16 @@ typedef struct EqBlockView {
     int64_t revision;
     int64_t deleted_at;
     int32_t has_deleted;
+    const char* title;
+    const char* batch_id;
 } EqBlockView;
 
 typedef struct EqBlockHandle EqBlockHandle;
 typedef struct EqBlockList EqBlockList;
 
 EQUORA_API const EqBlockView* eq_block_view(const EqBlockHandle* handle);
+int32_t EQUORA_API eq_block_apply_batch(EqCore* core, const EqBlockInput* inputs, int32_t count,
+                                       int32_t deleted, int32_t affect_tasks, EqError* out_error);
 void EQUORA_API eq_block_handle_destroy(EqBlockHandle* handle);
 int32_t EQUORA_API eq_block_create(EqCore* core, const EqBlockInput* input,
                                    EqBlockHandle** out_handle, EqError* out_error);

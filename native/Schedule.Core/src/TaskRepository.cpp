@@ -116,7 +116,7 @@ std::optional<Task> TaskRepository::findById(const std::string& id,
     return rowToTask(st);
 }
 
-Task TaskRepository::update(domain::Task task) const {
+Task TaskRepository::update(domain::Task task, bool ownTransaction) const {
     const std::optional<Task> existing = findById(task.id, /*includeDeleted=*/true);
     if (!existing.has_value() || existing->deletedAt.has_value()) {
         throw EquoraError(ErrorCode::NotFound, "task not found: '" + task.id + "'");
@@ -134,7 +134,7 @@ Task TaskRepository::update(domain::Task task) const {
     task.revision += 1;
     task.lastDeviceId = deviceId_;
 
-    Transaction tx = db_.beginTransaction();
+    Transaction tx = ownTransaction ? db_.beginTransaction() : Transaction{};
     {
         auto st = db_.prepare(
             "UPDATE tasks SET title = ?, note = ?, status = ?, priority = ?, "
@@ -162,11 +162,11 @@ Task TaskRepository::update(domain::Task task) const {
                               "concurrent update detected for task " + task.id);
         }
     }
-    tx.commit();
+    if (ownTransaction) tx.commit();
     return task;
 }
 
-Task TaskRepository::setDeleted(const std::string& id, bool deleted) const {
+Task TaskRepository::setDeleted(const std::string& id, bool deleted, bool ownTransaction) const {
     const std::optional<Task> existing = findById(id, /*includeDeleted=*/true);
     if (!existing.has_value()) {
         throw EquoraError(ErrorCode::NotFound, "task not found: '" + id + "'");
@@ -180,7 +180,7 @@ Task TaskRepository::setDeleted(const std::string& id, bool deleted) const {
     updated.deletedAt = deleted ? std::optional<domain::UtcMillis>(updated.updatedAt)
                                 : std::nullopt;
 
-    Transaction tx = db_.beginTransaction();
+    Transaction tx = ownTransaction ? db_.beginTransaction() : Transaction{};
     {
         auto st = db_.prepare(
             "UPDATE tasks SET deleted_at = ?, updated_at = ?, revision = ?, "
@@ -197,7 +197,7 @@ Task TaskRepository::setDeleted(const std::string& id, bool deleted) const {
                               "concurrent update detected for task " + id);
         }
     }
-    tx.commit();
+    if (ownTransaction) tx.commit();
     return updated;
 }
 

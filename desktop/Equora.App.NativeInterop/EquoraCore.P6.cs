@@ -22,6 +22,8 @@ public sealed record TimeBlockDto
     public int BufferMinutes { get; init; }
     public int ActualMinutes { get; init; }
     public string Note { get; init; } = "";
+    public string Title { get; init; } = "";
+    public string BatchId { get; init; } = "";
     public long Revision { get; init; }
     public bool IsDeleted { get; init; }
 }
@@ -182,11 +184,24 @@ public sealed partial class EquoraCore
     {
         using var scope = new BlockScope(block.TaskId, block.CalendarId, block.StartAt,
             block.EndAt, block.Note, block.PrepareMinutes, block.BufferMinutes,
-            block.Revision, block.ActualMinutes, block.Id);
+            block.Revision, block.ActualMinutes, block.Id, block.Title, block.BatchId);
         var rc = NativeMethods.eq_block_update(_core, in scope.Value, out var handle,
             out var error);
         EquoraException.ThrowIfFailed(rc, error, "block_update");
         return ReadBlock(handle);
+    }
+
+    public void ApplyBlockBatch(IReadOnlyList<TimeBlockDto> blocks, bool delete, bool affectTasks = false)
+    {
+        var scopes = new List<BlockScope>();
+        try
+        {
+            foreach (var b in blocks) scopes.Add(new(b.TaskId, b.CalendarId, b.StartAt, b.EndAt, b.Note,
+                b.PrepareMinutes, b.BufferMinutes, b.Revision, b.ActualMinutes, b.Id, b.Title, b.BatchId));
+            var rc = NativeMethods.eq_block_apply_batch(_core, scopes.Select(s => s.Value).ToArray(), scopes.Count, delete ? 1 : 0, affectTasks ? 1 : 0, out var error);
+            EquoraException.ThrowIfFailed(rc, error, "block_apply_batch");
+        }
+        finally { foreach (var scope in scopes) scope.Dispose(); }
     }
 
     public void DeleteBlock(string id)
@@ -257,6 +272,8 @@ public sealed partial class EquoraCore
         BufferMinutes = v.buffer_minutes,
         ActualMinutes = v.actual_minutes,
         Note = v.Note.Str() ?? "",
+        Title = v.Title.Str() ?? "",
+        BatchId = v.BatchId.Str() ?? "",
         Revision = v.revision,
         IsDeleted = v.has_deleted != 0,
     };
@@ -268,7 +285,7 @@ public sealed partial class EquoraCore
 
         public BlockScope(string? taskId, string? calendarId, DateTimeOffset start,
             DateTimeOffset end, string note, int prepare, int buffer, long revision,
-            int actualMinutes, string? id)
+            int actualMinutes, string? id, string title = "", string batchId = "")
         {
             Value = new NativeMethods.EqBlockInput
             {
@@ -282,6 +299,8 @@ public sealed partial class EquoraCore
                 actual_minutes = actualMinutes,
                 Note = Pin(string.IsNullOrEmpty(note) ? null : note),
                 revision = revision,
+                Title = Pin(title),
+                BatchId = Pin(batchId),
             };
         }
 

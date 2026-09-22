@@ -24,6 +24,7 @@
    <TextBlock x:Name="BackupStatus" TextWrapping="Wrap" />
    <StackPanel Orientation="Horizontal" Spacing="8"><Button Content="导出 JSON" Click="OnExportJson" /><Button Content="导出 CSV" Click="OnExportCsv" /><Button Content="导入 JSON" Click="OnImportJson" /></StackPanel>
    <TextBlock x:Name="TransferStatus" TextWrapping="Wrap" />
+   <Button Content="清空数据…" Click="OnClearData" />
   </StackPanel></Border>
   <Border Style="{StaticResource EquoraSectionStyle}"><StackPanel Spacing="16">
    <TextBlock Text="学期模式" FontSize="20" />
@@ -34,7 +35,10 @@
     <CalendarDatePicker x:Name="SemesterEnd" Header="结束日期" />
     <TextBlock Text="每周为周一至周日，起始日期所在周为第 1 周；仅在学期日期范围内批量添加时间段。" TextWrapping="Wrap" Opacity="0.7" />
     <Button Content="保存学期设置" Click="OnSaveSemester" />
-    <TextBlock x:Name="SemesterStatus" TextWrapping="Wrap" />
+   <TextBlock x:Name="SemesterStatus" TextWrapping="Wrap" />
+   <TextBlock Text="以往学期" FontWeight="SemiBold" />
+   <ComboBox x:Name="ArchivedSemesterChoice" Header="已结束并归档的学期" HorizontalAlignment="Stretch" />
+   <Button Content="查看所选学期日历" Click="OnViewArchivedSemester" />
    </StackPanel>
   </StackPanel></Border>
   <Border Style="{StaticResource EquoraSectionStyle}"><StackPanel Spacing="16">

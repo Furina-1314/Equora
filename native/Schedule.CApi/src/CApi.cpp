@@ -33,7 +33,7 @@ EqTaskHandle* makeTaskHandle(domain::Task t) { return new EqTaskHandle(std::move
 
 int32_t eq_api_version() { return EQUORA_CAPI_VERSION; }
 
-const char* eq_version_string() { return "Equora native core 0.2.0 (capi v2)"; }
+const char* eq_version_string() { return "Equora native core 1.0.0 (capi v3)"; }
 
 int32_t eq_ping(int32_t value) { return value + 1; }
 

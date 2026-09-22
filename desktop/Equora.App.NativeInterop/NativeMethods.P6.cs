@@ -31,6 +31,8 @@ internal static partial class NativeMethods
         public int actual_minutes;
         public nint Note;
         public long revision;
+        public nint Title;
+        public nint BatchId;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -50,7 +52,12 @@ internal static partial class NativeMethods
         public long revision;
         public long deleted_at;
         public int has_deleted;
+        public nint Title;
+        public nint BatchId;
     }
+
+    [DllImport("equora_capi", CallingConvention = CallingConvention.Cdecl)]
+    internal static extern int eq_block_apply_batch(IntPtr core, [In] EqBlockInput[] inputs, int count, int deleted, int affectTasks, out EqError error);
 
     [StructLayout(LayoutKind.Sequential)]
     internal struct EqEventInput

@@ -115,8 +115,8 @@ std::string exportIcs(const CalendarRepository& repo, domain::UtcMillis from,
     }
 
     for (const auto& b : repo.blocksInRange(from, to)) {
-        std::string title = "专注块";
-        if (b.taskId.has_value() && !b.taskId->empty()) {
+        std::string title = b.title.empty() ? "专注块" : b.title;
+        if (b.title.empty() && b.taskId.has_value() && !b.taskId->empty()) {
             title = "任务块 " + b.taskId->substr(0, 8);
         }
         out << "BEGIN:VEVENT\r\n"

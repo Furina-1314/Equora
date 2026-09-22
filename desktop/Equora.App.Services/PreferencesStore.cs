@@ -12,6 +12,7 @@ public sealed record AppPreferences
     public int PomodoroRounds { get; init; } = 4;
     public int BreakMinutes { get; init; } = 5;
     public SemesterSettings Semester { get; init; } = new();
+    public IReadOnlyList<SemesterSettings> ArchivedSemesters { get; init; } = Array.Empty<SemesterSettings>();
 }
 
 /// <summary>Works in both unpackaged desktop builds and MSIX installations.</summary>

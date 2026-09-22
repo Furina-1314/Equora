@@ -10,7 +10,7 @@
   <Identity
     Name="Equora"
     Publisher="CN=Equora"
-    Version="0.2.2.0" />
+    Version="1.0.0.0" />
 
   <Properties>
     <DisplayName>衡序 Equora</DisplayName>

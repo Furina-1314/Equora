@@ -220,6 +220,8 @@ public sealed partial class WeekView : UserControl
             TextWrapping = TextWrapping.Wrap,
         };
         block.Child = text;
+        Microsoft.UI.Xaml.Automation.AutomationProperties.SetAutomationId(block, "CalendarBlock-" + item.Span.SourceId);
+        Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(block, item.DisplayTitle);
 
         var visibleStart = item.Span.Start < dayStart ? dayStart : item.Span.Start;
         var visibleEnd = item.Span.End > dayStart.AddDays(1) ? dayStart.AddDays(1) : item.Span.End;
@@ -244,7 +246,12 @@ public sealed partial class WeekView : UserControl
                 var confirm = new ContentDialog { XamlRoot = XamlRoot, Title = "删除时间段", Content = "仅删除该时间安排，关联任务会保留。", PrimaryButtonText = "删除", CloseButtonText = "取消" };
                 if (await confirm.ShowAsync() == ContentDialogResult.Primary) ViewModel.DeleteItem(item);
             };
-            menu.Items.Add(edit); menu.Items.Add(delete); block.ContextFlyout = menu;
+            var batchEdit = new MenuFlyoutItem { Text = "批量编辑时间段" };
+            batchEdit.Click += async (_, _) => await BatchBlockEditor.ShowAsync(XamlRoot, item.Span.SourceId, false);
+            var batchDelete = new MenuFlyoutItem { Text = "批量删除时间段" };
+            batchDelete.Click += async (_, _) => await BatchBlockEditor.ShowAsync(XamlRoot, item.Span.SourceId, true);
+            menu.Items.Add(edit); menu.Items.Add(delete); menu.Items.Add(new MenuFlyoutSeparator());
+            menu.Items.Add(batchEdit); menu.Items.Add(batchDelete); block.ContextFlyout = menu;
         }
         return block;
     }

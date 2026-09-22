@@ -209,4 +209,28 @@ TEST(MigrationV3Test, UpgradesV2Database) {
     }
 }
 
+TEST(MigrationV7Test, ExistingBlocksPreserveNotesAndGainIndependentTitles) {
+    std::filesystem::create_directories(EQUORA_TEST_TMPDIR);
+    const std::string path = std::string(EQUORA_TEST_TMPDIR) + "/v7_upgrade.db";
+    std::error_code ec;
+    std::filesystem::remove(path, ec);
+    auto db = equora::storage::Database::open(path);
+    const auto& all = equora::storage::builtInMigrations();
+    equora::storage::applyMigrations(db, std::vector<equora::storage::Migration>(all.begin(), all.begin() + 6));
+    db.exec("INSERT INTO time_blocks (id, start_at, end_at, note, created_at, updated_at, revision) VALUES ('legacy', 100, 60000, 'old note', 1, 1, 1)");
+    equora::storage::applyMigrations(db);
+    CalendarRepository repo(db, "v7-test");
+    auto old = repo.findBlock("legacy");
+    ASSERT_TRUE(old.has_value());
+    EXPECT_EQ(old->note, "old note");
+    EXPECT_TRUE(old->title.empty());
+    EXPECT_TRUE(old->batchId.empty());
+    old->title = "independent title";
+    old->batchId = "test-batch";
+    const auto updated = repo.update(*old);
+    EXPECT_EQ(updated.note, "old note");
+    EXPECT_EQ(repo.findBlock("legacy")->title, "independent title");
+    EXPECT_EQ(repo.materializeWindow(0, 100000, 0)[0].title, "independent title");
+}
+
 } // namespace

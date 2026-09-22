@@ -45,7 +45,7 @@ protected:
 };
 
 TEST(CApiBasics, VersionAndPing) {
-    EXPECT_EQ(eq_api_version(), 2); // capi v2
+    EXPECT_EQ(eq_api_version(), 3); // capi v3
     EXPECT_EQ(eq_ping(0), 1);
     EXPECT_EQ(eq_ping(41), 42);
     EXPECT_EQ(eq_ping(-2), -1);
@@ -65,7 +65,7 @@ TEST_F(CApiTest, SchemaVersionAfterCreate) {
     EqError err{};
     int32_t version = 0;
     ASSERT_EQ(eq_core_schema_version(core_, &version, &err), kOk);
-    EXPECT_EQ(version, 6); // schema v6
+    EXPECT_EQ(version, 7); // schema v7
 }
 
 TEST_F(CApiTest, SchemaVersionNullCoreFillsError) {

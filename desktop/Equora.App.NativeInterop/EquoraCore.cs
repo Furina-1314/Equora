@@ -24,6 +24,8 @@ public sealed partial class EquoraCore : IDisposable
     /// <summary>打开(必要时创建)数据库并自动应用迁移。</summary>
     public static EquoraCore Open(string dbPath, string? deviceId = null)
     {
+        if (!GetNativeVersion().Contains("capi v3", StringComparison.Ordinal))
+            throw new InvalidOperationException("原生组件版本不匹配，请重新安装完整的 Equora v1.0.0 或更高版本。");
         var core = NativeMethods.eq_core_create(dbPath, deviceId ?? "local",
             out var error);
         if (core == IntPtr.Zero)

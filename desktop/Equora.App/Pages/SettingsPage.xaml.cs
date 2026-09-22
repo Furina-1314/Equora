@@ -12,6 +12,7 @@ public sealed partial class SettingsPage : Page
     public SettingsPage()
     {
         InitializeComponent();
+        Appearance.ArchiveExpiredSemester();
         var settings = Appearance.Current;
         ThemeChoice.SelectedIndex = Math.Clamp(settings.Theme, 0, 2);
         AccentHex.Text = settings.Accent;
@@ -27,13 +28,28 @@ public sealed partial class SettingsPage : Page
         UpdateSemesterDisplay();
         AboutText.Text = $"衡序 Equora\n数据目录：{AppPaths.DataDirectory}\n数据库版本：{AppServices.Data.SchemaVersion}";
         _loading = false;
+        Loaded += (_, _) => Appearance.SemesterChanged += OnSemesterArchived;
+        Unloaded += (_, _) => Appearance.SemesterChanged -= OnSemesterArchived;
+    }
+
+    private void OnSemesterArchived()
+    {
+        var semester = Appearance.Current.Semester;
+        SemesterName.Text = semester.Name;
+        SemesterStart.Date = new DateTimeOffset(semester.StartDate.ToDateTime(TimeOnly.MinValue));
+        SemesterEnd.Date = new DateTimeOffset(semester.EndDate.ToDateTime(TimeOnly.MinValue));
+        UpdateSemesterDisplay();
     }
 
     private void UpdateSemesterDisplay()
     {
         var semester = Appearance.Current.Semester;
         SemesterFields.Visibility = semester.Enabled ? Visibility.Visible : Visibility.Collapsed;
-        SemesterStatus.Text = semester.WeekNumber(DateOnly.FromDateTime(DateTime.Today)) is int week
+        ArchivedSemesterChoice.Items.Clear();
+        foreach (var past in Appearance.Current.ArchivedSemesters.OrderByDescending(s => s.StartDate))
+            ArchivedSemesterChoice.Items.Add(new ComboBoxItem { Content = $"{past.Name} · {past.StartDate:yyyy-MM-dd} 至 {past.EndDate:yyyy-MM-dd}", Tag = past });
+        if (ArchivedSemesterChoice.Items.Count > 0) ArchivedSemesterChoice.SelectedIndex = 0;
+        SemesterStatus.Text = string.IsNullOrWhiteSpace(semester.Name) ? "上一学期已归档，请填写并保存新学期。" : semester.WeekNumber(DateOnly.FromDateTime(DateTime.Today)) is int week
             ? $"{semester.Name} · 当前第 {week} 周 · 共 {semester.WeekCount} 周"
             : $"{semester.Name} · 当前不在学期内 · 共 {semester.WeekCount} 周";
     }
@@ -71,16 +87,25 @@ public sealed partial class SettingsPage : Page
         try
         {
             if (SemesterStart.Date is null || SemesterEnd.Date is null) throw new ArgumentException("请选择起始和结束日期。");
-            var semester = new SemesterSettings { Enabled = Appearance.Current.Semester.Enabled,
+            var semester = new SemesterSettings { Id = Appearance.Current.Semester.Id, Enabled = Appearance.Current.Semester.Enabled,
                 Name = SemesterName.Text.Trim(), StartDate = DateOnly.FromDateTime(SemesterStart.Date.Value.Date),
                 EndDate = DateOnly.FromDateTime(SemesterEnd.Date.Value.Date) };
             semester.Validate();
             Appearance.Save(Appearance.Current with { Semester = semester });
+            Appearance.ArchiveExpiredSemester();
             UpdateSemesterDisplay();
             SemesterStatus.Text = "已保存。" + SemesterStatus.Text;
             SettingsNotice.IsOpen = false;
         }
         catch (Exception ex) { ShowError(ex.Message); }
+    }
+
+    private void OnViewArchivedSemester(object sender, RoutedEventArgs e)
+    {
+        if (ArchivedSemesterChoice.SelectedItem is not ComboBoxItem { Tag: SemesterSettings semester }) return;
+        AppServices.Calendar.ViewModeIndex = 0;
+        AppServices.Calendar.WeekStart = new DateTimeOffset(semester.FirstMonday.ToDateTime(TimeOnly.MinValue));
+        App.MainWindow!.ShowPage(typeof(CalendarPage));
     }
 
     private void Save(AppPreferences preferences)
@@ -95,6 +120,47 @@ public sealed partial class SettingsPage : Page
         SettingsNotice.Severity = InfoBarSeverity.Error;
         SettingsNotice.Message = message;
         SettingsNotice.IsOpen = true;
+    }
+
+    private async void OnClearData(object sender, RoutedEventArgs e)
+    {
+        if (AppServices.FocusVm.IsRunning) { ShowError("请先结束当前专注，再清空数据。"); return; }
+        var button = (Button)sender;
+        button.IsEnabled = false;
+        var prepared = false;
+        try
+        {
+            var accepted = await DataReset.ConfirmAsync(async step =>
+            {
+                var input = new TextBox { Header = "输入“清空数据”以确认", PlaceholderText = "清空数据" };
+                var content = new StackPanel { Spacing = 12 };
+                content.Children.Add(new TextBlock { TextWrapping = TextWrapping.Wrap, Text = step switch {
+                    1 => "将清空本机当前数据目录中的任务、日历、专注记录、项目标签、限制规则与使用统计，以及设置和学期归档。是否继续？",
+                    2 => "清空前会自动将原数据移入数据目录的 backups 文件夹。已有备份、日志、其他文件及远端同步数据保留。清空后程序退出，下次启动为空白工作空间。是否继续？",
+                    _ => "这是最后一次确认。请输入“清空数据”，然后点击“清空并退出”。" } });
+                if (step == 3) content.Children.Add(input);
+                var dialog = new ContentDialog { XamlRoot = XamlRoot, Title = $"清空数据 · 第 {step}/3 次确认",
+                    Content = content, PrimaryButtonText = step == 3 ? "清空并退出" : "继续", CloseButtonText = "取消",
+                    DefaultButton = ContentDialogButton.Close, IsPrimaryButtonEnabled = step != 3 };
+                input.TextChanged += (_, _) => dialog.IsPrimaryButtonEnabled = input.Text.Trim() == "清空数据";
+                return await dialog.ShowAsync() == ContentDialogResult.Primary;
+            });
+            if (!accepted) return;
+            App.MainWindow!.PrepareDataReset();
+            prepared = true;
+            DataReset.Clear(AppPaths.DataDirectory);
+            App.MainWindow.ExitApplication();
+        }
+        catch (Exception ex)
+        {
+            if (!prepared) ShowError(ex.Message);
+            else
+            {
+                await new ContentDialog { XamlRoot = XamlRoot, Title = "清空未完成", Content = $"{ex.Message}\n程序将退出，请重新打开后检查数据。", CloseButtonText = "退出" }.ShowAsync();
+                App.MainWindow!.ExitApplication();
+            }
+        }
+        finally { button.IsEnabled = true; }
     }
 
     private void OnThemeChanged(object sender, SelectionChangedEventArgs e)

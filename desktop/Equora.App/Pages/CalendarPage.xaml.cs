@@ -17,8 +17,8 @@ public sealed partial class CalendarPage : Page
         InitializeComponent();
         DataContext = ViewModel;
         ViewModel.Refresh();
-        Loaded += (_, _) => { ViewModel.PropertyChanged += OnCalendarChanged; UpdateSemester(); };
-        Unloaded += (_, _) => ViewModel.PropertyChanged -= OnCalendarChanged;
+        Loaded += (_, _) => { Appearance.ArchiveExpiredSemester(); ViewModel.PropertyChanged += OnCalendarChanged; Appearance.SemesterChanged += UpdateSemester; UpdateSemester(); };
+        Unloaded += (_, _) => { ViewModel.PropertyChanged -= OnCalendarChanged; Appearance.SemesterChanged -= UpdateSemester; };
     }
 
     private void OnCalendarChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e) => UpdateSemester();
@@ -28,8 +28,11 @@ public sealed partial class CalendarPage : Page
         var semester = Appearance.Current.Semester;
         SemesterBatchButton.Visibility = SemesterWeekLabel.Visibility = semester.Enabled ? Visibility.Visible : Visibility.Collapsed;
         var day = DateOnly.FromDateTime(ViewModel.WindowStart.Date);
+        var history = Appearance.Current.ArchivedSemesters.FirstOrDefault(s => day <= s.EndDate && day.AddDays(ViewModel.ViewModeIndex == 1 ? 0 : 6) >= s.StartDate);
+        SemesterBatchButton.IsEnabled = !string.IsNullOrWhiteSpace(semester.Name);
+        if (history is not null && (day < semester.StartDate || string.IsNullOrWhiteSpace(semester.Name))) semester = history;
         if (ViewModel.ViewModeIndex != 1 && day < semester.StartDate && day.AddDays(6) >= semester.StartDate) day = semester.StartDate;
-        SemesterWeekLabel.Text = semester.WeekNumber(day) is int week
+        SemesterWeekLabel.Text = string.IsNullOrWhiteSpace(semester.Name) ? "请到设置页填写新学期，以往学期已归档。" : semester.WeekNumber(day) is int week
             ? $"{semester.Name} · 第 {week} 周 / 共 {semester.WeekCount} 周" : $"{semester.Name} · 当前日期不在学期内";
     }
 

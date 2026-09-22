@@ -12,6 +12,7 @@ public interface ICalendarService
         string note = "", int prepareMinutes = 0, int bufferMinutes = 0);
     TimeBlockDto? GetBlock(string id, bool includeDeleted = false);
     TimeBlockDto UpdateBlock(TimeBlockDto block);
+    void ApplyBlockBatch(IReadOnlyList<TimeBlockDto> blocks, bool delete, bool affectTasks = false);
     void DeleteBlock(string id);
     IReadOnlyList<TimeBlockDto> BlocksInRange(DateTimeOffset from, DateTimeOffset to);
     IReadOnlyList<TimeBlockDto> BlocksForTask(string taskId);

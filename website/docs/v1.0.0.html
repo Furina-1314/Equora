@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#C32F37">
+  <meta name="description" content="独立时间段标题、可选创建任务、跨周批量管理、学期归档与三次确认的数据重置。">
+  <meta property="og:title" content="v1.0.0 正式版 — 衡序 Equora 帮助中心">
+  <meta property="og:description" content="独立时间段标题、可选创建任务、跨周批量管理、学期归档与三次确认的数据重置。">
+  <meta property="og:type" content="article">
+  <link rel="canonical" href="https://furina-1314.github.io/Equora/docs/v1.0.0.html">
+  <link rel="icon" type="image/svg+xml" href="../assets/equora.svg">
+  <link rel="stylesheet" href="../styles.css">
+  <link rel="stylesheet" href="../help.css">
+  <meta name="help-search-index" content="search-index.json">
+  <script src="../help.js" defer></script>
+  <title>v1.0.0 正式版 — 衡序 Equora 帮助中心</title>
+</head>
+<body>
+  <a class="skip-link" href="#doc-content">跳到主要内容</a>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="../index.html" aria-label="衡序 Equora 首页"><img src="../assets/equora.svg" width="32" height="32" alt=""><span class="app-wordmark">EQUORA</span></a>
+      <button class="menu-toggle" type="button" aria-label="打开导航" aria-expanded="false" aria-controls="navigation">菜单 <span aria-hidden="true">☰</span></button>
+      <nav id="navigation" aria-label="主导航">
+        <a href="../index.html">首页</a><a href="../help.html">帮助中心</a><a href="../docs/release-notes.html">更新日志</a><a href="https://github.com/Furina-1314/Equora" class="repo-link">GitHub <span aria-hidden="true">↗</span></a>
+        <a class="button small" href="https://github.com/Furina-1314/Equora/releases/latest">下载 Equora <span aria-hidden="true">↓</span></a>
+      </nav>
+    </div>
+  </header>
+  <main id="main">
+    <div class="container help-layout">
+      <aside class="help-sidebar" id="help-sidebar" aria-label="文档目录">
+        <div class="sidebar-search">
+          <input type="search" id="doc-search" placeholder="搜索帮助文档…" aria-label="搜索帮助文档" autocomplete="off">
+          <div class="search-results" id="search-results" hidden></div>
+        </div>
+        <nav class="sidebar-nav">
+          <p class="nav-group">使用文档</p>
+          <a class="nav-link" href="../docs/user-guide.html">用户指南</a>
+          <a class="nav-link" href="../docs/usage-help.html">使用帮助与快捷键</a>
+          <a class="nav-link" href="../docs/usage-restrictions.html">应用与网站限制</a>
+          <a class="nav-link" href="../docs/privacy-and-security.html">隐私与安全说明</a>
+          <p class="nav-group">版本与更新</p>
+          <a class="nav-link" href="../docs/release-notes.html">发布说明 · 更新日志</a>
+          <a class="nav-link active" href="../docs/v1.0.0.html">v1.0.0 正式版</a>
+          <a class="nav-link" href="../docs/v0.2.2.html">v0.2.2 更新说明</a>
+          <a class="nav-link" href="../docs/v0.2.1.html">v0.2.1 更新说明</a>
+          <p class="nav-group">开发者资料</p>
+          <a class="nav-link" href="../docs/architecture.html">系统架构</a>
+          <a class="nav-link" href="../docs/data-model.html">数据模型</a>
+          <a class="nav-link" href="../docs/third-party-notices.html">第三方开源组件</a>
+          <p class="nav-group">反馈</p>
+          <a class="nav-link external" href="https://github.com/Furina-1314/Equora/issues">问题反馈 <span aria-hidden="true">↗</span></a>
+          <a class="nav-link external" href="https://github.com/Furina-1314/Equora/releases">版本下载 <span aria-hidden="true">↗</span></a>
+        </nav>
+      </aside>
+      <div class="doc-main">
+        <button class="sidebar-toggle" type="button" aria-expanded="false" aria-controls="help-sidebar">文档目录 <span aria-hidden="true">☰</span></button>
+        <nav class="doc-breadcrumb" aria-label="面包屑"><a href="../help.html">帮助中心</a> <span aria-hidden="true">/</span> <span>v1.0.0 正式版</span></nav>
+        <article class="doc-content" id="doc-content" tabindex="-1">
+<h1 id="equora-v100-正式版">Equora v1.0.0 — 正式版</h1>
+<p>v1.0.0 将学期安排、独立时间段和数据管理整合为完整的日常流程，保留本地优先、离线可用的使用方式。</p>
+<h2 id="学期安排与批量管理">学期安排与批量管理</h2>
+<ul>
+<li>按学期批量添加时，可勾选“同时添加到任务列表”。取消勾选后仅生成日历时间段，不增加任务列表条目。</li>
+<li>时间段拥有独立标题，不创建任务也可填写、修改标题；标题与备注分别保存，ICS 导出保留标题。</li>
+<li>右键时间段，选择“批量编辑时间段”或“批量删除时间段”。新建批次会列出同批次所有周次，支持勾选部分安排。</li>
+<li>批量编辑可分别选择修改标题、备注、颜色和每天的起止时间；不勾选的字段及各自日期保持不变。可选择同步关联任务标题。</li>
+<li>批量删除默认只移除日历安排，也可勾选将关联任务移入回收站。时间段删除无法撤销，任务可从回收站恢复。</li>
+<li>批量编辑、删除及关联任务操作在同一数据库事务中执行；遇到过期版本或保存错误会整体回滚。</li>
+<li>v0.2.2 及更早版本没有批次标识，右键批量操作时列出已有时间段供手动选择，不按同名标题猜测分组。</li>
+</ul>
+<h2 id="学期自动归档">学期自动归档</h2>
+<p>学期结束日期当天仍属于当前学期，次日起自动归档。程序关闭期间跨过结束日期的，会在下次启动时归档；运行期间也会检查日期变化。</p>
+<p>设置中的“以往学期”保留学期名、起止日期，可直接打开该学期的日历。旧任务和时间段保持原样，新学期可重新填写并保存。关闭学期模式仍需二次确认。</p>
+<h2 id="清空数据">清空数据</h2>
+<p>在“设置 → 数据与备份 → 清空数据…”操作，依次完成三次确认；最后一次必须输入“清空数据”。任何一步取消，都不会清空。</p>
+<p>清空范围包括当前数据目录中的任务、时间段、专注记录、项目标签、限制规则、使用统计、偏好设置及学期归档。程序先停止写入、关闭数据库，再将原数据移至 <code>backups/before-reset-*</code> 恢复副本，随后退出；下次启动建立空白工作空间。正在专注时需先结束专注。</p>
+<p>已有备份、日志、其他文件、数据目录位置和远端同步数据保留。这是重置本机工作空间，不是安全擦除；需要恢复时，退出程序后将恢复副本中的文件复制回原数据目录。</p>
+<h2 id="安装与升级">安装与升级</h2>
+<ul>
+<li>推荐 <code>Equora-v1.0.0-win-x64-Setup.exe</code>，使用原安装目录升级。</li>
+<li><code>Equora-v1.0.0-win-x64.msix</code> 版本为 1.0.0.0，沿用原包标识和签名证书。</li>
+<li>两种安装包均包含运行时、原生组件和浏览器扩展。数据库自动升级至 v7，保留原有数据。</li>
+<li>原生接口升级至 C ABI v3，请使用完整安装包，不要混用旧版 DLL。</li>
+<li>网站限制扩展另提供 <code>Equora-v1.0.0-BrowserExtension.zip</code>。覆盖原加载目录后，在浏览器扩展管理页重新加载。</li>
+<li>MSIX 首次安装需信任随附 <code>Equora-v1.0.0.cer</code>；已有证书仍然适用。自签名安装包可能显示 Windows 信任提示。</li>
+<li><code>SHA256SUMS.txt</code> 提供全部附件的完整性校验。</li>
+</ul>
+<p>官网功能介绍、用户指南、帮助中心及更新日志同步更新至 v1.0.0。</p>
+<h2 id="发布验证">发布验证</h2>
+<ul>
+<li>Release 桌面构建通过；原生 139 项、桌面 154 项、服务器 20 项及扩展 8 项测试全部通过，共 321 项。</li>
+<li>真实界面验证覆盖到期归档、新学期保存、仅日历批量创建、独立标题，以及清空数据三次确认中逐次取消与最终输入确认后退出。</li>
+<li>官网首页、帮助中心、新版说明与用户指南通过桌面和移动尺寸的排版、内部链接及搜索检查。</li>
+</ul>
+        </article>
+        <nav class="doc-pager" aria-label="上一篇与下一篇"><a class="pager-link pager-prev" href="release-notes.html"><span>上一篇</span><strong>发布说明 · 更新日志</strong></a>
+          <a class="pager-link pager-next" href="v0.2.2.html"><span>下一篇</span><strong>v0.2.2 更新说明</strong></a></nav>
+      </div>
+    </div>
+  </main>
+  <footer class="container footer">
+    <div class="footer-top"><a class="brand" href="../index.html"><img src="../assets/equora.svg" width="28" height="28" alt=""><span class="app-wordmark">EQUORA</span></a><span>在时间中保持平衡。</span><nav aria-label="页脚导航"><a href="../index.html">首页</a><a href="../help.html">帮助中心</a><a href="../docs/release-notes.html">更新日志</a><a href="https://github.com/Furina-1314/Equora/issues">反馈</a></nav></div>
+    <div class="footer-bottom"><span>© 2026 Furina-1314 · Equora</span><span>开源于 MIT · 为专注而设计</span><a href="#main">回到顶部 ↑</a></div>
+  </footer>
+</body>
+</html>

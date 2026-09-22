@@ -20,7 +20,7 @@ namespace {
 
 constexpr auto kBlockColumns =
     "SELECT id, task_id, calendar_id, start_at, end_at, prepare_minutes, buffer_minutes, "
-    "actual_minutes, note, created_at, updated_at, revision, deleted_at, last_device_id "
+    "actual_minutes, note, created_at, updated_at, revision, deleted_at, last_device_id, title, batch_id "
     "FROM time_blocks";
 constexpr auto kEventColumns =
     "SELECT id, title, location, note, calendar_id, start_at, end_at, is_all_day, "
@@ -165,6 +165,8 @@ domain::TimeBlock CalendarRepository::rowToBlock(const storage::Statement& st) {
     b.deletedAt = st.isNull(12) ? std::nullopt
                                 : std::optional<domain::UtcMillis>(st.columnInt(12));
     b.lastDeviceId = st.columnText(13);
+    b.title = st.columnText(14);
+    b.batchId = st.columnText(15);
     return b;
 }
 
@@ -183,8 +185,8 @@ domain::TimeBlock CalendarRepository::createBlock(domain::TimeBlock draft) const
         auto st = db_.prepare(
             "INSERT INTO time_blocks (id, task_id, calendar_id, start_at, end_at, "
             "prepare_minutes, buffer_minutes, actual_minutes, note, created_at, "
-            "updated_at, revision, deleted_at, last_device_id) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            "updated_at, revision, deleted_at, last_device_id, title, batch_id) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         st.bind(1, draft.id)
             .bind(2, draft.taskId)
             .bind(3, draft.calendarId)
@@ -198,7 +200,9 @@ domain::TimeBlock CalendarRepository::createBlock(domain::TimeBlock draft) const
             .bind(11, draft.updatedAt)
             .bind(12, draft.revision)
             .bind(13, draft.deletedAt)
-            .bind(14, deviceId_);
+            .bind(14, deviceId_)
+            .bind(15, draft.title)
+            .bind(16, draft.batchId);
         st.step();
     }
     tx.commit();
@@ -215,7 +219,7 @@ std::optional<domain::TimeBlock> CalendarRepository::findBlock(const std::string
     return rowToBlock(st);
 }
 
-domain::TimeBlock CalendarRepository::update(domain::TimeBlock block) const {
+domain::TimeBlock CalendarRepository::update(domain::TimeBlock block, bool ownTransaction) const {
     auto existing = findBlock(block.id, /*includeDeleted=*/true);
     if (!existing.has_value() || existing->deletedAt.has_value()) {
         throw EquoraError(ErrorCode::NotFound, "time block not found: " + block.id);
@@ -229,12 +233,12 @@ domain::TimeBlock CalendarRepository::update(domain::TimeBlock block) const {
     block.revision += 1;
     block.lastDeviceId = deviceId_;
 
-    Transaction tx = db_.beginTransaction();
+    Transaction tx = ownTransaction ? db_.beginTransaction() : Transaction{};
     {
         auto st = db_.prepare(
             "UPDATE time_blocks SET task_id = ?, calendar_id = ?, start_at = ?, end_at = ?, "
             "prepare_minutes = ?, buffer_minutes = ?, actual_minutes = ?, note = ?, "
-            "updated_at = ?, revision = ?, last_device_id = ? "
+            "updated_at = ?, revision = ?, last_device_id = ?, title = ?, batch_id = ? "
             "WHERE id = ? AND revision = ?");
         st.bind(1, block.taskId)
             .bind(2, block.calendarId)
@@ -247,14 +251,16 @@ domain::TimeBlock CalendarRepository::update(domain::TimeBlock block) const {
             .bind(9, block.updatedAt)
             .bind(10, block.revision)
             .bind(11, block.lastDeviceId)
-            .bind(12, block.id)
-            .bind(13, block.revision - 1);
+            .bind(12, block.title)
+            .bind(13, block.batchId)
+            .bind(14, block.id)
+            .bind(15, block.revision - 1);
         st.step();
         if (db_.changes() != 1) {
             throw EquoraError(ErrorCode::Conflict, "concurrent update of time block");
         }
     }
-    tx.commit();
+    if (ownTransaction) tx.commit();
     return block;
 }
 
@@ -602,7 +608,7 @@ std::vector<Span> CalendarRepository::materializeWindow(domain::UtcMillis from,
         Span s;
         s.sourceId = b.id;
         s.sourceType = "block";
-        s.title = b.note;
+        s.title = b.title.empty() ? b.note : b.title;
         s.taskId = b.taskId.value_or("");
         // 冲突计算考虑准备与缓冲(有效区间外扩)。
         s.start = b.startAt - static_cast<std::int64_t>(b.prepareMinutes) * 60'000;

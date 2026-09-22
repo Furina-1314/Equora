@@ -26,10 +26,10 @@ public:
 
     // 乐观并发更新:task.revision 必须等于库中当前值,否则抛 Conflict。
     // 成功后 revision+1、updatedAt 刷新、lastDeviceId 更新,并返回更新后的实体。
-    domain::Task update(domain::Task task) const;
+    domain::Task update(domain::Task task, bool ownTransaction = true) const;
 
     // 软删除/恢复(墓碑语义);返回最新实体。
-    domain::Task setDeleted(const std::string& id, bool deleted) const;
+    domain::Task setDeleted(const std::string& id, bool deleted, bool ownTransaction = true) const;
     void permanentlyDelete(const std::string& id) const;
 
     // 列出任务(默认排除软删除,按创建时间升序)。

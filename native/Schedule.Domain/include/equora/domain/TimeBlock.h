@@ -20,6 +20,8 @@ struct TimeBlock {
     std::int32_t bufferMinutes = 0;   // 后置缓冲
     std::int32_t actualMinutes = 0;
     std::string note;
+    std::string title;
+    std::string batchId;
     UtcMillis createdAt = 0;
     UtcMillis updatedAt = 0;
     std::int64_t revision = 1;
