@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Equora.App.Services;
 using Xunit;
 
@@ -56,26 +57,27 @@ public class RestrictionPolicyTests
         finally { if (Directory.Exists(directory)) Directory.Delete(directory, true); }
     }
     [Fact]
-    public async Task WriteRetriesWhenDestinationIsBrieflyHeldOpen()
+    public void WriteRetriesWhenDestinationIsBrieflyHeldOpen()
     {
         var directory = Path.Combine(Path.GetTempPath(), "equora-rules-" + Guid.NewGuid().ToString("N"));
-        Task? release = null;
         try
         {
             var store = new RestrictionStore(directory);
             store.Pulse(false, null);
             var path = Path.Combine(directory, "restriction-heartbeat.json");
-            var hold = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
-            release = Task.Run(async () => { await Task.Delay(10); await hold.DisposeAsync(); });
+            // 读方不共享 Delete 时替换持续被拒：写入必须重试到预算耗尽，而不是立即失败。
+            using var hold = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+            var stopwatch = Stopwatch.StartNew();
+            Exception? exhausted = null;
+            try { store.Pulse(true, null); }
+            catch (Exception ex) { exhausted = ex; }
+            Assert.True(exhausted is IOException or UnauthorizedAccessException, $"unexpected: {exhausted}");
+            Assert.True(stopwatch.ElapsedMilliseconds >= 100, "write gave up without retrying");
+            hold.Dispose();
             store.Pulse(true, null);
             Assert.True(new RestrictionStore(directory).IsDesktopActive(DateTimeOffset.Now));
         }
-        finally
-        {
-            // 清理前必须等占用句柄释放完毕，否则临时目录删除会与他人打开的文件竞争。
-            if (release is not null) await release;
-            if (Directory.Exists(directory)) Directory.Delete(directory, true);
-        }
+        finally { if (Directory.Exists(directory)) Directory.Delete(directory, true); }
     }
     [Fact]
     public void WriteReplacesFileWhileReaderHoldsItOpenWithDeleteSharing()
