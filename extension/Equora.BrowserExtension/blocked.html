@@ -3,14 +3,15 @@
 <style>
 :root { color-scheme: light dark; font-family: 'Segoe UI','Microsoft YaHei',sans-serif; }
 body { margin:0; min-height:100vh; display:grid; place-items:center; background:#f3f3f3; color:#202020; }
-main { max-width:560px; padding:48px; background:#fff; border-top:4px solid #c32f37; }
+main { max-width:560px; padding:48px 48px 20px; background:#fff; border-top:4px solid #c32f37; }
 svg { width:40px; height:40px; fill:none; stroke:currentColor; stroke-width:1.5; }
 h1 { font-weight:400; font-size:30px; } p { line-height:1.7; } #domain { font-size:20px; overflow-wrap:anywhere; }
 .actions { display:flex; flex-wrap:wrap; gap:12px; margin-top:28px; }
 button { border:1px solid #888; border-radius:0; padding:12px 20px; font:inherit; background:#e5e5e5; color:#202020; cursor:pointer; }
 button:first-child { background:#c32f37; color:white; border-color:#c32f37; } small { display:block; margin-top:24px; color:#666; }
 button:disabled { opacity:.55; cursor:default; }
-.brand-footer { display:flex; justify-content:flex-end; margin-top:24px; }
+.brand-footer { display:flex; align-items:center; justify-content:flex-end; gap:12px; margin-top:32px; }
+.brand-footer img { width:28px; height:28px; }
 .app-wordmark { font-family:"Segoe UI Variable","Segoe UI",sans-serif; font-size:18px; font-weight:400; letter-spacing:.12em; line-height:1.5; white-space:nowrap; }
 @media(prefers-color-scheme:dark) { body { background:#202020; color:#eee; } main { background:#2b2b2b; } small { color:#bbb; } }
 </style></head><body><main>
@@ -19,5 +20,5 @@ button:disabled { opacity:.55; cursor:default; }
 <div class="actions"><button id="back">关闭此页面</button><button id="allow">临时允许 5 分钟</button></div>
 <p id="feedback" role="status"></p>
 <small>每个网站仅可临时允许一次，刷新页面或重启浏览器不会重置。允许后打开网站首页，右上角显示倒计时；到期后恢复限制。可在桌面端“使用限制”中调整规则。</small>
-<footer class="brand-footer"><span class="app-wordmark">EQUORA</span></footer>
+<footer class="brand-footer"><img src="icon128.png" alt=""><span class="app-wordmark">EQUORA</span></footer>
 </main><script src="policy.js"></script><script src="blocked.js"></script></body></html>
