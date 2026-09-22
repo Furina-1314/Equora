@@ -11,6 +11,7 @@ public sealed record AppPreferences
     public bool CloseToTray { get; init; }
     public int PomodoroRounds { get; init; } = 4;
     public int BreakMinutes { get; init; } = 5;
+    public SemesterSettings Semester { get; init; } = new();
 }
 
 /// <summary>Works in both unpackaged desktop builds and MSIX installations.</summary>

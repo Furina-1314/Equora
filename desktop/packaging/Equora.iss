@@ -1,5 +1,5 @@
 #ifndef AppVersion
-  #define AppVersion "0.2.1"
+  #define AppVersion "0.2.2"
 #endif
 #ifndef PayloadDir
   #error PayloadDir must point to the self-contained application payload
@@ -30,7 +30,7 @@ WizardStyle=modern
 CloseApplications=yes
 RestartApplications=no
 UninstallDisplayName=衡序 Equora (EXE)
-VersionInfoVersion=0.2.1.0
+VersionInfoVersion={#AppVersion}.0
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
 [Tasks]

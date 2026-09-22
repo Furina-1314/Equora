@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "衡序 Equora 专注限制",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "minimum_chrome_version": "120",
   "host_permissions": ["http://*/*", "https://*/*"],
   "description": "根据 Equora 的专注状态、时段和每日额度管理网站使用；不记录网页内容。",

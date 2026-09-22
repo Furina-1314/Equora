@@ -19,8 +19,68 @@ public sealed partial class SettingsPage : Page
             string.Equals(item.Tag as string, settings.Accent, StringComparison.OrdinalIgnoreCase)) ?? AccentChoice.Items.Last();
         CloseChoice.SelectedIndex = settings.CloseToTray ? 1 : 0;
         StartupToggle.IsOn = StartupRegistration.IsRegistered();
+        var semester = settings.Semester;
+        SemesterToggle.IsOn = semester.Enabled;
+        SemesterName.Text = semester.Name;
+        SemesterStart.Date = new DateTimeOffset(semester.StartDate.ToDateTime(TimeOnly.MinValue));
+        SemesterEnd.Date = new DateTimeOffset(semester.EndDate.ToDateTime(TimeOnly.MinValue));
+        UpdateSemesterDisplay();
         AboutText.Text = $"衡序 Equora\n数据目录：{AppPaths.DataDirectory}\n数据库版本：{AppServices.Data.SchemaVersion}";
         _loading = false;
+    }
+
+    private void UpdateSemesterDisplay()
+    {
+        var semester = Appearance.Current.Semester;
+        SemesterFields.Visibility = semester.Enabled ? Visibility.Visible : Visibility.Collapsed;
+        SemesterStatus.Text = semester.WeekNumber(DateOnly.FromDateTime(DateTime.Today)) is int week
+            ? $"{semester.Name} · 当前第 {week} 周 · 共 {semester.WeekCount} 周"
+            : $"{semester.Name} · 当前不在学期内 · 共 {semester.WeekCount} 周";
+    }
+
+    private async void OnSemesterToggled(object sender, RoutedEventArgs e)
+    {
+        if (_loading) return;
+        SemesterToggle.IsEnabled = false;
+        try
+        {
+            var enabled = SemesterToggle.IsOn;
+            if (!enabled)
+            {
+                var dialog = new ContentDialog { XamlRoot = XamlRoot, Title = "关闭学期模式？",
+                    Content = "关闭后将隐藏学期周次和批量添加入口。已添加的任务和时间段会保留，仍可单独编辑；学期设置也会保留。",
+                    PrimaryButtonText = "关闭学期模式", CloseButtonText = "取消", DefaultButton = ContentDialogButton.Close };
+                if (await dialog.ShowAsync() != ContentDialogResult.Primary) return;
+            }
+            Appearance.Save(Appearance.Current with { Semester = Appearance.Current.Semester with { Enabled = enabled } });
+            SettingsNotice.IsOpen = false;
+        }
+        catch (Exception ex) { ShowError($"学期设置保存失败：{ex.Message}"); }
+        finally
+        {
+            _loading = true;
+            SemesterToggle.IsOn = Appearance.Current.Semester.Enabled;
+            _loading = false;
+            SemesterToggle.IsEnabled = true;
+            UpdateSemesterDisplay();
+        }
+    }
+
+    private void OnSaveSemester(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (SemesterStart.Date is null || SemesterEnd.Date is null) throw new ArgumentException("请选择起始和结束日期。");
+            var semester = new SemesterSettings { Enabled = Appearance.Current.Semester.Enabled,
+                Name = SemesterName.Text.Trim(), StartDate = DateOnly.FromDateTime(SemesterStart.Date.Value.Date),
+                EndDate = DateOnly.FromDateTime(SemesterEnd.Date.Value.Date) };
+            semester.Validate();
+            Appearance.Save(Appearance.Current with { Semester = semester });
+            UpdateSemesterDisplay();
+            SemesterStatus.Text = "已保存。" + SemesterStatus.Text;
+            SettingsNotice.IsOpen = false;
+        }
+        catch (Exception ex) { ShowError(ex.Message); }
     }
 
     private void Save(AppPreferences preferences)

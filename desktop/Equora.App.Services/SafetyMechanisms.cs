@@ -100,23 +100,23 @@ public static class StartupRegistration
     private const string RunKey = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run";
     private const string ValueName = "Equora";
 
-    public static bool IsRegistered()
+    public static bool IsRegistered(string valueName = ValueName)
     {
         using var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(RunKey, false);
-        return key?.GetValue(ValueName) is string;
+        return key?.GetValue(valueName) is string;
     }
 
     /// <summary>注册/取消开机启动(默认清晰告知用户,由设置页调用)。</summary>
-    public static void SetRegistered(bool enable, string exePath)
+    public static void SetRegistered(bool enable, string exePath, string valueName = ValueName)
     {
         using var key = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(RunKey);
         if (enable)
         {
-            key.SetValue(ValueName, $"\"{exePath}\"");
+            key.SetValue(valueName, $"\"{exePath}\"");
         }
         else
         {
-            key.DeleteValue(ValueName, throwOnMissingValue: false);
+            key.DeleteValue(valueName, throwOnMissingValue: false);
         }
     }
 }

@@ -100,10 +100,15 @@ public class StartupRegistrationTests
     {
         // 测试用值名,避免污染真实 Equora 启动项。
         const string testPath = @"C:\test\equora-test.exe";
-        Assert.False(StartupRegistration.IsRegistered());
-        StartupRegistration.SetRegistered(true, testPath);
-        Assert.True(StartupRegistration.IsRegistered());
-        StartupRegistration.SetRegistered(false, testPath);
-        Assert.False(StartupRegistration.IsRegistered());
+        var valueName = $"Equora-Test-{Guid.NewGuid():N}";
+        try
+        {
+            Assert.False(StartupRegistration.IsRegistered(valueName));
+            StartupRegistration.SetRegistered(true, testPath, valueName);
+            Assert.True(StartupRegistration.IsRegistered(valueName));
+            StartupRegistration.SetRegistered(false, testPath, valueName);
+            Assert.False(StartupRegistration.IsRegistered(valueName));
+        }
+        finally { StartupRegistration.SetRegistered(false, testPath, valueName); }
     }
 }

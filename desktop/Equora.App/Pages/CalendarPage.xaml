@@ -32,6 +32,8 @@
                 </StackPanel>
 
                 <Button Content="新建时间段" Click="OnNewBlock" Style="{StaticResource AccentButtonStyle}" />
+                <TextBlock x:Name="SemesterWeekLabel" Visibility="Collapsed" TextWrapping="Wrap" />
+                <Button x:Name="SemesterBatchButton" Content="按学期批量添加" Visibility="Collapsed" Click="OnSemesterBatch" />
                 <TextBlock Text="点击日历空白处快速新建；右键时间段编辑或删除。" TextWrapping="Wrap" Opacity="0.65" />
                 <TextBlock Text="未安排任务 · 拖入日历" Opacity="0.6"
                            Style="{StaticResource CaptionTextBlockStyle}" Margin="0,8,0,0" />

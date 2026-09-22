@@ -14,14 +14,14 @@
 
 > **Equora** = **Equ**ilibrium + **H**ora(拉丁语"时间")——在时间中保持平衡,即"衡序"。
 
-当前版本 [v0.2.1](https://github.com/Furina-1314/Equora/releases)(预发布) · 138 项原生、129 项桌面及 8 项扩展测试通过 · [发布说明](docs/release-notes.md) · [下载安装包](https://github.com/Furina-1314/Equora/releases)
+当前版本 [v0.2.2](https://github.com/Furina-1314/Equora/releases/tag/v0.2.2) · 138 项原生、140 项桌面、20 项服务器及 8 项扩展测试通过 · [发布说明](docs/release-notes.md) · [下载安装包](https://github.com/Furina-1314/Equora/releases/latest)
 
 ## 功能
 
 | 模块 | 能力 |
 |---|---|
 | 任务管理 | 三栏布局,九个智能清单,项目与标签,全文搜索,撤销栈,回收站恢复与确认后永久删除 |
-| 日历 | 周视图时间块,拖拽创建、移动与缩放,冲突检测,重复规则,ICS 导入导出 |
+| 日历 | 周视图时间块,拖拽创建、移动与缩放,冲突检测,重复规则,ICS 导入导出;学期周次与每周/指定周次批量安排,生成任务可独立编辑 |
 | 四象限 | 重要/紧急矩阵,拖拽换象限,今日要事,容量提示 |
 | 快速收集 | 全局快捷键 `Ctrl+Shift+Space`,中文自然语言解析(日期、时长、标签、优先级),预览确认 |
 | 专注 | 番茄钟、深度工作、正计时三种模式,暂停与继续,工作/休息轮次,分心捕获,崩溃恢复 |
@@ -61,12 +61,12 @@ cd Equora
 cd native
 cmake --preset win-x64-release
 cmake --build --preset win-x64-release
-ctest --preset win-x64-release    # 137/137 通过
+ctest --preset win-x64-release    # 138/138 通过
 
 # 2. 构建桌面应用(WinUI 3)
 cd ../desktop
 dotnet build Equora.slnx -c Release
-dotnet test Equora.App.Tests --no-build   # 127/127 通过
+dotnet test Equora.App.Tests -c Release --no-build   # 140/140 通过
 
 # 3. 运行
 dotnet run --project Equora.App -c Release
@@ -88,11 +88,11 @@ docker compose -f docker/docker-compose.yml up --build
 
 | 测试套件 | 数量 | CI |
 |---|---|---|
-| 原生核心(GoogleTest / C++20) | 137 | [![native-ci](https://github.com/Furina-1314/Equora/actions/workflows/native-ci.yml/badge.svg)](https://github.com/Furina-1314/Equora/actions/workflows/native-ci.yml) |
-| 桌面应用(xUnit / C#) | 127 | [![desktop-ci](https://github.com/Furina-1314/Equora/actions/workflows/desktop-ci.yml/badge.svg)](https://github.com/Furina-1314/Equora/actions/workflows/desktop-ci.yml) |
+| 原生核心(GoogleTest / C++20) | 138 | [![native-ci](https://github.com/Furina-1314/Equora/actions/workflows/native-ci.yml/badge.svg)](https://github.com/Furina-1314/Equora/actions/workflows/native-ci.yml) |
+| 桌面应用(xUnit / C#) | 140 | [![desktop-ci](https://github.com/Furina-1314/Equora/actions/workflows/desktop-ci.yml/badge.svg)](https://github.com/Furina-1314/Equora/actions/workflows/desktop-ci.yml) |
 | 同步服务器(GoogleTest) | 20 | [![server-ci](https://github.com/Furina-1314/Equora/actions/workflows/server-ci.yml/badge.svg)](https://github.com/Furina-1314/Equora/actions/workflows/server-ci.yml) |
-| 浏览器扩展与本地消息组件 | 3 | 本地验证 |
-| **合计** | **287** | |
+| 浏览器扩展 | 8 | 本地验证 |
+| **合计** | **306** | |
 
 ## 架构
 

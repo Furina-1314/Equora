@@ -1,5 +1,6 @@
 using Equora.App.NativeInterop;
 using Equora.App.ViewModels;
+using Equora.App.Services;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.ApplicationModel.DataTransfer;
@@ -16,6 +17,26 @@ public sealed partial class CalendarPage : Page
         InitializeComponent();
         DataContext = ViewModel;
         ViewModel.Refresh();
+        Loaded += (_, _) => { ViewModel.PropertyChanged += OnCalendarChanged; UpdateSemester(); };
+        Unloaded += (_, _) => ViewModel.PropertyChanged -= OnCalendarChanged;
+    }
+
+    private void OnCalendarChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e) => UpdateSemester();
+
+    private void UpdateSemester()
+    {
+        var semester = Appearance.Current.Semester;
+        SemesterBatchButton.Visibility = SemesterWeekLabel.Visibility = semester.Enabled ? Visibility.Visible : Visibility.Collapsed;
+        var day = DateOnly.FromDateTime(ViewModel.WindowStart.Date);
+        if (ViewModel.ViewModeIndex != 1 && day < semester.StartDate && day.AddDays(6) >= semester.StartDate) day = semester.StartDate;
+        SemesterWeekLabel.Text = semester.WeekNumber(day) is int week
+            ? $"{semester.Name} · 第 {week} 周 / 共 {semester.WeekCount} 周" : $"{semester.Name} · 当前日期不在学期内";
+    }
+
+    private async void OnSemesterBatch(object sender, RoutedEventArgs e)
+    {
+        try { await Controls.SemesterBlockEditor.ShowAsync(XamlRoot); }
+        catch (Exception ex) { ViewModel.StatusText = $"批量添加失败：{ex.Message}"; }
     }
 
     private void OnLayoutSizeChanged(object sender, SizeChangedEventArgs e)

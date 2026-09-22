@@ -2,7 +2,7 @@
 
 #include <equora/sync/MemorySyncStore.h>
 
-#include <thread>
+#include <chrono>
 
 namespace {
 
@@ -16,12 +16,13 @@ using equora::sync::SyncService;
 /// 每秒 N 次、桶容量 B 的令牌桶;超限返回 false(429 语义)。
 class RateLimiter {
 public:
-    RateLimiter(double permitsPerSecond, std::int64_t burst)
+    RateLimiter(double permitsPerSecond, std::int64_t burst,
+                std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now())
         : rate_(permitsPerSecond), burst_(burst), tokens_(static_cast<double>(burst)),
-          lastRefill_(std::chrono::steady_clock::now()) {}
+          lastRefill_(now) {}
 
-    bool TryAcquire() {
-        Refill();
+    bool TryAcquire(std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now()) {
+        Refill(now);
         if (tokens_ >= 1.0) {
             tokens_ -= 1.0;
             return true;
@@ -32,8 +33,7 @@ public:
     [[nodiscard]] double Available() const { return tokens_; }
 
 private:
-    void Refill() {
-        const auto now = std::chrono::steady_clock::now();
+    void Refill(std::chrono::steady_clock::time_point now) {
         const auto elapsed = std::chrono::duration<double>(now - lastRefill_).count();
         if (elapsed <= 0) return;
         tokens_ = std::min(tokens_ + elapsed * rate_, static_cast<double>(burst_));
@@ -47,29 +47,32 @@ private:
 };
 
 TEST(RateLimiterTest, AllowsUpToBurstThenRejects) {
-    RateLimiter limiter(/*perSecond=*/1.0, /*burst=*/5);
+    const auto now = std::chrono::steady_clock::time_point{};
+    RateLimiter limiter(/*perSecond=*/1.0, /*burst=*/5, now);
     for (int i = 0; i < 5; ++i) {
-        EXPECT_TRUE(limiter.TryAcquire()) << "第 " << i << " 次";
+        EXPECT_TRUE(limiter.TryAcquire(now)) << "第 " << i << " 次";
     }
-    EXPECT_FALSE(limiter.TryAcquire()); // 超过桶容量 → 拒绝(429)
+    EXPECT_FALSE(limiter.TryAcquire(now)); // 超过桶容量 → 拒绝(429)
 }
 
 TEST(RateLimiterTest, RecoversOverTime) {
-    RateLimiter limiter(/*perSecond=*/1000.0, /*burst=*/2);
-    EXPECT_TRUE(limiter.TryAcquire());
-    EXPECT_TRUE(limiter.TryAcquire());
-    EXPECT_FALSE(limiter.TryAcquire());
-    std::this_thread::sleep_for(std::chrono::milliseconds(5));
-    EXPECT_TRUE(limiter.TryAcquire()); // 1000/s → 5ms 恢复 5 个
+    auto now = std::chrono::steady_clock::time_point{};
+    RateLimiter limiter(/*perSecond=*/1000.0, /*burst=*/2, now);
+    EXPECT_TRUE(limiter.TryAcquire(now));
+    EXPECT_TRUE(limiter.TryAcquire(now));
+    EXPECT_FALSE(limiter.TryAcquire(now));
+    now += std::chrono::milliseconds(5);
+    EXPECT_TRUE(limiter.TryAcquire(now)); // 1000/s → 5ms 恢复 5 个
 }
 
 TEST(RateLimiterTest, DoesNotExceedBurstOnRefill) {
-    RateLimiter limiter(/*perSecond=*/1e6, /*burst=*/3);
-    std::this_thread::sleep_for(std::chrono::milliseconds(2));
-    EXPECT_TRUE(limiter.TryAcquire());
-    EXPECT_TRUE(limiter.TryAcquire());
-    EXPECT_TRUE(limiter.TryAcquire());
-    EXPECT_FALSE(limiter.TryAcquire()); // 不因高速率超过桶容量
+    auto now = std::chrono::steady_clock::time_point{};
+    RateLimiter limiter(/*perSecond=*/1e6, /*burst=*/3, now);
+    now += std::chrono::milliseconds(2);
+    EXPECT_TRUE(limiter.TryAcquire(now));
+    EXPECT_TRUE(limiter.TryAcquire(now));
+    EXPECT_TRUE(limiter.TryAcquire(now));
+    EXPECT_FALSE(limiter.TryAcquire(now)); // 同一时刻最多消耗桶容量
 }
 
 } // namespace

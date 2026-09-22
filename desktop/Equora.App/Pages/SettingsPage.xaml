@@ -26,6 +26,18 @@
    <TextBlock x:Name="TransferStatus" TextWrapping="Wrap" />
   </StackPanel></Border>
   <Border Style="{StaticResource EquoraSectionStyle}"><StackPanel Spacing="16">
+   <TextBlock Text="学期模式" FontSize="20" />
+   <ToggleSwitch x:Name="SemesterToggle" Header="开启学期模式" Toggled="OnSemesterToggled" />
+   <StackPanel x:Name="SemesterFields" Spacing="12" Visibility="Collapsed">
+    <TextBox x:Name="SemesterName" Header="学期名" />
+    <CalendarDatePicker x:Name="SemesterStart" Header="起始日期" />
+    <CalendarDatePicker x:Name="SemesterEnd" Header="结束日期" />
+    <TextBlock Text="每周为周一至周日，起始日期所在周为第 1 周；仅在学期日期范围内批量添加时间段。" TextWrapping="Wrap" Opacity="0.7" />
+    <Button Content="保存学期设置" Click="OnSaveSemester" />
+    <TextBlock x:Name="SemesterStatus" TextWrapping="Wrap" />
+   </StackPanel>
+  </StackPanel></Border>
+  <Border Style="{StaticResource EquoraSectionStyle}"><StackPanel Spacing="16">
    <TextBlock Text="启动与关闭" FontSize="20" />
    <ComboBox x:Name="CloseChoice" Header="点击窗口关闭按钮时" SelectionChanged="OnCloseChanged"><x:String>退出程序</x:String><x:String>隐藏窗口，在托盘继续运行</x:String></ComboBox>
    <ToggleSwitch x:Name="StartupToggle" Header="登录 Windows 时自动启动" Toggled="OnStartupChanged" />

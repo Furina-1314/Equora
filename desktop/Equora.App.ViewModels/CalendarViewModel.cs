@@ -184,6 +184,43 @@ public partial class CalendarViewModel : ObservableObject
     }
 
     // ---- 块编辑(接撤销) ----
+    public IReadOnlyList<TimeBlockDto> CreateSemesterBlocks(SemesterSettings semester, string? weeks,
+        DayOfWeek weekday, TimeSpan start, TimeSpan end, string title, string note, string color)
+    {
+        var slots = semester.Slots(weeks, weekday, start, end);
+        if (string.IsNullOrWhiteSpace(title)) throw new ArgumentException("请输入任务标题。");
+        if (color.Length != 7 || color[0] != '#' || !color.AsSpan(1).ToString().All(Uri.IsHexDigit))
+            throw new ArgumentException("颜色格式应为 #RRGGBB。");
+        var calendar = _calendar.ListCalendars().FirstOrDefault(c => c.Color.Equals(color, StringComparison.OrdinalIgnoreCase))
+            ?? _calendar.CreateCalendar("时间段 " + color, color);
+        var blocks = new List<TimeBlockDto>();
+        var taskIds = new List<string>();
+        try
+        {
+            foreach (var slot in slots)
+            {
+                var task = _tasks.CreateTask(new TaskDraft { Title = title.Trim(), Status = TaskStatus.Planned });
+                taskIds.Add(task.Id);
+                var block = _calendar.CreateBlock(task.Id, slot.Start, slot.End, note);
+                blocks.Add(block);
+                blocks[^1] = _calendar.UpdateBlock(block with { CalendarId = calendar.Id });
+            }
+        }
+        catch (Exception creationError)
+        {
+            var errors = new List<Exception> { creationError };
+            foreach (var block in blocks)
+                try { _calendar.DeleteBlock(block.Id); } catch (Exception ex) { errors.Add(ex); }
+            foreach (var taskId in taskIds)
+                try { _tasks.DeleteTask(taskId); } catch (Exception ex) { errors.Add(ex); }
+            if (errors.Count > 1) throw new AggregateException("批量添加失败，部分内容未能撤回，请检查日历后再重试。", errors);
+            throw;
+        }
+        Refresh();
+        StatusText = $"已添加 {blocks.Count} 个独立任务和时间段，可分别编辑。";
+        return blocks;
+    }
+
     public TimeBlockDto SaveTimeBlock(string? id, DateTimeOffset start, DateTimeOffset end, string note, string color, string? newTaskTitle = null)
     {
         if (end <= start) throw new ArgumentException("结束时间必须晚于开始时间。");
