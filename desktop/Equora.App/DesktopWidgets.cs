@@ -62,6 +62,10 @@ internal sealed class DesktopWidgets : IDisposable
 
     [DllImport("user32.dll")] private static extern uint GetDpiForWindow(IntPtr hwnd);
     [DllImport("user32.dll")] private static extern bool GetWindowRect(IntPtr hwnd, out Rect rect);
+    [DllImport("user32.dll")] private static extern bool GetCursorPos(out Point cursor);
+    [DllImport("user32.dll")] private static extern bool ClientToScreen(IntPtr hwnd, ref Point corner);
+    [DllImport("user32.dll")] private static extern IntPtr GetParent(IntPtr hwnd);
+    [StructLayout(LayoutKind.Sequential)] private struct Point { public int X, Y; }
     [DllImport("user32.dll", CharSet = CharSet.Unicode)] private static extern IntPtr FindWindow(string className, string? title);
     private delegate bool EnumWindowsProc(IntPtr window, IntPtr parameter);
     [DllImport("user32.dll")] private static extern bool EnumWindows(EnumWindowsProc callback, IntPtr parameter);
@@ -123,28 +127,31 @@ internal sealed class DesktopWidgets : IDisposable
     }
 
     // 头部按住拖动整个小组件(窗口已无标题栏)。
+    // 用 Win32 光标屏幕坐标做锚点(按下时记录 光标-窗口左上 偏移与桌面层父窗口原点),
+    // 每次移动按新光标位置直接定靶,不做增量累加——不受显示缩放与重绘延迟影响,不会漂移。
     private static void MakeDraggable(FrameworkElement handle, Window window)
     {
         var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(window);
-        double lastX = 0, lastY = 0;
         var dragging = false;
+        var offsetX = 0; var offsetY = 0; var parentX = 0; var parentY = 0;
         handle.PointerPressed += (_, e) =>
         {
             dragging = true;
-            lastX = e.GetCurrentPoint(handle).Position.X;
-            lastY = e.GetCurrentPoint(handle).Position.Y;
             handle.CapturePointer(e.Pointer);
+            GetCursorPos(out var cursor);
+            GetWindowRect(hwnd, out var rect);
+            offsetX = cursor.X - rect.Left;
+            offsetY = cursor.Y - rect.Top;
+            var origin = new Point();
+            ClientToScreen(GetParent(hwnd), ref origin);
+            parentX = origin.X; parentY = origin.Y;
         };
         handle.PointerMoved += (_, e) =>
         {
             if (!dragging) return;
-            var scale = Math.Max(1, GetDpiForWindow(hwnd) / 96.0);
-            var point = e.GetCurrentPoint(handle).Position;
-            var dx = (int)Math.Round((point.X - lastX) * scale);
-            var dy = (int)Math.Round((point.Y - lastY) * scale);
-            if (dx == 0 && dy == 0) return;
-            GetWindowRect(hwnd, out var rect);
-            SetWindowPosChild(hwnd, IntPtr.Zero, rect.Left + dx, rect.Top + dy, 0, 0, SwpNoZOrder | SwpNoSize);
+            GetCursorPos(out var cursor);
+            SetWindowPosChild(hwnd, IntPtr.Zero, cursor.X - offsetX - parentX, cursor.Y - offsetY - parentY,
+                0, 0, SwpNoZOrder | SwpNoSize);
         };
         handle.PointerReleased += (_, e) => { dragging = false; handle.ReleasePointerCapture(e.Pointer); };
         handle.PointerCanceled += (_, _) => dragging = false;
@@ -252,14 +259,28 @@ internal sealed class DesktopWidgets : IDisposable
         next.Click += (_, _) => vm.NextWeekCommand.Execute(null);
         var status = new TextBlock { Opacity = 0.65, TextWrapping = TextWrapping.Wrap };
         var list = new ListView { SelectionMode = ListViewSelectionMode.None };
+        // 与日历页相同的色块视图;注入小组件自己的视图模型,视图切换独立于主窗口。
+        var week = new Controls.WeekView { ViewModelOverride = vm };
+        var gridHost = new ScrollViewer
+        {
+            Content = week, MinZoomFactor = 1, MaxZoomFactor = 1,
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+            HorizontalScrollMode = ScrollMode.Enabled,
+            VerticalScrollMode = ScrollMode.Disabled,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Disabled
+        };
         void Rebuild()
         {
             viewChoice.SelectedIndex = vm.ViewModeIndex;
+            // 周视图/日视图用色块视图;议程用列表。
+            var grid = vm.ViewModeIndex != 2;
+            gridHost.Visibility = grid ? Visibility.Visible : Visibility.Collapsed;
+            list.Visibility = grid ? Visibility.Collapsed : Visibility.Visible;
             list.Items.Clear();
             foreach (var item in vm.Items)
             {
                 var start = item.Span.Start.ToLocalTime();
-                var prefix = vm.ViewModeIndex == 1 ? start.ToString("HH:mm") : start.ToString("MM-dd HH:mm");
+                var prefix = start.ToString("MM-dd HH:mm");
                 list.Items.Add(new TextBlock
                 {
                     Text = $"{prefix} · {item.DisplayTitle}",
@@ -295,10 +316,12 @@ internal sealed class DesktopWidgets : IDisposable
         Grid.SetRow(header, 0);
         Grid.SetRow(nav, 1);
         var scroll = new ScrollViewer { Content = list, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
+        Grid.SetRow(gridHost, 2);
         Grid.SetRow(scroll, 2);
         Grid.SetRow(status, 3);
         root.Children.Add(header);
         root.Children.Add(nav);
+        root.Children.Add(gridHost);
         root.Children.Add(scroll);
         root.Children.Add(status);
         window.Content = root;

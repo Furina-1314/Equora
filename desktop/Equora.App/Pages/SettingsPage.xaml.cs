@@ -17,6 +17,7 @@ public sealed partial class SettingsPage : Page
         ThemeChoice.SelectedIndex = Math.Clamp(settings.Theme, 0, 2);
         AccentHex.Text = settings.Accent;
         SyncAccentPreview();
+        AccentHex.SizeChanged += OnAccentHexSizeChanged;
         AccentChoice.SelectedItem = AccentChoice.Items.OfType<ComboBoxItem>().FirstOrDefault(item =>
             string.Equals(item.Tag as string, settings.Accent, StringComparison.OrdinalIgnoreCase)) ?? AccentChoice.Items.Last();
         CloseChoice.SelectedIndex = settings.CloseToTray ? 1 : 0;
@@ -190,6 +191,12 @@ public sealed partial class SettingsPage : Page
         DesktopWidgets.EnsureStarted();
         if (CalendarWidgetToggle.IsOn) DesktopWidgets.Current?.ShowCalendar();
         else DesktopWidgets.Current?.HideCalendar();
+    }
+
+    // 预览方块与色号文本框(仅输入框)保持等高的正方形。
+    private void OnAccentHexSizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        if (AccentHex.ActualHeight > 0) AccentPreview.Width = AccentPreview.Height = AccentHex.ActualHeight;
     }
 
     private void SyncAccentPreview()

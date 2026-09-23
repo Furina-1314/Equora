@@ -25,7 +25,26 @@ public sealed partial class WeekView : UserControl
     private readonly Canvas[] _days;
     private readonly DispatcherTimer _nowTimer = new() { Interval = TimeSpan.FromMinutes(1) };
 
-    private CalendarViewModel ViewModel => AppServices.Calendar;
+    private CalendarViewModel _viewModelOverride = null!;
+    /// <summary>视图模型注入:默认跟随主窗口;小组件等独立窗口设置自己的实例。</summary>
+    public CalendarViewModel ViewModelOverride
+    {
+        get => _viewModelOverride;
+        set
+        {
+            if (ReferenceEquals(_viewModelOverride, value)) return;
+            if (_viewModelOverride is not null)
+            {
+                _viewModelOverride.PropertyChanged -= OnViewModelChanged;
+                _viewModelOverride.Items.CollectionChanged -= OnItemsChanged;
+            }
+            _viewModelOverride = value;
+            _viewModelOverride.PropertyChanged += OnViewModelChanged;
+            _viewModelOverride.Items.CollectionChanged += OnItemsChanged;
+            Rebuild();
+        }
+    }
+    private CalendarViewModel ViewModel => _viewModelOverride ?? AppServices.Calendar;
 
     // 指针交互状态。
     private enum DragKind { None, CreateNew, Move, Resize }
