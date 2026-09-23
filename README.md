@@ -14,7 +14,7 @@
 
 > **Equora** = **Equ**ilibrium + **H**ora(拉丁语"时间")——在时间中保持平衡,即"衡序"。
 
-当前正式版 [v1.0.3](https://github.com/Furina-1314/Equora/releases/tag/v1.0.3) · [发布说明](docs/release-notes.md) · [下载安装包](https://github.com/Furina-1314/Equora/releases/latest)
+当前正式版 [v1.1.0](https://github.com/Furina-1314/Equora/releases/tag/v1.1.0) · [发布说明](docs/release-notes.md) · [下载安装包](https://github.com/Furina-1314/Equora/releases/latest)
 
 ## 功能
 

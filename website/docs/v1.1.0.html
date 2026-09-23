@@ -4,17 +4,17 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#C32F37">
-  <meta name="description" content="v0.2.2「学期模式」：学期设置、周次显示与按周批量添加任务和时间段。">
-  <meta property="og:title" content="v0.2.2 更新说明 — 衡序 Equora 帮助中心">
-  <meta property="og:description" content="v0.2.2「学期模式」：学期设置、周次显示与按周批量添加任务和时间段。">
+  <meta name="description" content="任务与日历桌面小组件；日历术语统一为“日程”；色号预览方块与选色表；批量操作复选框选中。">
+  <meta property="og:title" content="v1.1.0 桌面小组件与日历体验 — 衡序 Equora 帮助中心">
+  <meta property="og:description" content="任务与日历桌面小组件；日历术语统一为“日程”；色号预览方块与选色表；批量操作复选框选中。">
   <meta property="og:type" content="article">
-  <link rel="canonical" href="https://furina-1314.github.io/Equora/docs/v0.2.2.html">
+  <link rel="canonical" href="https://furina-1314.github.io/Equora/docs/v1.1.0.html">
   <link rel="icon" type="image/svg+xml" href="../assets/equora.svg">
   <link rel="stylesheet" href="../styles.css">
   <link rel="stylesheet" href="../help.css">
   <meta name="help-search-index" content="search-index.json">
   <script src="../help.js" defer></script>
-  <title>v0.2.2 更新说明 — 衡序 Equora 帮助中心</title>
+  <title>v1.1.0 桌面小组件与日历体验 — 衡序 Equora 帮助中心</title>
 </head>
 <body>
   <a class="skip-link" href="#doc-content">跳到主要内容</a>
@@ -43,12 +43,12 @@
           <a class="nav-link" href="../docs/privacy-and-security.html">隐私与安全说明</a>
           <p class="nav-group">版本与更新</p>
           <a class="nav-link" href="../docs/release-notes.html">发布说明 · 更新日志</a>
-          <a class="nav-link" href="../docs/v1.1.0.html">v1.1.0 桌面小组件与日历体验</a>
+          <a class="nav-link active" href="../docs/v1.1.0.html">v1.1.0 桌面小组件与日历体验</a>
           <a class="nav-link" href="../docs/v1.0.3.html">v1.0.3 稳定性与自保护</a>
           <a class="nav-link" href="../docs/v1.0.2.html">v1.0.2 日历与使用限制</a>
           <a class="nav-link" href="../docs/v1.0.1.html">v1.0.1 正式版修复</a>
           <a class="nav-link" href="../docs/v1.0.0.html">v1.0.0 正式版</a>
-          <a class="nav-link active" href="../docs/v0.2.2.html">v0.2.2 更新说明</a>
+          <a class="nav-link" href="../docs/v0.2.2.html">v0.2.2 更新说明</a>
           <a class="nav-link" href="../docs/v0.2.1.html">v0.2.1 更新说明</a>
           <p class="nav-group">开发者资料</p>
           <a class="nav-link" href="../docs/architecture.html">系统架构</a>
@@ -61,39 +61,33 @@
       </aside>
       <div class="doc-main">
         <button class="sidebar-toggle" type="button" aria-expanded="false" aria-controls="help-sidebar">文档目录 <span aria-hidden="true">☰</span></button>
-        <nav class="doc-breadcrumb" aria-label="面包屑"><a href="../help.html">帮助中心</a> <span aria-hidden="true">/</span> <span>v0.2.2 更新说明</span></nav>
+        <nav class="doc-breadcrumb" aria-label="面包屑"><a href="../help.html">帮助中心</a> <span aria-hidden="true">/</span> <span>v1.1.0 桌面小组件与日历体验</span></nav>
         <article class="doc-content" id="doc-content" tabindex="-1">
-<h1 id="equora-v022-学期模式">Equora v0.2.2 — 学期模式</h1>
-<p>新增学期设置与按周批量安排任务，适合课程、每周自习和固定活动。</p>
+<h1 id="equora-v110-桌面小组件与日历体验">Equora v1.1.0 — 桌面小组件与日历体验</h1>
+<h2 id="桌面小组件">桌面小组件</h2>
 <ul>
-<li>设置页“数据与备份”之后新增“学期模式”，开启后可设置学期名、起始日期和结束日期。</li>
-<li>起始日期所在周为第 1 周，每周按周一至周日计算；设置页显示当前周次，日历页显示正在查看的学期周次。</li>
-<li>日历新增“按学期批量添加”，可选择每周或特定周次（例如 <code>1,3,5-8</code>）、星期和起止时间，并设置任务标题、备注和颜色。</li>
-<li>添加前显示预计生成数量和日期范围；仅在学期起止日期范围内生成时间段。</li>
-<li>每项生成独立任务和时间段，可分别编辑。修改学期设置或关闭学期模式不会改变已添加内容。</li>
-<li>关闭学期模式需要二次确认，取消不会关闭；关闭后保留学期设置，便于再次开启。</li>
-<li>扩展配置面板标题更新为与桌面应用一致的 EQUORA 字标；网站封锁页信息框右下角新增同款字标，两处字标左侧均保留程序图标。</li>
+<li>新增两个常驻小窗,在“设置 → 桌面小组件”中开关;随应用启动自动恢复,关闭小窗即停用。</li>
+<li><strong>任务小组件</strong>:列出未完成任务(按截止时间排序,最多 50 项),打勾即完成任务,与任务页打勾一致;每 30 秒自动刷新,也可手动刷新。</li>
+<li><strong>日历小组件</strong>:显示日程,支持日视图、周视图和议程三种视图,可与主窗口独立切换;提供上一时段、今天、下一时段导航,冲突日程以红色标出。</li>
+</ul>
+<h2 id="日历改进">日历改进</h2>
+<ul>
+<li>日历页中的“时间段”统一改称“日程”:新建、编辑、批量编辑、批量删除与右键菜单等全部入口使用同一称呼,不再区分两种说法。</li>
+<li>新建日程(含按学期批量添加)的颜色输入框右侧新增 36×36 预览方块,实时反映输入的色号;点击方块弹出选色表,在选色表中选色自动回填色号。</li>
+<li>设置页自定义主题色的预览方块同样实时反映输入色号,并可点击打开选色表。</li>
+<li>批量编辑与批量删除日程改为复选框打勾表示选中,可逐项切换,支持全选/取消全选,已选数量实时显示。</li>
 </ul>
 <h2 id="验证">验证</h2>
-<ul>
-<li>Release 构建及自包含安装包打包通过。</li>
-<li>发布产物启动验证通过；已验证批量添加弹窗、关闭二次确认、取消后保持开启，以及关闭后保留学期设置。</li>
-<li>原生核心 138 项、桌面应用 140 项、服务器 20 项、浏览器扩展 8 项测试全部通过，共 306 项。</li>
-<li>修复开机启动测试对真实启动项的依赖，以及服务器限流测试对执行速度的依赖。</li>
-</ul>
+<p>原生核心 140 项、桌面应用 159 项、同步服务器 20 项及浏览器扩展 10 项测试通过,共 329 项。真实窗口冒烟验证:两个小组件按偏好自动恢复打开、内容正常渲染、偏好状态正确记录;封锁页遮罩行为无回归。</p>
 <h2 id="安装与升级">安装与升级</h2>
 <ul>
-<li><code>Equora-v0.2.2-win-x64-Setup.exe</code>：推荐，使用原安装目录即可升级，无需单独安装 .NET。</li>
-<li><code>Equora-v0.2.2-win-x64.msix</code>：版本号为 0.2.2.0，沿用原包标识和签名证书。</li>
-<li><code>Equora-v0.2.2.cer</code>：MSIX 首次安装使用的公钥证书；已信任旧版证书无需重复导入。EXE 无需导入证书。</li>
-<li><code>Equora-v0.2.2-BrowserExtension.zip</code>：随版本提供的网站限制扩展。</li>
-<li><code>SHA256SUMS.txt</code>：发布附件的 SHA-256 校验值。</li>
+<li>推荐 <code>Equora-v1.1.0-win-x64-Setup.exe</code>,使用原安装目录覆盖安装即可,任务和数据不受影响。</li>
+<li><code>Equora-v1.1.0-win-x64.msix</code> 版本为 1.1.0.0,沿用原包标识和签名证书。</li>
+<li><code>SHA256SUMS.txt</code> 提供全部附件的完整性校验。</li>
 </ul>
-<p>已有任务和数据自动沿用，学期模式默认关闭。安装包使用自签名证书，Windows 可能显示发行者信任提示。</p>
-<p>本版本附件已合并扩展外观更新。已安装 v0.2.2 的用户可重新下载扩展 ZIP，覆盖原加载目录并在浏览器扩展管理页重新加载，即可更新字标外观；保持原目录可保留扩展 ID。</p>
         </article>
-        <nav class="doc-pager" aria-label="上一篇与下一篇"><a class="pager-link pager-prev" href="v1.0.0.html"><span>上一篇</span><strong>v1.0.0 正式版</strong></a>
-          <a class="pager-link pager-next" href="v0.2.1.html"><span>下一篇</span><strong>v0.2.1 更新说明</strong></a></nav>
+        <nav class="doc-pager" aria-label="上一篇与下一篇"><a class="pager-link pager-prev" href="release-notes.html"><span>上一篇</span><strong>发布说明 · 更新日志</strong></a>
+          <a class="pager-link pager-next" href="v1.0.3.html"><span>下一篇</span><strong>v1.0.3 稳定性与自保护</strong></a></nav>
       </div>
     </div>
   </main>

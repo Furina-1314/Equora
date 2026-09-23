@@ -17,7 +17,7 @@ public sealed record CalendarItem
     public string Title { get; init; } = "";
 
     public string DisplayTitle => !string.IsNullOrWhiteSpace(Title) ? Title : Span.SourceType == "block" && Span.TaskId is null && !string.IsNullOrWhiteSpace(Note) ? Note.Split('\n')[0] : string.IsNullOrWhiteSpace(Span.Title)
-        ? (string.IsNullOrWhiteSpace(Note) ? (Span.SourceType == "block" ? "时间段" : "日程") : Note.Split('\n')[0])
+        ? (string.IsNullOrWhiteSpace(Note) ? "日程" : Note.Split('\n')[0])
         : Span.Title;
 }
 
@@ -194,7 +194,7 @@ public partial class CalendarViewModel : ObservableObject
         if (color.Length != 7 || color[0] != '#' || !color.AsSpan(1).ToString().All(Uri.IsHexDigit))
             throw new ArgumentException("颜色格式应为 #RRGGBB。");
         var calendar = _calendar.ListCalendars().FirstOrDefault(c => c.Color.Equals(color, StringComparison.OrdinalIgnoreCase))
-            ?? _calendar.CreateCalendar("时间段 " + color, color);
+            ?? _calendar.CreateCalendar("默认日程 " + color, color);
         var blocks = new List<TimeBlockDto>();
         var taskIds = new List<string>();
         var batchId = Guid.NewGuid().ToString();
@@ -224,7 +224,7 @@ public partial class CalendarViewModel : ObservableObject
             throw;
         }
         Refresh();
-        StatusText = $"已添加 {blocks.Count} 个时间段{(addToTasks ? "及关联任务" : "，未添加到任务列表")}，可分别编辑或按批次管理。";
+        StatusText = $"已添加 {blocks.Count} 个日程{(addToTasks ? "及关联任务" : "，未添加到任务列表")}，可分别编辑或按批次管理。";
         return blocks;
     }
 
@@ -233,8 +233,8 @@ public partial class CalendarViewModel : ObservableObject
         if (end <= start) throw new ArgumentException("结束时间必须晚于开始时间。");
         if (color.Length != 7 || color[0] != '#' || !color.AsSpan(1).ToString().All(Uri.IsHexDigit)) throw new ArgumentException("颜色格式应为 #RRGGBB。");
         var calendar = _calendar.ListCalendars().FirstOrDefault(c => c.Color.Equals(color, StringComparison.OrdinalIgnoreCase))
-            ?? _calendar.CreateCalendar("时间段 " + color, color);
-        var old = id is null ? null : _calendar.GetBlock(id) ?? throw new ArgumentException("时间段已不存在。");
+            ?? _calendar.CreateCalendar("默认日程 " + color, color);
+        var old = id is null ? null : _calendar.GetBlock(id) ?? throw new ArgumentException("日程已不存在。");
         var taskId = old?.TaskId;
         if (old is null && !string.IsNullOrWhiteSpace(newTaskTitle)) taskId = _tasks.CreateTask(new TaskDraft { Title = newTaskTitle.Trim(), Status = TaskStatus.Planned }).Id;
         var block = old ?? _calendar.CreateBlock(taskId, start, end, note);
@@ -244,7 +244,7 @@ public partial class CalendarViewModel : ObservableObject
 
     public IReadOnlyList<TimeBlockDto> BatchCandidates(string id)
     {
-        var block = _calendar.GetBlock(id) ?? throw new ArgumentException("时间段已不存在。");
+        var block = _calendar.GetBlock(id) ?? throw new ArgumentException("日程已不存在。");
         // Older releases did not persist batch IDs; never infer a series from matching titles.
         return string.IsNullOrEmpty(block.BatchId)
             ? _calendar.BlocksInRange(DateTimeOffset.MinValue, DateTimeOffset.MaxValue)
@@ -253,7 +253,7 @@ public partial class CalendarViewModel : ObservableObject
 
     public void EditBlocks(IReadOnlyList<TimeBlockDto> blocks, string? title, string? note, string? color, TimeSpan? start, TimeSpan? end, bool syncTaskTitles = false)
     {
-        if (blocks.Count == 0) throw new ArgumentException("请至少选择一个时间段。");
+        if (blocks.Count == 0) throw new ArgumentException("请至少选择一个日程。");
         if (title is not null && string.IsNullOrWhiteSpace(title)) throw new ArgumentException("请输入标题。");
         if (start.HasValue && (!end.HasValue || start.Value < TimeSpan.Zero || end.Value >= TimeSpan.FromDays(1) || end <= start))
             throw new ArgumentException("请输入同一天内有效的起止时间。");
@@ -262,7 +262,7 @@ public partial class CalendarViewModel : ObservableObject
         {
             if (color.Length != 7 || color[0] != '#' || !color.Skip(1).All(Uri.IsHexDigit)) throw new ArgumentException("颜色格式应为 #RRGGBB。");
             calendarId = (_calendar.ListCalendars().FirstOrDefault(c => c.Color.Equals(color, StringComparison.OrdinalIgnoreCase))
-                ?? _calendar.CreateCalendar("时间段 " + color, color)).Id;
+                ?? _calendar.CreateCalendar("默认日程 " + color, color)).Id;
         }
         DateTimeOffset LocalTime(DateTime date, TimeSpan time)
         {
@@ -276,14 +276,14 @@ public partial class CalendarViewModel : ObservableObject
             EndAt = start.HasValue ? LocalTime(b.StartAt.LocalDateTime, end!.Value) : b.EndAt }).ToArray();
         _calendar.ApplyBlockBatch(updates, false, syncTaskTitles && title is not null);
         Refresh();
-        StatusText = $"已批量编辑 {blocks.Count} 个时间段。";
+        StatusText = $"已批量编辑 {blocks.Count} 个日程。";
     }
 
     public void DeleteBlocks(IReadOnlyList<TimeBlockDto> blocks, bool deleteTasks = false)
     {
         _calendar.ApplyBlockBatch(blocks, true, deleteTasks);
         Refresh();
-        StatusText = $"已删除 {blocks.Count} 个时间段，{(deleteTasks ? "关联任务已移入回收站" : "关联任务保留")}。";
+        StatusText = $"已删除 {blocks.Count} 个日程，{(deleteTasks ? "关联任务已移入回收站" : "关联任务保留")}。";
     }
 
     /// <summary>在指定槽位创建块(视图拖拽/点击创建与待办拖入共用)。</summary>

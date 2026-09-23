@@ -10,20 +10,21 @@ internal static class TimeBlockEditor
         var existing = id is null ? null : AppServices.Data.GetBlock(id);
         if (existing is not null) { start = existing.StartAt.ToLocalTime(); end = existing.EndAt.ToLocalTime(); }
         var task = new CheckBox { Content = "同时创建任务", IsChecked = createTask, Visibility = id is null ? Visibility.Visible : Visibility.Collapsed };
-        var title = new TextBox { Header = "时间段标题", Text = existing?.Title ?? "", PlaceholderText = "不添加到任务列表也可以设置标题" };
+        var title = new TextBox { Header = "日程标题", Text = existing?.Title ?? "", PlaceholderText = "不添加到任务列表也可以设置标题" };
         Microsoft.UI.Xaml.Automation.AutomationProperties.SetAutomationId(title, "BlockTitle");
         var note = new TextBox { Header = "备注", Text = existing?.Note ?? "", AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 70 };
         var fromDate = new CalendarDatePicker { Header = "开始日期", Date = start };
         var fromTime = new TimePicker { Header = "开始时间", ClockIdentifier = "24HourClock", Time = start.TimeOfDay };
         var toDate = new CalendarDatePicker { Header = "结束日期", Date = end };
         var toTime = new TimePicker { Header = "结束时间", ClockIdentifier = "24HourClock", Time = end.TimeOfDay };
-        var color = new TextBox { Header = "时间段颜色（#RRGGBB）", Text = AppServices.Data.ListCalendars().FirstOrDefault(c => c.Id == existing?.CalendarId)?.Color is { Length: 7 } savedColor ? savedColor : "#0078D4" };
+        var initialColor = AppServices.Data.ListCalendars().FirstOrDefault(c => c.Id == existing?.CalendarId)?.Color is { Length: 7 } savedColor ? savedColor : "#0078D4";
+        var (color, colorRow) = Controls.ColorHexField.Create("日程颜色（#RRGGBB）", initialColor);
         var error = new TextBlock { TextWrapping = TextWrapping.Wrap };
         var content = new StackPanel { Spacing = 10, MinWidth = 320 };
-        foreach (var element in new UIElement[] { task, title, note, fromDate, fromTime, toDate, toTime, color, error }) content.Children.Add(element);
+        foreach (var element in new UIElement[] { task, title, note, fromDate, fromTime, toDate, toTime, colorRow, error }) content.Children.Add(element);
         Microsoft.UI.Xaml.Automation.AutomationProperties.SetAutomationId(note, "BlockNote");
         Microsoft.UI.Xaml.Automation.AutomationProperties.SetAutomationId(color, "BlockColor");
-        var dialog = new ContentDialog { XamlRoot = root, Title = id is null ? "新建时间段" : "编辑时间段", PrimaryButtonText = "保存", CloseButtonText = "取消", Content = new ScrollViewer { Content = content, MaxHeight = 540 } };
+        var dialog = new ContentDialog { XamlRoot = root, Title = id is null ? "新建日程" : "编辑日程", PrimaryButtonText = "保存", CloseButtonText = "取消", Content = new ScrollViewer { Content = content, MaxHeight = 540 } };
         dialog.PrimaryButtonClick += (_, e) =>
         {
             try

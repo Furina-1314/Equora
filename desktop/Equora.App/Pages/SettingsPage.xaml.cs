@@ -16,9 +16,12 @@ public sealed partial class SettingsPage : Page
         var settings = Appearance.Current;
         ThemeChoice.SelectedIndex = Math.Clamp(settings.Theme, 0, 2);
         AccentHex.Text = settings.Accent;
+        SyncAccentPreview();
         AccentChoice.SelectedItem = AccentChoice.Items.OfType<ComboBoxItem>().FirstOrDefault(item =>
             string.Equals(item.Tag as string, settings.Accent, StringComparison.OrdinalIgnoreCase)) ?? AccentChoice.Items.Last();
         CloseChoice.SelectedIndex = settings.CloseToTray ? 1 : 0;
+        TaskWidgetToggle.IsOn = DesktopWidgets.Current?.TasksOpen == true;
+        CalendarWidgetToggle.IsOn = DesktopWidgets.Current?.CalendarOpen == true;
         StartupToggle.IsOn = StartupRegistration.IsRegistered();
         var semester = settings.Semester;
         SemesterToggle.IsOn = semester.Enabled;
@@ -64,7 +67,7 @@ public sealed partial class SettingsPage : Page
             if (!enabled)
             {
                 var dialog = new ContentDialog { XamlRoot = XamlRoot, Title = "关闭学期模式？",
-                    Content = "关闭后将隐藏学期周次和批量添加入口。已添加的任务和时间段会保留，仍可单独编辑；学期设置也会保留。",
+                    Content = "关闭后将隐藏学期周次和批量添加入口。已添加的任务和日程会保留，仍可单独编辑；学期设置也会保留。",
                     PrimaryButtonText = "关闭学期模式", CloseButtonText = "取消", DefaultButton = ContentDialogButton.Close };
                 if (await dialog.ShowAsync() != ContentDialogResult.Primary) return;
             }
@@ -174,6 +177,43 @@ public sealed partial class SettingsPage : Page
         AccentHex.Text = hex;
         Save(Appearance.Current with { Accent = hex });
     }
+
+    private void OnTaskWidgetToggled(object sender, RoutedEventArgs e)
+    {
+        DesktopWidgets.EnsureStarted();
+        if (TaskWidgetToggle.IsOn) DesktopWidgets.Current?.ShowTasks();
+        else DesktopWidgets.Current?.HideTasks();
+    }
+
+    private void OnCalendarWidgetToggled(object sender, RoutedEventArgs e)
+    {
+        DesktopWidgets.EnsureStarted();
+        if (CalendarWidgetToggle.IsOn) DesktopWidgets.Current?.ShowCalendar();
+        else DesktopWidgets.Current?.HideCalendar();
+    }
+
+    private void SyncAccentPreview()
+    {
+        AccentPreview.Background = Appearance.TryColor(AccentHex.Text.Trim(), out var color)
+            ? new Microsoft.UI.Xaml.Media.SolidColorBrush(color)
+            : new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(255, 211, 211, 211));
+    }
+
+    private void OnAccentHexChanged(object sender, TextChangedEventArgs e) => SyncAccentPreview();
+
+    private void OnAccentPreviewTapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
+    {
+        if (_accentPicker is null)
+        {
+            _accentPicker = new ColorPicker { IsAlphaEnabled = false, IsColorSliderVisible = true, MinWidth = 260 };
+            _accentPicker.ColorChanged += (_, args) => AccentHex.Text = $"#{args.NewColor.R:X2}{args.NewColor.G:X2}{args.NewColor.B:X2}";
+            _accentFlyout = new Flyout { Content = _accentPicker };
+        }
+        if (Appearance.TryColor(AccentHex.Text.Trim(), out var color)) _accentPicker.Color = color;
+        _accentFlyout.ShowAt(AccentPreview);
+    }
+    private ColorPicker? _accentPicker;
+    private Flyout? _accentFlyout;
 
     private void OnApplyAccent(object sender, RoutedEventArgs e)
     {
@@ -290,7 +330,7 @@ public sealed partial class SettingsPage : Page
     }
     private async void OnHelp(object sender, RoutedEventArgs e)
     {
-        var dialog = new ContentDialog { XamlRoot = XamlRoot, Title = "使用帮助与快捷键", CloseButtonText = "关闭", Content = new TextBlock { Text = "Ctrl+N：新建任务\nCtrl+K：打开命令面板\nCtrl+Shift+空格：快速记录\nCtrl+Z：在任务页撤销\n\n日历：点击空白处新建；拖动安排时间；右键时间段编辑或删除。\n托盘：单击恢复窗口，右键退出。\n专注：番茄钟按轮次自动交替工作与休息；深度工作为单次倒计时；正计时手动结束。", TextWrapping = TextWrapping.Wrap } };
+        var dialog = new ContentDialog { XamlRoot = XamlRoot, Title = "使用帮助与快捷键", CloseButtonText = "关闭", Content = new TextBlock { Text = "Ctrl+N：新建任务\nCtrl+K：打开命令面板\nCtrl+Shift+空格：快速记录\nCtrl+Z：在任务页撤销\n\n日历：点击空白处新建；拖动安排时间；右键日程编辑或删除。\n托盘：单击恢复窗口，右键退出。\n专注：番茄钟按轮次自动交替工作与休息；深度工作为单次倒计时；正计时手动结束。", TextWrapping = TextWrapping.Wrap } };
         await dialog.ShowAsync();
     }
 }

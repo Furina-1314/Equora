@@ -9,7 +9,7 @@ internal static class SemesterBlockEditor
     {
         var semester = Appearance.Current.Semester;
         if (!semester.Enabled) return;
-        var title = new TextBox { Header = "时间段标题", PlaceholderText = "例如：高等数学" };
+        var title = new TextBox { Header = "日程标题", PlaceholderText = "例如：高等数学" };
         var addToTasks = new CheckBox { Content = "同时添加到任务列表", IsChecked = true };
         Microsoft.UI.Xaml.Automation.AutomationProperties.SetAutomationId(title, "SemesterBlockTitle");
         Microsoft.UI.Xaml.Automation.AutomationProperties.SetAutomationId(addToTasks, "SemesterAddToTasks");
@@ -19,14 +19,14 @@ internal static class SemesterBlockEditor
         var from = new TimePicker { Header = "开始时间", ClockIdentifier = "24HourClock", Time = TimeSpan.FromHours(9) };
         var to = new TimePicker { Header = "结束时间", ClockIdentifier = "24HourClock", Time = TimeSpan.FromHours(10) };
         var note = new TextBox { Header = "备注", AcceptsReturn = true, TextWrapping = TextWrapping.Wrap };
-        var color = new TextBox { Header = "时间段颜色（#RRGGBB）", Text = "#0078D4" };
+        var (color, colorRow) = Controls.ColorHexField.Create("日程颜色（#RRGGBB）", "#0078D4");
         var preview = new TextBlock { TextWrapping = TextWrapping.Wrap };
         var error = new TextBlock { TextWrapping = TextWrapping.Wrap };
         var content = new StackPanel { Spacing = 10, MinWidth = 320 };
         foreach (var element in new UIElement[] {
             new TextBlock { Text = $"{semester.Name} · {semester.StartDate:yyyy-MM-dd} 至 {semester.EndDate:yyyy-MM-dd}\n起始日期所在周为第 1 周，每周从周一开始。每项独立保存，关闭学期模式后仍保留。", TextWrapping = TextWrapping.Wrap },
-            title, addToTasks, mode, weeks, weekday, from, to, note, color, preview, error }) content.Children.Add(element);
-        var dialog = new ContentDialog { XamlRoot = root, Title = "按学期批量添加时间段", PrimaryButtonText = "添加", CloseButtonText = "取消",
+            title, addToTasks, mode, weeks, weekday, from, to, note, colorRow, preview, error }) content.Children.Add(element);
+        var dialog = new ContentDialog { XamlRoot = root, Title = "按学期批量添加日程", PrimaryButtonText = "添加", CloseButtonText = "取消",
             Content = new ScrollViewer { Content = content, MaxHeight = 540 } };
         void UpdatePreview()
         {

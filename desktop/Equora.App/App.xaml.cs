@@ -32,6 +32,8 @@ public partial class App : Application
         MainWindow = new MainWindow();
         MainWindow.Closed += (_, _) => _instance.Dispose();
         MainWindow.Activate();
+        // 桌面小组件:按偏好恢复上次打开的任务/日历小窗。
+        DesktopWidgets.EnsureStarted();
     }
 
     private void OnUnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)

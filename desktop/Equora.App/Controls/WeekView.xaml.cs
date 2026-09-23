@@ -238,17 +238,17 @@ public sealed partial class WeekView : UserControl
         if (item.Span.SourceType == "block")
         {
             var menu = new MenuFlyout();
-            var edit = new MenuFlyoutItem { Text = "编辑时间段", Icon = new SymbolIcon(Symbol.Edit) };
+            var edit = new MenuFlyoutItem { Text = "编辑日程", Icon = new SymbolIcon(Symbol.Edit) };
             edit.Click += async (_, _) => await TimeBlockEditor.ShowAsync(XamlRoot, item.Span.Start, item.Span.End, item.Span.SourceId);
-            var delete = new MenuFlyoutItem { Text = "删除时间段", Icon = new SymbolIcon(Symbol.Delete) };
+            var delete = new MenuFlyoutItem { Text = "删除日程", Icon = new SymbolIcon(Symbol.Delete) };
             delete.Click += async (_, _) =>
             {
-                var confirm = new ContentDialog { XamlRoot = XamlRoot, Title = "删除时间段", Content = "仅删除该时间安排，关联任务会保留。", PrimaryButtonText = "删除", CloseButtonText = "取消" };
+                var confirm = new ContentDialog { XamlRoot = XamlRoot, Title = "删除日程", Content = "仅删除该日历安排，关联任务会保留。", PrimaryButtonText = "删除", CloseButtonText = "取消" };
                 if (await confirm.ShowAsync() == ContentDialogResult.Primary) ViewModel.DeleteItem(item);
             };
-            var batchEdit = new MenuFlyoutItem { Text = "批量编辑时间段" };
+            var batchEdit = new MenuFlyoutItem { Text = "批量编辑日程" };
             batchEdit.Click += async (_, _) => await BatchBlockEditor.ShowAsync(XamlRoot, item.Span.SourceId, false);
-            var batchDelete = new MenuFlyoutItem { Text = "批量删除时间段" };
+            var batchDelete = new MenuFlyoutItem { Text = "批量删除日程" };
             batchDelete.Click += async (_, _) => await BatchBlockEditor.ShowAsync(XamlRoot, item.Span.SourceId, true);
             menu.Items.Add(edit); menu.Items.Add(delete); menu.Items.Add(new MenuFlyoutSeparator());
             menu.Items.Add(batchEdit); menu.Items.Add(batchDelete); block.ContextFlyout = menu;

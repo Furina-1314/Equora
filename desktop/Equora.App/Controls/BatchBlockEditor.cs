@@ -12,16 +12,30 @@ internal static class BatchBlockEditor
         {
             var candidates = AppServices.Calendar.BatchCandidates(id);
             var grouped = !string.IsNullOrEmpty(candidates.First(b => b.Id == id).BatchId);
-            var list = new ListView { SelectionMode = ListViewSelectionMode.Multiple, MaxHeight = 200 };
+            // 用复选框打勾表示选中,直观且可逐项切换。
+            var checks = new List<CheckBox>();
+            var count = new TextBlock();
+            var listPanel = new StackPanel { Spacing = 4 };
             foreach (var block in candidates)
             {
-                var row = new ListViewItem { Content = $"{block.StartAt.ToLocalTime():yyyy-MM-dd HH:mm} · {(string.IsNullOrWhiteSpace(block.Title) ? block.Note : block.Title)}", Tag = block };
-                list.Items.Add(row);
-                if (grouped || block.Id == id) list.SelectedItems.Add(row);
+                var box = new CheckBox
+                {
+                    Content = $"{block.StartAt.ToLocalTime():yyyy-MM-dd HH:mm} · {(string.IsNullOrWhiteSpace(block.Title) ? block.Note : block.Title)}",
+                    Tag = block,
+                    IsChecked = grouped || block.Id == id
+                };
+                checks.Add(box);
+                listPanel.Children.Add(box);
+                box.Checked += (_, _) => UpdateCount();
+                box.Unchecked += (_, _) => UpdateCount();
             }
             var all = new Button { Content = "全选 / 取消全选" };
-            all.Click += (_, _) => { if (list.SelectedItems.Count == list.Items.Count) list.SelectedItems.Clear(); else list.SelectAll(); };
-            var changeTitle = new CheckBox { Content = "修改时间段标题" };
+            all.Click += (_, _) =>
+            {
+                var target = checks.All(c => c.IsChecked == true) ? false : true;
+                foreach (var box in checks) box.IsChecked = target;
+            };
+            var changeTitle = new CheckBox { Content = "修改日程标题" };
             var title = new TextBox { Header = "新标题", IsEnabled = false };
             var changeNote = new CheckBox { Content = "修改备注" };
             var note = new TextBox { Header = "新备注（可留空）", IsEnabled = false };
@@ -37,26 +51,25 @@ internal static class BatchBlockEditor
             changeTime.Unchecked += (_, _) => from.IsEnabled = to.IsEnabled = false;
             var error = new TextBlock { TextWrapping = TextWrapping.Wrap };
             var affectTasks = new CheckBox { Content = delete ? "同时将关联任务移入回收站" : "修改标题时，同时更新关联任务标题" };
-            var count = new TextBlock();
-            void UpdateCount() => count.Text = $"已选择 {list.SelectedItems.Count} / {list.Items.Count} 个时间段";
-            list.SelectionChanged += (_, _) => UpdateCount(); UpdateCount();
+            void UpdateCount() => count.Text = $"已选择 {checks.Count(c => c.IsChecked == true)} / {checks.Count} 个日程";
+            UpdateCount();
             var content = new StackPanel { Spacing = 10, MinWidth = 340 };
-            content.Children.Add(new TextBlock { Text = "同一批次的时间段可跨周选择；旧版未记录批次的安排将列出全部时间段，需手动勾选。默认只修改日历，勾选下方选项可同时处理关联任务。", TextWrapping = TextWrapping.Wrap });
-            foreach (var element in new UIElement[] { all, list, count }) content.Children.Add(element);
+            content.Children.Add(new TextBlock { Text = "同一批次的日程可跨周选择；旧版未记录批次的安排将列出全部日程，需手动勾选。默认只修改日历，勾选下方选项可同时处理关联任务。", TextWrapping = TextWrapping.Wrap });
+            foreach (var element in new UIElement[] { all, new ScrollViewer { Content = listPanel, MaxHeight = 200, VerticalScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility.Auto }, count }) content.Children.Add(element);
             if (!delete)
                 foreach (var element in new UIElement[] { changeTitle, title, changeNote, note, changeColor, color, changeTime, from, to }) content.Children.Add(element);
             else content.Children.Add(new TextBlock { Text = "默认只删除时间安排。勾选下方选项可同时将关联任务移入回收站。删除的时间安排无法撤销。", TextWrapping = TextWrapping.Wrap });
             content.Children.Add(affectTasks);
             content.Children.Add(error);
-            var dialog = new ContentDialog { XamlRoot = root, Title = delete ? "批量删除时间段" : "批量编辑时间段",
-                PrimaryButtonText = delete ? "删除选中时间段" : "保存选中时间段", CloseButtonText = "取消", DefaultButton = ContentDialogButton.Close,
+            var dialog = new ContentDialog { XamlRoot = root, Title = delete ? "批量删除日程" : "批量编辑日程",
+                PrimaryButtonText = delete ? "删除选中日程" : "保存选中日程", CloseButtonText = "取消", DefaultButton = ContentDialogButton.Close,
                 Content = new ScrollViewer { Content = content, MaxHeight = 540 } };
             dialog.PrimaryButtonClick += (_, args) =>
             {
                 try
                 {
-                    var selected = list.SelectedItems.Cast<ListViewItem>().Select(row => (TimeBlockDto)row.Tag).ToArray();
-                    if (selected.Length == 0) throw new ArgumentException("请至少选择一个时间段。");
+                    var selected = checks.Where(c => c.IsChecked == true).Select(c => (TimeBlockDto)c.Tag).ToArray();
+                    if (selected.Length == 0) throw new ArgumentException("请至少选择一个日程。");
                     if (delete) AppServices.Calendar.DeleteBlocks(selected, affectTasks.IsChecked == true);
                     else
                     {

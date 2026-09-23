@@ -9,6 +9,8 @@ public sealed record AppPreferences
     public bool ActivityMonitoring { get; init; }
     public string BlockedApps { get; init; } = "game.exe,steam.exe";
     public bool CloseToTray { get; init; }
+    public bool TaskWidgetEnabled { get; init; }
+    public bool CalendarWidgetEnabled { get; init; }
     public int PomodoroRounds { get; init; } = 4;
     public int BreakMinutes { get; init; } = 5;
     public SemesterSettings Semester { get; init; } = new();
