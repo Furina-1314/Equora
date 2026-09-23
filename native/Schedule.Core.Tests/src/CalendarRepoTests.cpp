@@ -173,6 +173,18 @@ TEST_F(CalendarRepoTest, IcsImportWithRruleCreatesRule) {
     ASSERT_EQ(rules.size(), 1U);
     EXPECT_EQ(rules[0].freq, RecurFreq::Daily);
     EXPECT_EQ(rules[0].maxCount, std::optional<std::int64_t>(5));
+
+    auto event = cal_->findEvent("ics-rule-1");
+    ASSERT_TRUE(event.has_value());
+    event->title = "更新后的站会";
+    (void)cal_->update(*event);
+    const auto beforeDelete = cal_->materializeWindow(kDay, kDay + 7 * 86'400'000, 0);
+    EXPECT_TRUE(std::any_of(beforeDelete.begin(), beforeDelete.end(), [](const auto& span) {
+        return span.sourceType == "recurring" && span.title == "更新后的站会";
+    }));
+    cal_->deleteEvent("ics-rule-1");
+    const auto afterDelete = cal_->materializeWindow(kDay, kDay + 7 * 86'400'000, 0);
+    EXPECT_TRUE(afterDelete.empty());
 }
 
 TEST(MigrationV3Test, UpgradesV2Database) {

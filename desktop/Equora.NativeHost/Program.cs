@@ -178,7 +178,10 @@ public static class Program
             heartbeat?.Focusing == true, usage.GetValueOrDefault(r.Target)) is not null).Select(r => r.Target).Distinct().ToArray() : Array.Empty<string>();
         return new { enabled = active, focusing = heartbeat?.Focusing == true, updatedUtcMs = now.ToUnixTimeMilliseconds(),
             blockedDomains = blocked, trackedDomains = active ? websiteRules.Select(r => r.Target).Distinct().ToArray() : Array.Empty<string>(),
-            usedSeconds = usage };
+            usedSeconds = usage,
+            quotas = active ? websiteRules.Where(r => r.DailyMinutes > 0)
+                .Select(r => new { domain = r.Target, remainingSeconds = Math.Max(0, r.DailyMinutes * 60 - usage.GetValueOrDefault(r.Target)) }).ToArray()
+                : Array.Empty<object>() };
     }
 
     private static string AssemblyLocation() =>

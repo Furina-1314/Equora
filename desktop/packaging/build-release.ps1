@@ -1,5 +1,5 @@
 param(
-    [string]$Version = '1.0.0',
+    [string]$Version = '1.0.2',
     [Parameter(Mandatory)][string]$SdkBin,
     [Parameter(Mandatory)][string]$VCRedist,
     [Parameter(Mandatory)][string]$InnoCompiler,

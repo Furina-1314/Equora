@@ -92,6 +92,24 @@ public sealed class RestrictionStore(string directory)
     public DateTimeOffset? BrowserSeen => Read<DateTimeOffset?>("browser-heartbeat.json");
     public void MarkBrowserSeen() => Write("browser-heartbeat.json", DateTimeOffset.Now);
 
+    public (bool Used, DateTimeOffset? Until) AppAllowance(string target, DateTimeOffset now)
+    {
+        var data = Read<AppAllowances>("app-allowances.json");
+        if (data is not null && data.Until.TryGetValue(target, out var until)) return (true, until);
+        return (false, null);
+    }
+
+    public DateTimeOffset? GrantAppAllowance(string target, DateTimeOffset now)
+    {
+        var existing = Read<AppAllowances>("app-allowances.json");
+        var entries = existing?.Until ?? new Dictionary<string, DateTimeOffset>(StringComparer.OrdinalIgnoreCase);
+        if (entries.ContainsKey(target)) return null;
+        var until = now.AddMinutes(5);
+        entries[target] = until;
+        Write("app-allowances.json", new AppAllowances(entries));
+        return until;
+    }
+
     public Dictionary<string, double> Usage(string kind, DateTimeOffset now)
     {
         var data = Read<DailyUsage>(kind + "-usage.json");
@@ -163,4 +181,5 @@ public sealed class RestrictionStore(string directory)
         try { File.Delete(path); } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
     }
     public sealed record DailyUsage(string Date, Dictionary<string, double> Seconds);
+    public sealed record AppAllowances(Dictionary<string, DateTimeOffset> Until);
 }

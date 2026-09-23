@@ -14,7 +14,7 @@ public static class DataReset
     {
         var root = Path.GetFullPath(dataDirectory);
         string[] names = ["equora.db", "equora.db-wal", "equora.db-shm", "preferences.json", "preferences.json.tmp",
-            "restrictions.json", "restriction-heartbeat.json", "browser-heartbeat.json", "app-usage.json", "website-usage.json"];
+            "restrictions.json", "restriction-heartbeat.json", "browser-heartbeat.json", "app-usage.json", "website-usage.json", "app-allowances.json"];
         var backup = Path.Combine(root, "backups", "before-reset-" + DateTime.Now.ToString("yyyyMMdd-HHmmss") + "-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(backup);
         var moved = new List<(string Source, string Destination)>();

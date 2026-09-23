@@ -25,7 +25,7 @@ function harness(storage = {}) {
     if (keep !== true) resolve(undefined);
   });
   return { ready, send, storage, rules: () => rules, advance: ms => { now += ms; }, fail: value => { fail = value; },
-    state: () => port.onMessage.fn({ type: 'state', state: { enabled: true, updatedUtcMs: now, blockedDomains: ['example.com'] } }),
+    state: (quotas = []) => port.onMessage.fn({ type: 'state', state: { enabled: true, updatedUtcMs: now, blockedDomains: ['example.com'], quotas } }),
     alarm: () => chrome.alarms.onAlarm.fn() };
 }
 test('Allowance is atomic, lasts five minutes, expires, and stays consumed after restart', async () => {
@@ -58,4 +58,11 @@ test('Legacy redirect paths, uppercase hosts and escaped queries normalize to th
   }
   const h = harness(); await h.ready();
   assert.equal((await h.send('allowTemp', 'different.example', 'chrome-extension://test/blocked.html?host=example.com')).ok, false);
+});
+test('Matched websites receive the smallest active daily quota', async () => {
+  const h = harness(); await h.ready();
+  h.state([{ domain: 'example.com', remainingSeconds: 900 }, { domain: 'sub.example.com', remainingSeconds: 75 }]);
+  const state = await h.send('allowanceStatus', '', 'https://sub.example.com/path');
+  assert.equal(state.quotaRemainingSeconds, 75);
+  assert.equal((await h.send('allowanceStatus', '', 'https://other.test/')).quotaRemainingSeconds, undefined);
 });

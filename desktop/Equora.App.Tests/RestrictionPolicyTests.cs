@@ -57,6 +57,24 @@ public class RestrictionPolicyTests
         finally { if (Directory.Exists(directory)) Directory.Delete(directory, true); }
     }
     [Fact]
+    public void AppTemporaryAllowanceIsOneUsePerProcessAndSurvivesRestart()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), "equora-allow-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var now = At(10);
+            var store = new RestrictionStore(directory);
+            Assert.False(store.AppAllowance("game.exe", now).Used);
+            Assert.Equal(now.AddMinutes(5), store.GrantAppAllowance("game.exe", now));
+            Assert.Null(new RestrictionStore(directory).GrantAppAllowance("game.exe", now.AddMinutes(6)));
+            Assert.Equal(now.AddMinutes(5), new RestrictionStore(directory).AppAllowance("game.exe", now).Until);
+            Assert.True(store.AppAllowance("game.exe", now.AddDays(1)).Used);
+            Assert.Null(store.GrantAppAllowance("game.exe", now.AddDays(1)));
+            Assert.Equal(now.AddDays(1).AddMinutes(5), store.GrantAppAllowance("other.exe", now.AddDays(1)));
+        }
+        finally { if (Directory.Exists(directory)) Directory.Delete(directory, true); }
+    }
+    [Fact]
     public void WriteRetriesWhenDestinationIsBrieflyHeldOpen()
     {
         var directory = Path.Combine(Path.GetTempPath(), "equora-rules-" + Guid.NewGuid().ToString("N"));

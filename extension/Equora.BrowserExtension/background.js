@@ -6,6 +6,12 @@ function allowanceState(host) {
   const entries = Object.entries(allowances).filter(([domain]) => matches(host, domain));
   return { until: Math.max(0, ...entries.map(([, until]) => until)), used: entries.length > 0 };
 }
+function quotaState(host) {
+  if (!gate.enabled || !gate.updatedUtcMs || Date.now() - gate.updatedUtcMs > 12000) return {};
+  const matching = (gate.quotas || []).filter(item => matches(host, item.domain));
+  if (!matching.length) return {};
+  return { quotaRemainingSeconds: Math.min(...matching.map(item => item.remainingSeconds)), quotaUpdatedUtcMs: gate.updatedUtcMs };
+}
 async function grantAllowance(host) {
   await ready;
   const domain = (gate.blockedDomains || []).filter(domain => matches(host, domain)).sort((a, b) => a.length - b.length)[0] || host;
@@ -93,7 +99,7 @@ chrome.runtime.onMessage.addListener((message, sender, respond) => {
     if (!host) return;
     ready.then(() => {
       const state = allowanceState(host);
-      respond(state);
+      respond({ ...state, ...quotaState(host) });
       if (state.used && state.until <= Date.now() && blocked(host)) return refreshRules();
     }, () => respond({ error: '无法读取临时允许状态。' })).catch(() => {});
     return true;

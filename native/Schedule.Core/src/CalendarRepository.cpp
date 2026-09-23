@@ -635,7 +635,7 @@ std::vector<Span> CalendarRepository::materializeWindow(domain::UtcMillis from,
              return rules;
          }()) {
         auto ev = findEvent(r.hostId, /*includeDeleted=*/true);
-        if (!ev.has_value()) continue;
+        if (!ev.has_value() || ev->deletedAt.has_value()) continue;
         for (const auto& inst : scheduling::expandRecurrence(r, ev->startAt, ev->endAt,
                                                              from, to, tzOffsetMinutes)) {
             // 宿主事件本身已计入窗口,跳过与其同时刻的种子实例。

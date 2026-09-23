@@ -53,3 +53,21 @@ test('Website overlay shows the shared deadline and requests enforcement at zero
   await new Promise(resolve => setImmediate(resolve));
   assert.equal(messages, 2);
 });
+test('Daily quota uses minute precision until ten minutes and seconds below it', async () => {
+  let now = 1000000, label;
+  const intervals = [];
+  class Clock extends Date { static now() { return now; } }
+  vm.runInNewContext(read('allowance-timer.js'), {
+    Date: Clock,
+    document: {
+      createElement: () => ({ style: {}, remove() {}, attachShadow: () => ({ append: element => { label = element; } }) }),
+      documentElement: { append() {} }
+    },
+    chrome: { runtime: { sendMessage: async () => ({ quotaRemainingSeconds: 660, quotaUpdatedUtcMs: now }) } },
+    setInterval(fn) { intervals.push(fn); }
+  });
+  await new Promise(resolve => setImmediate(resolve));
+  assert.match(label.textContent, /11 分钟/);
+  now += 61000; intervals[0]();
+  assert.match(label.textContent, /09:59/);
+});

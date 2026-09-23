@@ -253,6 +253,20 @@ public sealed partial class WeekView : UserControl
             menu.Items.Add(edit); menu.Items.Add(delete); menu.Items.Add(new MenuFlyoutSeparator());
             menu.Items.Add(batchEdit); menu.Items.Add(batchDelete); block.ContextFlyout = menu;
         }
+        else if (ViewModel.EventIdFor(item) is { } eventId)
+        {
+            var menu = new MenuFlyout();
+            var recurring = item.Span.SourceType == "recurring";
+            var edit = new MenuFlyoutItem { Text = recurring ? "编辑整个重复日程" : "编辑日程", Icon = new SymbolIcon(Symbol.Edit) };
+            edit.Click += async (_, _) => await CalendarEventEditor.ShowAsync(XamlRoot, eventId);
+            var delete = new MenuFlyoutItem { Text = recurring ? "删除整个重复日程" : "删除日程", Icon = new SymbolIcon(Symbol.Delete) };
+            delete.Click += async (_, _) =>
+            {
+                var confirm = new ContentDialog { XamlRoot = XamlRoot, Title = "删除日程", Content = recurring ? $"确定删除「{item.DisplayTitle}」的整个重复日程？" : $"确定删除「{item.DisplayTitle}」？", PrimaryButtonText = "删除", CloseButtonText = "取消", DefaultButton = ContentDialogButton.Close };
+                if (await confirm.ShowAsync() == ContentDialogResult.Primary) ViewModel.DeleteEvent(eventId);
+            };
+            menu.Items.Add(edit); menu.Items.Add(delete); block.ContextFlyout = menu;
+        }
         return block;
     }
 

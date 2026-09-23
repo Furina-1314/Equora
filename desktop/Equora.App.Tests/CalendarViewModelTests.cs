@@ -43,6 +43,26 @@ public class CalendarViewModelTests : IDisposable
     }
 
     [Fact]
+    public void ImportedEventCanBeEditedAndDeletedFromCalendar()
+    {
+        var start = WeekStartLocal.AddHours(10);
+        var path = Path.Combine(Path.GetTempPath(), $"equora-v102-{Guid.NewGuid():N}.ics");
+        try
+        {
+            File.WriteAllText(path, $"BEGIN:VCALENDAR\r\nVERSION:2.0\r\nBEGIN:VEVENT\r\nUID:v102-event\r\nDTSTART:{start.UtcDateTime:yyyyMMddTHHmmssZ}\r\nDTEND:{start.AddHours(1).UtcDateTime:yyyyMMddTHHmmssZ}\r\nSUMMARY:导入日程\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n");
+            _vm.ImportIcs(path);
+            var item = Assert.Single(_vm.Items, i => i.Span.SourceType == "event");
+            var id = _vm.EventIdFor(item)!;
+            var edited = _vm.UpdateEvent(_vm.GetEvent(id)! with { Title = "已修改日程", EndAt = start.AddHours(2) });
+            Assert.Equal("已修改日程", edited.Title);
+            Assert.Contains(_vm.Items, i => i.DisplayTitle == "已修改日程");
+            _vm.DeleteEvent(id);
+            Assert.DoesNotContain(_vm.Items, i => i.Span.SourceId == id);
+        }
+        finally { File.Delete(path); }
+    }
+
+    [Fact]
     public void CreateBlockAtFromDragAndUndo()
     {
         var slot = WeekStartLocal.AddDays(1).AddHours(14);

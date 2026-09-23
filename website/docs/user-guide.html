@@ -43,6 +43,7 @@
           <a class="nav-link" href="../docs/privacy-and-security.html">隐私与安全说明</a>
           <p class="nav-group">版本与更新</p>
           <a class="nav-link" href="../docs/release-notes.html">发布说明 · 更新日志</a>
+          <a class="nav-link" href="../docs/v1.0.2.html">v1.0.2 日历与使用限制</a>
           <a class="nav-link" href="../docs/v1.0.1.html">v1.0.1 正式版修复</a>
           <a class="nav-link" href="../docs/v1.0.0.html">v1.0.0 正式版</a>
           <a class="nav-link" href="../docs/v0.2.2.html">v0.2.2 更新说明</a>
@@ -62,7 +63,7 @@
         <article class="doc-content" id="doc-content" tabindex="-1">
 <h1 id="衡序-equora-用户指南">衡序 Equora 用户指南</h1>
 <blockquote>
-<p>版本 1.0.0 正式版 · 适用 Windows 10 19041+ / Windows 11（x64）</p>
+<p>版本 1.0.2 正式版 · 适用 Windows 10 19041+ / Windows 11（x64）</p>
 </blockquote>
 <h2 id="1-快速开始">1. 快速开始</h2>
 <h3 id="11-安装">1.1 安装</h3>
@@ -109,7 +110,7 @@
 <li>工作时间底纹(工作日 09:00–18:00)</li>
 <li>冲突检测:重叠时间块红描边,侧栏可查看冲突对详情</li>
 <li>重复规则:支持每周 X / 每天 / 每月第 N 个星期 X / 最后一个星期 X</li>
-<li>ICS 导入导出:日历页选择文件位置后操作</li>
+<li>ICS 导入导出:日历页选择文件位置后操作。导入的日程可右键编辑或删除；重复日程的右键菜单明确提供整个系列的编辑、删除。</li>
 </ul>
 <h3 id="221-学期模式与批量安排">2.2.1 学期模式与批量安排</h3>
 <p>在设置中开启学期模式，设置学期名和起止日期。每周按周一至周日计算，起始日期所在周为第 1 周。日历可按每周或指定周次（如 <code>1,3,5-8</code>）添加时间段，仅生成学期日期范围内的安排。</p>
@@ -183,13 +184,14 @@
 <li>关联任务开始/结束时自动流转任务状态</li>
 <li><strong>分心捕获</strong>:专注中按 <code>Ctrl+Shift+Space</code> 记录,不切焦点;结束后一键转任务</li>
 <li><strong>崩溃恢复</strong>:软件崩溃后重启自动收尾未闭合会话</li>
-<li><strong>前台应用温和提醒</strong>(默认关闭):仅识别进程名(如 game.exe),不采集窗口内容</li>
+<li><strong>前台应用温和提醒</strong>(默认关闭):在分心应用窗口顶部显示醒目提醒，仅识别进程名(如 game.exe),不采集窗口内容</li>
 </ul>
 <h3 id="26-网站限制浏览器扩展">2.6 网站限制(浏览器扩展)</h3>
 <ul>
 <li>根据专注、指定时段和每日额度限制网站，包含规则域名的子域名。</li>
 <li>扩展连接桌面应用并根据有效心跳更新限制；桌面端退出或心跳超时后自动解除。</li>
 <li>封锁页提供“关闭此页面”和“临时允许 5 分钟”，允许到期后恢复限制；该机会不会因刷新或重启浏览器重置。</li>
+<li>有每日额度的网站会在网页右上角显示剩余时间，至少 10 分钟精确到分钟，低于 10 分钟精确到秒。受限进程也显示封锁页，每个应用可临时允许一次、共 5 分钟，重启不会重置。</li>
 <li>详细连接步骤与行为见<a href="usage-restrictions.html">应用与网站限制</a>。</li>
 </ul>
 <h2 id="3-数据安全">3. 数据安全</h2>

@@ -3,6 +3,7 @@ using Equora.App.ViewModels;
 using Equora.App.Services;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage.Pickers;
 
@@ -111,5 +112,26 @@ public sealed partial class CalendarPage : Page
         ViewModel.ImportIcs(file.Path);
         }
         catch (Exception ex) { ViewModel.StatusText = $"导入失败：{ex.Message}"; }
+    }
+
+    private void OnAgendaRightTapped(object sender, RightTappedRoutedEventArgs e)
+    {
+        if (e.OriginalSource is not DependencyObject source) return;
+        DependencyObject? ancestor = source;
+        while (ancestor is not null && ancestor is not ListViewItem) ancestor = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetParent(ancestor);
+        if (ancestor is not ListViewItem { Content: CalendarItem item } container || ViewModel.EventIdFor(item) is not { } eventId) return;
+        var menu = new MenuFlyout();
+        var recurring = item.Span.SourceType == "recurring";
+        var edit = new MenuFlyoutItem { Text = recurring ? "编辑整个重复日程" : "编辑日程" };
+        edit.Click += async (_, _) => await Controls.CalendarEventEditor.ShowAsync(XamlRoot, eventId);
+        var delete = new MenuFlyoutItem { Text = recurring ? "删除整个重复日程" : "删除日程" };
+        delete.Click += async (_, _) =>
+        {
+            var dialog = new ContentDialog { XamlRoot = XamlRoot, Title = "删除日程", Content = recurring ? $"确定删除「{item.DisplayTitle}」的整个重复日程？" : $"确定删除「{item.DisplayTitle}」？", PrimaryButtonText = "删除", CloseButtonText = "取消", DefaultButton = ContentDialogButton.Close };
+            if (await dialog.ShowAsync() == ContentDialogResult.Primary) ViewModel.DeleteEvent(eventId);
+        };
+        menu.Items.Add(edit); menu.Items.Add(delete);
+        menu.ShowAt(container);
+        e.Handled = true;
     }
 }

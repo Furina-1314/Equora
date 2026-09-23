@@ -420,4 +420,34 @@ public partial class CalendarViewModel : ObservableObject
         StatusText = $"导入完成:新增 {imported},跳过 {skipped},失败 {failed}";
         Refresh();
     }
+
+    public CalendarEventDto? GetEvent(string id) => _calendar.GetEvent(id);
+
+    public string? EventIdFor(CalendarItem item)
+    {
+        if (item.Span.SourceType == "event") return item.Span.SourceId;
+        if (item.Span.SourceType != "recurring") return null;
+        var separator = item.Span.SourceId.LastIndexOf(':');
+        if (separator <= 0) return null;
+        var rule = _calendar.GetRule(item.Span.SourceId[..separator]);
+        return rule?.HostType == "event" ? rule.HostId : null;
+    }
+
+    public CalendarEventDto UpdateEvent(CalendarEventDto ev)
+    {
+        if (string.IsNullOrWhiteSpace(ev.Title) || ev.EndAt <= ev.StartAt)
+            throw new ArgumentException("请输入标题及有效的起止时间。");
+        var saved = _calendar.UpdateEvent(ev with { Title = ev.Title.Trim() });
+        Refresh();
+        StatusText = "日程已更新。";
+        return saved;
+    }
+
+    public void DeleteEvent(string id)
+    {
+        if (_calendar.GetEvent(id) is null) throw new ArgumentException("日程已不存在。");
+        _calendar.DeleteEvent(id);
+        Refresh();
+        StatusText = "日程已删除。";
+    }
 }
