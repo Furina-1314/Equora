@@ -4,17 +4,17 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#C32F37">
-  <meta name="description" content="ICS 日程编辑与删除、进程封锁页与临时允许、分心提醒和网站/进程额度倒计时。">
-  <meta property="og:title" content="v1.0.2 日历与使用限制 — 衡序 Equora 帮助中心">
-  <meta property="og:description" content="ICS 日程编辑与删除、进程封锁页与临时允许、分心提醒和网站/进程额度倒计时。">
+  <meta name="description" content="移除最小化隐藏任务栏窗口的行为；Equora 相关进程自保护回归测试。">
+  <meta property="og:title" content="v1.0.3 稳定性与自保护 — 衡序 Equora 帮助中心">
+  <meta property="og:description" content="移除最小化隐藏任务栏窗口的行为；Equora 相关进程自保护回归测试。">
   <meta property="og:type" content="article">
-  <link rel="canonical" href="https://furina-1314.github.io/Equora/docs/v1.0.2.html">
+  <link rel="canonical" href="https://furina-1314.github.io/Equora/docs/v1.0.3.html">
   <link rel="icon" type="image/svg+xml" href="../assets/equora.svg">
   <link rel="stylesheet" href="../styles.css">
   <link rel="stylesheet" href="../help.css">
   <meta name="help-search-index" content="search-index.json">
   <script src="../help.js" defer></script>
-  <title>v1.0.2 日历与使用限制 — 衡序 Equora 帮助中心</title>
+  <title>v1.0.3 稳定性与自保护 — 衡序 Equora 帮助中心</title>
 </head>
 <body>
   <a class="skip-link" href="#doc-content">跳到主要内容</a>
@@ -43,8 +43,8 @@
           <a class="nav-link" href="../docs/privacy-and-security.html">隐私与安全说明</a>
           <p class="nav-group">版本与更新</p>
           <a class="nav-link" href="../docs/release-notes.html">发布说明 · 更新日志</a>
-          <a class="nav-link" href="../docs/v1.0.3.html">v1.0.3 稳定性与自保护</a>
-          <a class="nav-link active" href="../docs/v1.0.2.html">v1.0.2 日历与使用限制</a>
+          <a class="nav-link active" href="../docs/v1.0.3.html">v1.0.3 稳定性与自保护</a>
+          <a class="nav-link" href="../docs/v1.0.2.html">v1.0.2 日历与使用限制</a>
           <a class="nav-link" href="../docs/v1.0.1.html">v1.0.1 正式版修复</a>
           <a class="nav-link" href="../docs/v1.0.0.html">v1.0.0 正式版</a>
           <a class="nav-link" href="../docs/v0.2.2.html">v0.2.2 更新说明</a>
@@ -60,31 +60,30 @@
       </aside>
       <div class="doc-main">
         <button class="sidebar-toggle" type="button" aria-expanded="false" aria-controls="help-sidebar">文档目录 <span aria-hidden="true">☰</span></button>
-        <nav class="doc-breadcrumb" aria-label="面包屑"><a href="../help.html">帮助中心</a> <span aria-hidden="true">/</span> <span>v1.0.2 日历与使用限制</span></nav>
+        <nav class="doc-breadcrumb" aria-label="面包屑"><a href="../help.html">帮助中心</a> <span aria-hidden="true">/</span> <span>v1.0.3 稳定性与自保护</span></nav>
         <article class="doc-content" id="doc-content" tabindex="-1">
-<h1 id="equora-v102-日历与使用限制更新">Equora v1.0.2 — 日历与使用限制更新</h1>
-<h2 id="日历">日历</h2>
+<h1 id="equora-v103-稳定性与自保护">Equora v1.0.3 — 稳定性与自保护</h1>
+<h2 id="调整">调整</h2>
 <ul>
-<li>ICS 导入的普通日程现在可在周视图、日视图或议程中右键编辑标题、地点、备注和起止时间，也可确认后删除。</li>
-<li>对 ICS 导入的重复日程，右键菜单明确标为“编辑整个重复日程”或“删除整个重复日程”。删除宿主日程后，后续重复实例不再出现在日历中。</li>
+<li>移除"受限窗口最小化后从任务栏隐藏"的行为:该行为会导致用户无法通过常规方式关闭被限制的进程。窗口最小化时封锁页收起,从任务栏恢复显示后立即重新覆盖;最小化期间任务栏缩略图仍显示程序自身画面(Windows 不允许其他程序改写)。</li>
 </ul>
-<h2 id="应用与网站限制">应用与网站限制</h2>
+<h2 id="自保护">自保护</h2>
 <ul>
-<li>命中进程限制时，在该程序窗口上显示封锁页。封锁页盖住标题栏以下的整个工作区，标题栏(含最小化、还原、关闭按钮)完整露出并可点击；封锁页的“关闭窗口”按钮发送同样的正常关闭指令。按钮为纯色扁平样式且悬停不变色，与扩展封锁页一致：关闭为红底白字、临时允许为浅灰底，用完后置灰。</li>
-<li>封锁页持续覆盖命中窗口，不随焦点离开而消失，遮罩窗口通过系统窗口事件即时跟随窗口移动和缩放。窗口最小化时直接从任务栏隐藏，不留下可显示内容的预览缩略图；解除封锁或退出 Equora 时自动恢复显示，恢复后的窗口仍会被立即重新覆盖。</li>
-<li>临时允许为每个应用一次、共 5 分钟，用完后按钮置灰，重启不重置。临时允许期间或有每日额度的应用，窗口右上角持续显示倒计时，不依赖该窗口是否在前台；到期后恢复限制。</li>
-<li>专注时的分心应用提醒显示在当前应用窗口顶部正中，拖动窗口时逐帧跟随，视觉上与窗口一体；提醒只识别进程名，不读取窗口内容。</li>
-<li>有每日使用额度的网站和进程，在活动窗口右上角显示剩余额度。剩余至少 10 分钟时按分钟显示，低于 10 分钟时按秒倒计时。网站额度由扩展和本地消息组件同步，约每 5 秒校准一次。</li>
-<li>倒计时提示框会随 Windows 显示缩放和可用宽度调整，窄窗口中的文字可换行显示。</li>
+<li>Equora 相关进程始终受安全白名单保护,无法被使用限制规则针对:包括桌面应用(<code>Equora.App.exe</code>)、浏览器扩展本地宿主(<code>com.equora.nativehost.exe</code>)与自托管同步服务器(<code>equora-server</code>)。</li>
+<li>保护在两处生效:创建规则时校验拒绝,规则求值时无条件放行——即使手动修改配置文件写入针对 Equora 的规则,也不会产生封锁页或倒计时。</li>
+<li>本版本为上述行为补充了回归测试,防止后续改动破坏自保护。</li>
 </ul>
-<p>进程遮罩属于当前用户桌面的使用管理提示，不能阻止管理员权限程序、系统安全界面或后台服务。Equora 退出后不再显示遮罩；系统恢复工具保持白名单保护。</p>
 <h2 id="验证">验证</h2>
-<p>原生核心 140 项、桌面应用 156 项、同步服务器 20 项及浏览器扩展 10 项测试通过，共 326 项。独立窗口验证了进程封锁页、临时允许、分心提醒及额度两档显示；浏览器倒计时提示在 240、320、390 像素宽度下检查了内容完整性。</p>
-<h2 id="安装">安装</h2>
-<p>推荐从 <a href="https://github.com/Furina-1314/Equora/releases/latest">最新正式版</a> 下载 <code>Equora-v1.0.2-win-x64-Setup.exe</code>；MSIX 为 1.0.2.0，沿用包标识和签名证书。网站倒计时功能需更新扩展文件并在 Edge 或 Chrome 的扩展管理页重新加载。安装包附 SHA256SUMS.txt。</p>
+<p>原生核心 140 项、桌面应用 159 项、同步服务器 20 项及浏览器扩展 10 项测试通过,共 329 项。真实窗口冒烟验证:封锁页完整露出标题栏、非前台持续覆盖、最小化收起且窗口保留在任务栏、恢复即重新覆盖、关闭目标后遮罩移除。</p>
+<h2 id="安装与升级">安装与升级</h2>
+<ul>
+<li>推荐 <code>Equora-v1.0.3-win-x64-Setup.exe</code>,使用原安装目录覆盖安装即可,任务和数据不受影响。</li>
+<li><code>Equora-v1.0.3-win-x64.msix</code> 版本为 1.0.3.0,沿用原包标识和签名证书。</li>
+<li><code>SHA256SUMS.txt</code> 提供全部附件的完整性校验。</li>
+</ul>
         </article>
-        <nav class="doc-pager" aria-label="上一篇与下一篇"><a class="pager-link pager-prev" href="v1.0.3.html"><span>上一篇</span><strong>v1.0.3 稳定性与自保护</strong></a>
-          <a class="pager-link pager-next" href="v1.0.1.html"><span>下一篇</span><strong>v1.0.1 正式版修复</strong></a></nav>
+        <nav class="doc-pager" aria-label="上一篇与下一篇"><a class="pager-link pager-prev" href="release-notes.html"><span>上一篇</span><strong>发布说明 · 更新日志</strong></a>
+          <a class="pager-link pager-next" href="v1.0.2.html"><span>下一篇</span><strong>v1.0.2 日历与使用限制</strong></a></nav>
       </div>
     </div>
   </main>

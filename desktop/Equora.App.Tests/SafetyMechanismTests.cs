@@ -13,7 +13,9 @@ public class SafetyWhitelistTests
     [InlineData("SystemSettings.exe")]     // 系统设置
     [InlineData("narrator.exe")]           // 辅助功能
     [InlineData("powershell")]             // 无扩展名形式
-    [InlineData("Equora.App.exe")]         // 自身(避免自锁)
+    [InlineData("Equora.App.exe")]         // 桌面应用自身(避免自锁)
+    [InlineData("com.equora.nativehost.exe")] // 浏览器扩展本地宿主
+    [InlineData("equora-server")]          // 自托管同步服务器
     public void CriticalProcessesAreAlwaysProtected(string process)
     {
         Assert.True(SafetyWhitelist.IsProtected(process),

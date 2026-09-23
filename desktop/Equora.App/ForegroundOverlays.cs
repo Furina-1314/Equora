@@ -33,7 +33,6 @@ internal sealed class ForegroundOverlays : IDisposable
         public bool Blocking;
         public bool CountdownShown;
         public bool Active;
-        public bool HidTarget;
     }
 
     private const int GwlStyle = -16, GwlExStyle = -20;
@@ -54,7 +53,6 @@ internal sealed class ForegroundOverlays : IDisposable
     [DllImport("user32.dll")] private static extern bool SetWindowPos(IntPtr hwnd, IntPtr after, int x, int y, int width, int height, uint flags);
     [DllImport("user32.dll")] private static extern uint GetDpiForWindow(IntPtr hwnd);
     [DllImport("user32.dll")] private static extern int GetSystemMetricsForDpi(int index, uint dpi);
-    [DllImport("user32.dll")] private static extern bool ShowWindowAsync(IntPtr window, int command);
     [DllImport("user32.dll")] private static extern IntPtr GetForegroundWindow();
     [DllImport("user32.dll")] private static extern bool SetForegroundWindow(IntPtr window);
     [DllImport("dwmapi.dll")] private static extern int DwmGetWindowAttribute(IntPtr hwnd, int attribute, out Rect buttons, int size);
@@ -284,13 +282,11 @@ internal sealed class ForegroundOverlays : IDisposable
                 }
                 else
                 {
-                    // 最小化等不可见状态:直接隐藏目标窗口,任务栏不再出现可泄漏内容的预览缩略图。
-                    HideBlockedTarget(pair, hwnd);
+                    // 最小化等不可见状态:收起遮罩;恢复显示后由窗口事件立即重新覆盖。
                     pair.Block.AppWindow.Hide(); pair.Countdown.AppWindow.Hide();
                 }
                 continue;
             }
-            RestoreIfHidden(pair);
             pair.Blocking = false;
             pair.Block.AppWindow.Hide();
             if (bounds is null) { pair.CountdownShown = false; pair.Countdown.AppWindow.Hide(); continue; }
@@ -315,7 +311,6 @@ internal sealed class ForegroundOverlays : IDisposable
         foreach (var idle in _pairs.Where(kv => !kv.Value.Active).ToList())
         {
             var pair = idle.Value;
-            RestoreIfHidden(pair);
             pair.Block.AppWindow.Hide(); pair.Countdown.AppWindow.Hide();
             pair.Blocking = false; pair.CountdownShown = false;
             _pairs.Remove(idle.Key);
@@ -330,20 +325,6 @@ internal sealed class ForegroundOverlays : IDisposable
     {
         var strip = TitleStripHeight(target, rect);
         Place(pair.Block, target, rect.Left, rect.Top + strip, rect.Width, rect.Height - strip);
-    }
-
-    // 只隐藏“因封锁而最小化”的窗口;解除封锁或遮罩撤下时恢复其可见性。
-    private void HideBlockedTarget(Pair pair, IntPtr hwnd)
-    {
-        if (pair.HidTarget || !ForegroundAccess.IsAlive(hwnd) || !ForegroundAccess.IsMinimized(hwnd)) return;
-        ShowWindowAsync(hwnd, 0 /* SW_HIDE */);
-        pair.HidTarget = true;
-    }
-    private void RestoreIfHidden(Pair pair)
-    {
-        if (!pair.HidTarget) return;
-        pair.HidTarget = false;
-        if (ForegroundAccess.IsAlive(pair.Target)) ShowWindowAsync(pair.Target, 5 /* SW_SHOW */);
     }
 
     // 倒计时提示框:钉在目标客户区右上角(避开标题栏按钮豁口),尺寸随文字与可用宽度自适应。
@@ -384,10 +365,6 @@ internal sealed class ForegroundOverlays : IDisposable
     public bool Owns(IntPtr hwnd) =>
         hwnd != IntPtr.Zero && (_pairs.Values.Any(p => hwnd == Handle(p.Block) || hwnd == Handle(p.Countdown)) || hwnd == Handle(_nudge));
 
-    /// <summary>被封锁期间因最小化而隐藏的目标窗口——枚举时须并入,否则会陷入隐藏/恢复震荡。</summary>
-    public IReadOnlyCollection<IntPtr> HiddenTargets =>
-        _pairs.Values.Where(p => p.HidTarget).Select(p => p.Target).ToList();
-
     /// <summary>遮罩窗口 → 它跟随的目标窗口(前台是自家遮罩时,把逻辑映射回目标应用)。</summary>
     public IntPtr HostOf(IntPtr hwnd)
     {
@@ -424,13 +401,7 @@ internal sealed class ForegroundOverlays : IDisposable
             if (!_pairs.ContainsKey(hwnd)) return;
         }
         else if (!_pairs.ContainsKey(hwnd)) return;
-        _queue.TryEnqueue(() =>
-        {
-            if (_pairs.TryGetValue(target, out var pair) && pair.Blocking &&
-                eventType is EventSystemMinimizeStart or EventObjectHide)
-                HideBlockedTarget(pair, target); // 最小化瞬间即隐藏,不给任务栏预览留内容
-            Reposition(target);
-        });
+        _queue.TryEnqueue(() => Reposition(target));
     }
 
     private void Reposition(IntPtr target)
@@ -438,7 +409,6 @@ internal sealed class ForegroundOverlays : IDisposable
         if (!_pairs.TryGetValue(target, out var pair)) return;
         if (!ForegroundAccess.IsAlive(target) || ForegroundAccess.IsMinimized(target))
         {
-            if (pair.Blocking) HideBlockedTarget(pair, target);
             pair.Block.AppWindow.Hide(); pair.Countdown.AppWindow.Hide();
             return;
         }
@@ -460,10 +430,7 @@ internal sealed class ForegroundOverlays : IDisposable
     public void Hide()
     {
         foreach (var pair in _pairs.Values)
-        {
-            RestoreIfHidden(pair);
-            pair.Block.AppWindow.Hide(); pair.Countdown.AppWindow.Hide(); pair.Blocking = false;
-        }
+        { pair.Block.AppWindow.Hide(); pair.Countdown.AppWindow.Hide(); pair.Blocking = false; }
         _nudge.AppWindow.Hide();
         _nudgeHost = IntPtr.Zero;
         IsBlocking = false;
@@ -471,8 +438,7 @@ internal sealed class ForegroundOverlays : IDisposable
     public void Dispose()
     {
         foreach (var hook in _hooks) if (hook != IntPtr.Zero) UnhookWinEvent(hook);
-        // 退出前恢复所有被隐藏的目标窗口,不能把用户的窗口留在不可见状态。
-        foreach (var pair in _pairs.Values) { RestoreIfHidden(pair); pair.Block.Close(); pair.Countdown.Close(); }
+        foreach (var pair in _pairs.Values) { pair.Block.Close(); pair.Countdown.Close(); }
         foreach (var pair in _pool) { pair.Block.Close(); pair.Countdown.Close(); }
         _pairs.Clear();
         _pool.Clear();

@@ -35,6 +35,24 @@ public class RestrictionPolicyTests
         Assert.Throws<ArgumentException>(() => RestrictionPolicy.Validate(new UsageRule { Target = "game.exe" }));
         Assert.Equal("game.exe", RestrictionPolicy.Validate(new UsageRule { Target = "GAME", DuringFocus = true }).Target);
     }
+
+    [Fact]
+    public void EquoraProcessesCannotBeRestricted()
+    {
+        // 自保护:规则入口(Validate)与求值出口(Reason)双重拦截,手动改配置文件也无法生效。
+        Assert.Throws<ArgumentException>(() =>
+            RestrictionPolicy.Validate(new UsageRule { Target = "Equora.App.exe", DuringFocus = true }));
+        Assert.Throws<ArgumentException>(() =>
+            RestrictionPolicy.Validate(new UsageRule { Target = "com.equora.nativehost.exe", HasSchedule = true }));
+        Assert.Throws<ArgumentException>(() =>
+            RestrictionPolicy.Validate(new UsageRule { Target = "EQUORA-SERVER", DuringFocus = true }));
+        Assert.Null(RestrictionPolicy.Reason(
+            new UsageRule { Kind = "app", Target = "equora.app.exe", DuringFocus = true }, At(10), true, 0));
+        Assert.Null(RestrictionPolicy.Reason(
+            new UsageRule { Kind = "app", Target = "COM.EQUORA.NATIVEHOST.exe", HasSchedule = true, StartMinute = 0, EndMinute = 0 }, At(10), false, 0));
+        Assert.Null(RestrictionPolicy.Reason(
+            new UsageRule { Kind = "app", Target = "equora-server", DailyMinutes = 1 }, At(10), false, 3600));
+    }
     [Fact]
     public void UsagePersistsAndResetsAtLocalMidnightAndLeaseExpires()
     {

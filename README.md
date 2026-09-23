@@ -14,7 +14,7 @@
 
 > **Equora** = **Equ**ilibrium + **H**ora(拉丁语"时间")——在时间中保持平衡,即"衡序"。
 
-当前正式版 [v1.0.2](https://github.com/Furina-1314/Equora/releases/tag/v1.0.2) · [发布说明](docs/release-notes.md) · [下载安装包](https://github.com/Furina-1314/Equora/releases/latest)
+当前正式版 [v1.0.3](https://github.com/Furina-1314/Equora/releases/tag/v1.0.3) · [发布说明](docs/release-notes.md) · [下载安装包](https://github.com/Furina-1314/Equora/releases/latest)
 
 ## 功能
 
@@ -66,7 +66,7 @@ ctest --preset win-x64-release    # 140/140 通过
 # 2. 构建桌面应用(WinUI 3)
 cd ../desktop
 dotnet build Equora.slnx -c Release
-dotnet test Equora.App.Tests -c Release --no-build   # 154/154 通过
+dotnet test Equora.App.Tests -c Release --no-build   # 159/159 通过
 
 # 3. 运行
 dotnet run --project Equora.App -c Release
@@ -89,10 +89,10 @@ docker compose -f docker/docker-compose.yml up --build
 | 测试套件 | 数量 | CI |
 |---|---|---|
 | 原生核心(GoogleTest / C++20) | 140 | [![native-ci](https://github.com/Furina-1314/Equora/actions/workflows/native-ci.yml/badge.svg)](https://github.com/Furina-1314/Equora/actions/workflows/native-ci.yml) |
-| 桌面应用(xUnit / C#) | 154 | [![desktop-ci](https://github.com/Furina-1314/Equora/actions/workflows/desktop-ci.yml/badge.svg)](https://github.com/Furina-1314/Equora/actions/workflows/desktop-ci.yml) |
+| 桌面应用(xUnit / C#) | 159 | [![desktop-ci](https://github.com/Furina-1314/Equora/actions/workflows/desktop-ci.yml/badge.svg)](https://github.com/Furina-1314/Equora/actions/workflows/desktop-ci.yml) |
 | 同步服务器(GoogleTest) | 20 | [![server-ci](https://github.com/Furina-1314/Equora/actions/workflows/server-ci.yml/badge.svg)](https://github.com/Furina-1314/Equora/actions/workflows/server-ci.yml) |
 | 浏览器扩展 | 8 | 本地验证 |
-| **合计** | **322** | |
+| **合计** | **329** | |
 
 ## 架构
 

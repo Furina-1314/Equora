@@ -171,8 +171,7 @@ internal sealed class RestrictionRuntime : IDisposable
         Dictionary<string, (string? Reason, bool Used, DateTimeOffset? Until, double? Quota)> decisions)
     {
         var result = new List<(IntPtr, ForegroundOverlays.TargetState)>();
-        foreach (var hwnd in ForegroundAccess.VisibleTopWindows(includeMinimized: true)
-                     .Union(_overlays.HiddenTargets))
+        foreach (var hwnd in ForegroundAccess.VisibleTopWindows(includeMinimized: true))
         {
             if (_overlays.Owns(hwnd)) continue;
             var process = _windowProcesses.Resolve(hwnd);
