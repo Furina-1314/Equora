@@ -15,11 +15,10 @@ internal static class ColorHexField
     public static (TextBox Box, FrameworkElement Row) Create(string header, string initial)
     {
         var box = new TextBox { Header = header, Text = initial, MaxLength = 7 };
+        // 方角、无边框,高度随左侧文本框拉伸对齐。
         var preview = new Border
         {
-            Width = 36, Height = 36, VerticalAlignment = VerticalAlignment.Bottom,
-            CornerRadius = new CornerRadius(4), BorderThickness = new Thickness(1),
-            BorderBrush = new SolidColorBrush(Color.FromArgb(255, 120, 120, 120)),
+            Width = 36, VerticalAlignment = VerticalAlignment.Stretch,
             Background = new SolidColorBrush(Color.FromArgb(255, 211, 211, 211))
         };
         void Sync()

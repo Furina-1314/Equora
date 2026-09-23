@@ -13,9 +13,9 @@
    </ComboBox>
    <Grid ColumnSpacing="12"><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
     <TextBox x:Name="AccentHex" Header="自定义颜色（#RRGGBB）" MaxLength="7" PlaceholderText="#C32F37" TextChanged="OnAccentHexChanged" />
-    <Border x:Name="AccentPreview" Grid.Column="1" Width="36" Height="36" VerticalAlignment="Bottom"
-            CornerRadius="4" BorderThickness="1" BorderBrush="#787878" Background="#D3D3D3"
-            IsTapEnabled="True" Tapped="OnAccentPreviewTapped" ToolTipService.ToolTip="点击打开选色表" />
+    <Border x:Name="AccentPreview" Grid.Column="1" Width="36" VerticalAlignment="Stretch"
+            Background="#D3D3D3" IsTapEnabled="True" Tapped="OnAccentPreviewTapped"
+            ToolTipService.ToolTip="点击打开选色表" />
     <Button Grid.Column="2" Content="应用" VerticalAlignment="Bottom" Click="OnApplyAccent" />
    </Grid>
    <TextBlock Text="更改立即生效并自动保存。高对比度模式遵循 Windows 系统颜色。" TextWrapping="Wrap" Opacity="0.65" />
