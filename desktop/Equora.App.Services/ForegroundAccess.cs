@@ -58,13 +58,14 @@ public static class ForegroundAccess
     public static IntPtr ZOrderAbove(IntPtr window) =>
         window == IntPtr.Zero || !IsWindow(window) ? IntPtr.Zero : GetWindow(window, GwHwndPrev);
 
-    /// <summary>屏幕上可见、未最小化、未挂起(非 DWM 遮蔽)的顶层窗口,排除工具窗。</summary>
-    public static List<IntPtr> VisibleTopWindows()
+    /// <summary>屏幕上可见的顶层窗口(排除工具窗与 DWM 遮蔽的挂起窗口)。includeMinimized
+    /// 时连同最小化窗口一起返回——封锁目标最小化后仍需跟踪,以便解除时恢复可见。</summary>
+    public static List<IntPtr> VisibleTopWindows(bool includeMinimized = false)
     {
         var result = new List<IntPtr>();
         EnumWindows((window, _) =>
         {
-            if (!IsWindowVisible(window) || IsIconic(window)) return true;
+            if (!IsWindowVisible(window) || (!includeMinimized && IsIconic(window))) return true;
             if ((GetWindowLongPtr(window, GwlExStyle).ToInt64() & WsExToolWindow) != 0) return true;
             if (DwmGetWindowAttribute(window, DwmwaCloaked, out var cloaked, sizeof(int)) == 0 && cloaked != 0) return true;
             if (GetClientRect(window, out var client) && client.Width >= 96 && client.Height >= 48)

@@ -33,7 +33,7 @@ internal sealed class ForegroundOverlays : IDisposable
         public bool Blocking;
         public bool CountdownShown;
         public bool Active;
-        public DateTimeOffset InactiveSince;
+        public bool HidTarget;
     }
 
     private const int GwlStyle = -16, GwlExStyle = -20;
@@ -53,6 +53,13 @@ internal sealed class ForegroundOverlays : IDisposable
     [DllImport("user32.dll", EntryPoint = "SetWindowLongPtrW")] private static extern IntPtr SetWindowLongPtr(IntPtr hwnd, int index, IntPtr value);
     [DllImport("user32.dll")] private static extern bool SetWindowPos(IntPtr hwnd, IntPtr after, int x, int y, int width, int height, uint flags);
     [DllImport("user32.dll")] private static extern uint GetDpiForWindow(IntPtr hwnd);
+    [DllImport("user32.dll")] private static extern int GetSystemMetricsForDpi(int index, uint dpi);
+    [DllImport("user32.dll")] private static extern bool ShowWindowAsync(IntPtr window, int command);
+    [DllImport("user32.dll")] private static extern IntPtr GetForegroundWindow();
+    [DllImport("user32.dll")] private static extern bool SetForegroundWindow(IntPtr window);
+    [DllImport("dwmapi.dll")] private static extern int DwmGetWindowAttribute(IntPtr hwnd, int attribute, out Rect buttons, int size);
+    [StructLayout(LayoutKind.Sequential)] private struct Rect { public int Left, Top, Right, Bottom; }
+    private const int SmCyCaption = 4, SmCxPaddingBorder = 92;
 
     private readonly Dictionary<IntPtr, Pair> _pairs = new();
     private readonly List<Pair> _pool = new();
@@ -122,8 +129,8 @@ internal sealed class ForegroundOverlays : IDisposable
         var blockName = new TextBlock { FontSize = 20, Foreground = Brush(32, 32, 32), TextWrapping = TextWrapping.Wrap };
         var blockReason = new TextBlock { FontSize = 14, Foreground = Brush(90, 90, 90), TextWrapping = TextWrapping.Wrap };
         var allowFeedback = new TextBlock { FontSize = 14, Foreground = Brush(90, 90, 90), TextWrapping = TextWrapping.Wrap };
-        Button allow = new() { Content = "临时允许 5 分钟" };
-        Button close = new() { Content = "关闭窗口" };
+        Button allow = new() { Content = "临时允许 5 分钟", Template = FlatTemplate() };
+        Button close = new() { Content = "关闭窗口", Template = FlatTemplate() };
         var block = new Window { ExtendsContentIntoTitleBar = true };
         var pair = new Pair
         {
@@ -137,8 +144,29 @@ internal sealed class ForegroundOverlays : IDisposable
         pair.Countdown.Content = Notice(pair.CountdownText);
         Configure(block, false);
         Configure(pair.Countdown, true);
+        // 从未激活过的 WinUI 窗口不会加载 XAML 内容(呈现为空白)。离屏激活一次强制完成
+        // 内容加载,再把焦点还给原窗口;之后的所有摆放都不再依赖激活。
+        var focus = GetForegroundWindow();
+        ForceContentLoaded(block);
+        ForceContentLoaded(pair.Countdown);
+        if (focus != IntPtr.Zero && !Owns(focus)) SetForegroundWindow(focus);
         return pair;
     }
+
+    private static void ForceContentLoaded(Window window)
+    {
+        SetWindowPos(Handle(window), IntPtr.Zero, -4000, -4000, 4, 4, SwpNoActivate);
+        window.Activate();
+        window.AppWindow.Hide();
+    }
+
+    private ControlTemplate? _flatTemplate;
+    // 与扩展封锁页一致的纯色按钮:无悬停/按压变色的扁平模板,禁用态由调用方设置透明度。
+    private ControlTemplate FlatTemplate() => _flatTemplate ??= (ControlTemplate)Microsoft.UI.Xaml.Markup.XamlReader.Load(
+        "<ControlTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' TargetType='Button'>" +
+        "<Border Background='{TemplateBinding Background}' BorderBrush='{TemplateBinding BorderBrush}' BorderThickness='{TemplateBinding BorderThickness}' CornerRadius='0'>" +
+        "<ContentPresenter Content='{TemplateBinding Content}' Foreground='{TemplateBinding Foreground}' Padding='{TemplateBinding Padding}' HorizontalAlignment='Center' VerticalAlignment='Center'/>" +
+        "</Border></ControlTemplate>");
 
     private static UIElement BuildBlock(Button close, Button allow, TextBlock name, TextBlock reason, TextBlock feedback)
     {
@@ -201,6 +229,24 @@ internal sealed class ForegroundOverlays : IDisposable
         window.AppWindow.Show(false);
     }
 
+    // 露出整个标题栏:现代应用把最小化/还原/关闭按钮画在客户区内,用 DWM 的标题栏按钮
+    // 边界精确求出应下移的高度;经典应用的标题栏本就在客户区之外,结果为 0,不会多露。
+    private static int TitleStripHeight(IntPtr target, ForegroundAccess.WindowBounds client)
+    {
+        if (DwmGetWindowAttribute(target, 5 /* DWMWA_CAPTION_BUTTON_BOUNDS */, out var buttons, 16) == 0)
+        {
+            var window = ForegroundAccess.Bounds(target);
+            if (window is { } w)
+            {
+                var strip = buttons.Bottom + 2 - (client.Top - w.Top);
+                return Math.Max(0, Math.Min(client.Height / 2, strip));
+            }
+        }
+        var dpi = GetDpiForWindow(target);
+        var pad = Math.Max(1, GetSystemMetricsForDpi(SmCxPaddingBorder, dpi));
+        return Math.Min(client.Height / 2, GetSystemMetricsForDpi(SmCyCaption, dpi) + 3 * pad);
+    }
+
     /// <summary>把遮罩同步到当前所有命中窗口;倒计时提示与封锁页一样常驻,不依赖前台焦点。</summary>
     public void Sync(IReadOnlyList<(IntPtr Window, TargetState State)> targets, IntPtr nudgeHost, string? nudge)
     {
@@ -219,30 +265,36 @@ internal sealed class ForegroundOverlays : IDisposable
             pair.BlockName.Text = state.Process;
             pair.BlockReason.Text = state.BlockReason ?? "";
             pair.Allow.IsEnabled = !state.AllowUsed;
+            pair.Allow.Opacity = state.AllowUsed ? 0.55 : 1.0;
             pair.AllowFeedback.Text = state.AllowUsed && state.BlockReason is not null ? "临时允许机会已用完。" : "";
             var bounds = ForegroundAccess.ClientBounds(hwnd);
-            if (bounds is null)
-            {
-                pair.Block.AppWindow.Hide(); pair.Countdown.AppWindow.Hide();
-                pair.Blocking = false; pair.CountdownShown = false;
-                continue;
-            }
-            var rect = bounds.Value;
             if (state.BlockReason is not null)
             {
                 var wasBlocking = pair.Blocking;
                 blocking = true;
                 pair.Blocking = true;
                 pair.CountdownShown = false;
-                Place(pair.Block, hwnd, rect.Left, rect.Top, rect.Width, rect.Height);
-                pair.Countdown.AppWindow.Hide();
-                // 前台应用刚被封锁时让封锁页接管焦点(也促成新窗口完成首帧渲染);
-                // 后台窗口被封锁时不抢夺用户当前焦点。
-                if (!wasBlocking && ForegroundAccess.Current().Window == hwnd) pair.Block.Activate();
+                if (bounds is not null)
+                {
+                    var rect = bounds.Value;
+                    PlaceBlock(pair, hwnd, rect);
+                    pair.Countdown.AppWindow.Hide();
+                    // 前台应用刚被封锁时让封锁页接管焦点;后台窗口被封锁时不抢夺用户当前焦点。
+                    if (!wasBlocking && ForegroundAccess.Current().Window == hwnd) pair.Block.Activate();
+                }
+                else
+                {
+                    // 最小化等不可见状态:直接隐藏目标窗口,任务栏不再出现可泄漏内容的预览缩略图。
+                    HideBlockedTarget(pair, hwnd);
+                    pair.Block.AppWindow.Hide(); pair.Countdown.AppWindow.Hide();
+                }
                 continue;
             }
+            RestoreIfHidden(pair);
             pair.Blocking = false;
             pair.Block.AppWindow.Hide();
+            if (bounds is null) { pair.CountdownShown = false; pair.Countdown.AppWindow.Hide(); continue; }
+            var rect2 = bounds.Value;
             var scale = Math.Max(1, GetDpiForWindow(hwnd) / 96.0);
             var seconds = state.AllowUntil is { } end && end > DateTimeOffset.Now
                 ? (int)Math.Ceiling((end - DateTimeOffset.Now).TotalSeconds)
@@ -254,48 +306,87 @@ internal sealed class ForegroundOverlays : IDisposable
                     : seconds >= 600 ? $"Equora · 今日可用 {(int)Math.Ceiling(seconds / 60.0)} 分钟"
                     : $"Equora · 今日可用 {seconds / 60:00}:{seconds % 60:00}";
                 pair.CountdownShown = true;
-                PlaceCountdown(pair, rect, scale);
+                PlaceCountdown(pair, rect2, scale);
             }
             else { pair.CountdownShown = false; pair.Countdown.AppWindow.Hide(); }
         }
         IsBlocking = blocking;
-        // 空闲窗口对归还窗口池(隐藏);池已满则关闭,避免长会话句柄累积。
+        // 目标已消失或规则不再命中的空闲对:恢复被隐藏的窗口后归还窗口池。
         foreach (var idle in _pairs.Where(kv => !kv.Value.Active).ToList())
         {
             var pair = idle.Value;
+            RestoreIfHidden(pair);
             pair.Block.AppWindow.Hide(); pair.Countdown.AppWindow.Hide();
             pair.Blocking = false; pair.CountdownShown = false;
             _pairs.Remove(idle.Key);
             if (_pool.Count < 3) _pool.Add(pair);
             else { pair.Block.Close(); pair.Countdown.Close(); }
         }
-        if (nudge is null || !ForegroundAccess.IsAlive(nudgeHost)) { _nudge.AppWindow.Hide(); return; }
-        var host = ForegroundAccess.ClientBounds(nudgeHost);
-        if (host is null) { _nudge.AppWindow.Hide(); return; }
-        var rect2 = host.Value;
-        var scale2 = Math.Max(1, GetDpiForWindow(nudgeHost) / 96.0);
-        var inset = (int)Math.Ceiling(16 * scale2);
-        _nudgeText.Text = "Equora · " + nudge;
-        var width = Math.Min((int)Math.Ceiling(560 * scale2), Math.Max(1, rect2.Width - 2 * inset));
-        _nudgeText.Measure(new Windows.Foundation.Size(Math.Max(1, width / scale2 - 32), double.PositiveInfinity));
-        var height = (int)Math.Ceiling(Math.Max(64, _nudgeText.DesiredSize.Height + 28) * scale2);
-        Place(_nudge, nudgeHost, rect2.Left + inset, rect2.Top + inset, width, height);
+        PlaceNudge(nudgeHost, nudge);
     }
 
-    // 倒计时提示框:钉在目标客户区右上角,尺寸随文字与可用宽度自适应。
+    // 封锁页整体盖住“客户区减去顶部标题栏”的区域:标题栏(含最小化/还原/关闭)完全露出。
+    private void PlaceBlock(Pair pair, IntPtr target, ForegroundAccess.WindowBounds rect)
+    {
+        var strip = TitleStripHeight(target, rect);
+        Place(pair.Block, target, rect.Left, rect.Top + strip, rect.Width, rect.Height - strip);
+    }
+
+    // 只隐藏“因封锁而最小化”的窗口;解除封锁或遮罩撤下时恢复其可见性。
+    private void HideBlockedTarget(Pair pair, IntPtr hwnd)
+    {
+        if (pair.HidTarget || !ForegroundAccess.IsAlive(hwnd) || !ForegroundAccess.IsMinimized(hwnd)) return;
+        ShowWindowAsync(hwnd, 0 /* SW_HIDE */);
+        pair.HidTarget = true;
+    }
+    private void RestoreIfHidden(Pair pair)
+    {
+        if (!pair.HidTarget) return;
+        pair.HidTarget = false;
+        if (ForegroundAccess.IsAlive(pair.Target)) ShowWindowAsync(pair.Target, 5 /* SW_SHOW */);
+    }
+
+    // 倒计时提示框:钉在目标客户区右上角(避开标题栏按钮豁口),尺寸随文字与可用宽度自适应。
     private void PlaceCountdown(Pair pair, ForegroundAccess.WindowBounds rect, double scale)
     {
         var inset = (int)Math.Ceiling(16 * scale);
+        var below = TitleStripHeight(pair.Target, rect) + inset;
         pair.CountdownText.Measure(new Windows.Foundation.Size(double.PositiveInfinity, double.PositiveInfinity));
         var wanted = (int)Math.Ceiling(Math.Max(320, pair.CountdownText.DesiredSize.Width + 48) * scale);
         var width = Math.Min(wanted, Math.Max(1, rect.Width - 2 * inset));
         pair.CountdownText.Measure(new Windows.Foundation.Size(Math.Max(1, width / scale - 32), double.PositiveInfinity));
         var height = (int)Math.Ceiling(Math.Max(64, pair.CountdownText.DesiredSize.Height + 28) * scale);
-        Place(pair.Countdown, pair.Target, rect.Right - width - inset, rect.Top + inset, width, height);
+        Place(pair.Countdown, pair.Target, rect.Right - width - inset, rect.Top + below, width, height);
+    }
+
+    private IntPtr _nudgeHost;
+    private string? _nudgeValue;
+    // 分心提醒框:钉在宿主窗口客户区顶部正中,拖动窗口时由钩子逐帧跟随,视觉上与窗口一体。
+    private void PlaceNudge(IntPtr host, string? text)
+    {
+        _nudgeValue = text;
+        if (text is null || !ForegroundAccess.IsAlive(host) || ForegroundAccess.IsMinimized(host))
+        { _nudge.AppWindow.Hide(); _nudgeHost = IntPtr.Zero; return; }
+        var bounds = ForegroundAccess.ClientBounds(host);
+        if (bounds is null) { _nudge.AppWindow.Hide(); _nudgeHost = IntPtr.Zero; return; }
+        var rect = bounds.Value;
+        var scale = Math.Max(1, GetDpiForWindow(host) / 96.0);
+        var inset = (int)Math.Ceiling(16 * scale);
+        _nudgeText.Text = "Equora · " + text;
+        var width = Math.Min((int)Math.Ceiling(560 * scale), Math.Max(1, rect.Width - 2 * inset));
+        _nudgeText.Measure(new Windows.Foundation.Size(Math.Max(1, width / scale - 32), double.PositiveInfinity));
+        var height = (int)Math.Ceiling(Math.Max(64, _nudgeText.DesiredSize.Height + 28) * scale);
+        var x = rect.Left + Math.Max(inset, (rect.Width - width) / 2);
+        Place(_nudge, host, x, rect.Top + inset, width, height);
+        _nudgeHost = host;
     }
 
     public bool Owns(IntPtr hwnd) =>
         hwnd != IntPtr.Zero && (_pairs.Values.Any(p => hwnd == Handle(p.Block) || hwnd == Handle(p.Countdown)) || hwnd == Handle(_nudge));
+
+    /// <summary>被封锁期间因最小化而隐藏的目标窗口——枚举时须并入,否则会陷入隐藏/恢复震荡。</summary>
+    public IReadOnlyCollection<IntPtr> HiddenTargets =>
+        _pairs.Values.Where(p => p.HidTarget).Select(p => p.Target).ToList();
 
     /// <summary>遮罩窗口 → 它跟随的目标窗口(前台是自家遮罩时,把逻辑映射回目标应用)。</summary>
     public IntPtr HostOf(IntPtr hwnd)
@@ -325,39 +416,63 @@ internal sealed class ForegroundOverlays : IDisposable
         // 已跟踪目标的位置/显隐变化:立刻重摆或收起对应遮罩。
         if (eventType is not (EventObjectLocationChange or EventObjectDestroy or EventObjectHide
             or EventSystemMinimizeStart or EventSystemMinimizeEnd)) return;
-        if (!_pairs.ContainsKey(hwnd)) return;
         var target = hwnd;
-        _queue.TryEnqueue(() => Reposition(target));
+        if (hwnd == _nudgeHost)
+        {
+            // 提醒框宿主移动:逐帧重摆,保持钉在窗口顶部正中。
+            _queue.TryEnqueue(() => PlaceNudge(_nudgeHost, _nudgeValue));
+            if (!_pairs.ContainsKey(hwnd)) return;
+        }
+        else if (!_pairs.ContainsKey(hwnd)) return;
+        _queue.TryEnqueue(() =>
+        {
+            if (_pairs.TryGetValue(target, out var pair) && pair.Blocking &&
+                eventType is EventSystemMinimizeStart or EventObjectHide)
+                HideBlockedTarget(pair, target); // 最小化瞬间即隐藏,不给任务栏预览留内容
+            Reposition(target);
+        });
     }
 
     private void Reposition(IntPtr target)
     {
         if (!_pairs.TryGetValue(target, out var pair)) return;
+        if (!ForegroundAccess.IsAlive(target) || ForegroundAccess.IsMinimized(target))
+        {
+            if (pair.Blocking) HideBlockedTarget(pair, target);
+            pair.Block.AppWindow.Hide(); pair.Countdown.AppWindow.Hide();
+            return;
+        }
         var bounds = ForegroundAccess.ClientBounds(target);
-        if (bounds is null || ForegroundAccess.IsMinimized(target) || !ForegroundAccess.IsAlive(target))
+        if (bounds is null)
         {
             pair.Block.AppWindow.Hide(); pair.Countdown.AppWindow.Hide();
             return;
         }
         var rect = bounds.Value;
-        if (pair.Blocking) Place(pair.Block, target, rect.Left, rect.Top, rect.Width, rect.Height);
-        else if (pair.CountdownShown)
+        if (pair.Blocking) PlaceBlock(pair, target, rect);
+        else
         {
             pair.Block.AppWindow.Hide();
-            PlaceCountdown(pair, rect, Math.Max(1, GetDpiForWindow(target) / 96.0));
+            if (pair.CountdownShown) PlaceCountdown(pair, rect, Math.Max(1, GetDpiForWindow(target) / 96.0));
         }
     }
 
     public void Hide()
     {
-        foreach (var pair in _pairs.Values) { pair.Block.AppWindow.Hide(); pair.Countdown.AppWindow.Hide(); pair.Blocking = false; }
+        foreach (var pair in _pairs.Values)
+        {
+            RestoreIfHidden(pair);
+            pair.Block.AppWindow.Hide(); pair.Countdown.AppWindow.Hide(); pair.Blocking = false;
+        }
         _nudge.AppWindow.Hide();
+        _nudgeHost = IntPtr.Zero;
         IsBlocking = false;
     }
     public void Dispose()
     {
         foreach (var hook in _hooks) if (hook != IntPtr.Zero) UnhookWinEvent(hook);
-        foreach (var pair in _pairs.Values) { pair.Block.Close(); pair.Countdown.Close(); }
+        // 退出前恢复所有被隐藏的目标窗口,不能把用户的窗口留在不可见状态。
+        foreach (var pair in _pairs.Values) { RestoreIfHidden(pair); pair.Block.Close(); pair.Countdown.Close(); }
         foreach (var pair in _pool) { pair.Block.Close(); pair.Countdown.Close(); }
         _pairs.Clear();
         _pool.Clear();

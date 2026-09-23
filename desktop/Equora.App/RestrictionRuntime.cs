@@ -97,7 +97,13 @@ internal sealed class RestrictionRuntime : IDisposable
                 if (host != IntPtr.Zero) { window = host; process = _overlays.ProcessOf(host); }
             }
             if (process is null || window == IntPtr.Zero || SafetyWhitelist.IsProtected(process))
-            { _overlays.Sync(Array.Empty<(IntPtr, ForegroundOverlays.TargetState)>(), IntPtr.Zero, null); _lastProcess = process; return; }
+            {
+                // 前台是 Equora 或受保护进程时不能清空遮罩——其他被封锁窗口仍需保持覆盖;
+                // 只收起与前台挂钩的分心提醒。
+                SyncOverlayWindows(IntPtr.Zero, null);
+                _lastProcess = process;
+                return;
+            }
             string? nudge = null;
             if (Appearance.Current.ActivityMonitoring && focusing)
             {
@@ -165,7 +171,8 @@ internal sealed class RestrictionRuntime : IDisposable
         Dictionary<string, (string? Reason, bool Used, DateTimeOffset? Until, double? Quota)> decisions)
     {
         var result = new List<(IntPtr, ForegroundOverlays.TargetState)>();
-        foreach (var hwnd in ForegroundAccess.VisibleTopWindows())
+        foreach (var hwnd in ForegroundAccess.VisibleTopWindows(includeMinimized: true)
+                     .Union(_overlays.HiddenTargets))
         {
             if (_overlays.Owns(hwnd)) continue;
             var process = _windowProcesses.Resolve(hwnd);
