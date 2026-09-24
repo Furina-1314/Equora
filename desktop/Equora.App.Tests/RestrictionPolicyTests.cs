@@ -75,6 +75,27 @@ public class RestrictionPolicyTests
         finally { if (Directory.Exists(directory)) Directory.Delete(directory, true); }
     }
     [Fact]
+    public void LegacyAllowanceFileDoesNotThrowAndReadsAsUnused()
+    {
+        // 旧格式(键名 Until)升级后必须可读:不抛空引用,且视为未使用,当天可重新发放。
+        var directory = Path.Combine(Path.GetTempPath(), "equora-allow-legacy-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            Directory.CreateDirectory(directory);
+            File.WriteAllText(Path.Combine(directory, "app-allowances.json"),
+                "{\"Until\":{\"game.exe\":\"2026-09-20T10:00:00+08:00\"}}");
+            var store = new RestrictionStore(directory);
+            var now = new DateTimeOffset(2026, 9, 24, 10, 0, 0, TimeSpan.FromHours(8));
+            var state = store.AppAllowance("game.exe", now);
+            Assert.False(state.Used);
+            Assert.Null(state.Until);
+            Assert.NotNull(store.GrantAppAllowance("game.exe", now));
+            Assert.True(store.AppAllowance("game.exe", now.AddMinutes(1)).Used);
+        }
+        finally { if (Directory.Exists(directory)) Directory.Delete(directory, true); }
+    }
+
+    [Fact]
     public void AppTemporaryAllowanceIsOncePerDayPerProcessAndSurvivesRestart()
     {
         var directory = Path.Combine(Path.GetTempPath(), "equora-allow-" + Guid.NewGuid().ToString("N"));

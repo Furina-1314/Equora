@@ -96,7 +96,9 @@ public sealed class RestrictionStore(string directory)
     public (bool Used, DateTimeOffset? Until) AppAllowance(string target, DateTimeOffset now)
     {
         var data = Read<AppAllowances>("app-allowances.json");
-        if (data is not null && data.GrantedAt.TryGetValue(target, out var granted))
+        // 兼容旧格式(键名 Until,值为到期时间):GrantedAt 反序列化为 null,不得抛空引用;
+        // 旧条目一律视为未使用——升级后当天可重新获得一次机会。
+        if (data?.GrantedAt is { } entries && entries.TryGetValue(target, out var granted))
         {
             if (granted.Date != now.Date) return (false, null);
             var until = granted.AddMinutes(5);
@@ -113,7 +115,7 @@ public sealed class RestrictionStore(string directory)
             entries.Remove(stale);
         if (entries.ContainsKey(target)) return null;
         entries[target] = now;
-        Write("app-allowances.json", new AppAllowances(entries));
+        Write("app-allowances.json", new AppAllowances(entries, null));
         return now.AddMinutes(5);
     }
 
@@ -188,5 +190,5 @@ public sealed class RestrictionStore(string directory)
         try { File.Delete(path); } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
     }
     public sealed record DailyUsage(string Date, Dictionary<string, double> Seconds);
-    public sealed record AppAllowances(Dictionary<string, DateTimeOffset> GrantedAt);
+    public sealed record AppAllowances(Dictionary<string, DateTimeOffset>? GrantedAt, Dictionary<string, DateTimeOffset>? Until);
 }
