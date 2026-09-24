@@ -102,20 +102,25 @@ public sealed partial class WeekView : UserControl
 
     // ---- 构建 ----
 
+    // 时间轴列宽与刻度字号:压缩模式下随小时高度等比缩放,主窗口(56px/时)保持原样。
+    private double AxisWidth => Math.Clamp(HourHeight * 3.2, 36.0, 64.0);
+
     private void BuildAxis()
     {
         HourAxis.Children.Clear();
-        for (int h = 0; h < 24; ++h)
+        var font = Math.Clamp(HourHeight * 0.55, 8.0, 11.0);
+        var step = HourHeight switch { < 9 => 3, < 18 => 2, _ => 1 }; // 小时过矮时隔行标注,避免重叠
+        for (int h = 0; h < 24; h += step)
         {
             var text = new TextBlock
             {
                 Text = $"{h:00}:00",
-                FontSize = 11,
+                FontSize = font,
                 Opacity = 0.55,
                 Margin = new Thickness(0),
             };
-            Canvas.SetLeft(text, 10);
-            Canvas.SetTop(text, Math.Max(2, h * HourHeight - 8));
+            Canvas.SetLeft(text, Math.Clamp(HourHeight * 0.5, 3.0, 10.0));
+            Canvas.SetTop(text, Math.Max(1, h * HourHeight - font * 0.7));
             HourAxis.Children.Add(text);
         }
         HourAxis.Height = 24 * HourHeight;
@@ -123,10 +128,13 @@ public sealed partial class WeekView : UserControl
         {
             day.Height = 24 * HourHeight;
         }
+        HeaderGrid.ColumnDefinitions[0].Width = new GridLength(AxisWidth);
+        BodyGrid.ColumnDefinitions[0].Width = new GridLength(AxisWidth);
     }
 
     private void Rebuild()
     {
+        BuildAxis();
         for (int i = 0; i < 7; ++i)
         {
             _days[i].Children.Clear();
@@ -140,7 +148,7 @@ public sealed partial class WeekView : UserControl
             HeaderGrid.ColumnDefinitions[i + 1].Width = i < dayCount ? new GridLength(1, GridUnitType.Star) : new GridLength(0);
             BodyGrid.ColumnDefinitions[i + 1].Width = HeaderGrid.ColumnDefinitions[i + 1].Width;
         }
-        canvasWidth = Math.Max(1, (BodyGrid.ActualWidth - 64) / dayCount);
+        canvasWidth = Math.Max(1, (BodyGrid.ActualWidth - AxisWidth) / dayCount);
 
         // 星期标题。
         HeaderGrid.Children.Clear();
@@ -316,7 +324,7 @@ public sealed partial class WeekView : UserControl
 
     private void OnBodySizeChanged(object sender, SizeChangedEventArgs e)
     {
-        canvasWidth = e.NewSize.Width > 64 ? (e.NewSize.Width - 64) / (ViewModel.ViewModeIndex == 1 ? 1 : 7) : 120;
+        canvasWidth = e.NewSize.Width > AxisWidth ? (e.NewSize.Width - AxisWidth) / (ViewModel.ViewModeIndex == 1 ? 1 : 7) : 120;
         Rebuild();
     }
 

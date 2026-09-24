@@ -269,7 +269,9 @@ internal sealed class DesktopWidgets : IDisposable
         root.Children.Add(header);
         root.Children.Add(scroll);
         root.Children.Add(refresh);
-        root.Children.Add(ResizeGrip(window));
+        var grip = ResizeGrip(window);
+        Grid.SetRow(grip, 2); // 底部行(刷新按钮所在行),不再遮挡头部
+        root.Children.Add(grip);
         window.Content = root;
         window.Closed += (_, _) =>
         {
@@ -364,7 +366,9 @@ internal sealed class DesktopWidgets : IDisposable
         root.Children.Add(gridHost);
         root.Children.Add(scroll);
         root.Children.Add(status);
-        root.Children.Add(ResizeGrip(window));
+        var grip = ResizeGrip(window);
+        Grid.SetRow(grip, 3); // 底部状态行右下角
+        root.Children.Add(grip);
         window.Content = root;
         window.Closed += (_, _) =>
         {
