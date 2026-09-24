@@ -75,7 +75,7 @@ public class RestrictionPolicyTests
         finally { if (Directory.Exists(directory)) Directory.Delete(directory, true); }
     }
     [Fact]
-    public void AppTemporaryAllowanceIsOneUsePerProcessAndSurvivesRestart()
+    public void AppTemporaryAllowanceIsOncePerDayPerProcessAndSurvivesRestart()
     {
         var directory = Path.Combine(Path.GetTempPath(), "equora-allow-" + Guid.NewGuid().ToString("N"));
         try
@@ -86,8 +86,10 @@ public class RestrictionPolicyTests
             Assert.Equal(now.AddMinutes(5), store.GrantAppAllowance("game.exe", now));
             Assert.Null(new RestrictionStore(directory).GrantAppAllowance("game.exe", now.AddMinutes(6)));
             Assert.Equal(now.AddMinutes(5), new RestrictionStore(directory).AppAllowance("game.exe", now).Until);
-            Assert.True(store.AppAllowance("game.exe", now.AddDays(1)).Used);
-            Assert.Null(store.GrantAppAllowance("game.exe", now.AddDays(1)));
+            // 当天过期后仍算已用;次日机会自动刷新,可再次发放。
+            Assert.True(store.AppAllowance("game.exe", now.AddMinutes(6)).Used);
+            Assert.False(store.AppAllowance("game.exe", now.AddDays(1)).Used);
+            Assert.NotNull(store.GrantAppAllowance("game.exe", now.AddDays(1)));
             Assert.Equal(now.AddDays(1).AddMinutes(5), store.GrantAppAllowance("other.exe", now.AddDays(1)));
         }
         finally { if (Directory.Exists(directory)) Directory.Delete(directory, true); }

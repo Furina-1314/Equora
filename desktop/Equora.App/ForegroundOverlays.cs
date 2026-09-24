@@ -186,7 +186,7 @@ internal sealed class ForegroundOverlays : IDisposable
         buttons.Children.Add(close); buttons.Children.Add(allow);
         stack.Children.Add(buttons);
         stack.Children.Add(feedback);
-        stack.Children.Add(Text("每个应用仅可临时允许一次，重启不会重置。允许后窗口右上角显示倒计时，到期后恢复限制。可在桌面端“使用限制”中调整规则。", 12, true));
+        stack.Children.Add(Text("每个应用每天可临时允许一次，重启不会重置；机会随新一天自动刷新。允许后窗口右上角显示倒计时，到期后恢复限制。可在桌面端“使用限制”中调整规则。", 12, true));
         var brand = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Spacing = 12, Margin = new Thickness(0, 16, 0, 0) };
         brand.Children.Add(new Image { Source = new BitmapImage(new Uri("ms-appx:///Assets/Square44x44Logo.png")), Width = 28, Height = 28 });
         brand.Children.Add(new TextBlock { Text = "EQUORA", FontFamily = new FontFamily("Segoe UI Variable"), FontSize = 18, CharacterSpacing = 120, VerticalAlignment = VerticalAlignment.Center, Foreground = Brush(32, 32, 32) });

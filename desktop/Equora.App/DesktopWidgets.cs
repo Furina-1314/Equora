@@ -81,7 +81,7 @@ internal sealed class DesktopWidgets : IDisposable
     private const int GwlStyle = -16, GwlExStyle = -20;
     private const long WsCaption = 0x00C00000, WsThickFrame = 0x00040000, WsChild = 0x40000000, WsPopup = unchecked((int)0x80000000);
     private const long WsExToolWindow = 0x80;
-    private const uint SwpFrameChanged = 0x0020, SwpNoZOrder = 0x0004, SwpShowWindow = 0x0040, SwpNoSize = 0x0001;
+    private const uint SwpFrameChanged = 0x0020, SwpNoZOrder = 0x0004, SwpShowWindow = 0x0040, SwpNoSize = 0x0001, SwpNoMove = 0x0002;
     private const uint GwHwndNext = 2;
 
     private static IntPtr _desktopLayer;
@@ -157,6 +157,45 @@ internal sealed class DesktopWidgets : IDisposable
         handle.PointerCanceled += (_, _) => dragging = false;
     }
 
+    // 右下角把手:按住拖动修改小组件尺寸(光标锚定,物理像素,随窗口缩放内容)。
+    private static void MakeResizable(FrameworkElement grip, Window window)
+    {
+        var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(window);
+        var resizing = false; var startCursorX = 0; var startCursorY = 0; var startWidth = 0; var startHeight = 0;
+        grip.PointerPressed += (_, e) =>
+        {
+            resizing = true;
+            grip.CapturePointer(e.Pointer);
+            GetCursorPos(out var cursor);
+            GetWindowRect(hwnd, out var rect);
+            startCursorX = cursor.X; startCursorY = cursor.Y;
+            startWidth = rect.Right - rect.Left; startHeight = rect.Bottom - rect.Top;
+        };
+        grip.PointerMoved += (_, e) =>
+        {
+            if (!resizing) return;
+            GetCursorPos(out var cursor);
+            var scale = Math.Max(1, GetDpiForWindow(hwnd) / 96.0);
+            var width = Math.Max((int)Math.Ceiling(260 * scale), startWidth + cursor.X - startCursorX);
+            var height = Math.Max((int)Math.Ceiling(300 * scale), startHeight + cursor.Y - startCursorY);
+            SetWindowPosChild(hwnd, IntPtr.Zero, 0, 0, width, height, SwpNoZOrder | SwpNoMove);
+        };
+        grip.PointerReleased += (_, e) => { resizing = false; grip.ReleasePointerCapture(e.Pointer); };
+        grip.PointerCanceled += (_, _) => resizing = false;
+    }
+
+    private static TextBlock ResizeGrip(Window window)
+    {
+        var grip = new TextBlock
+        {
+            Text = "◢", FontSize = 14, Opacity = 0.45,
+            HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Bottom,
+            Padding = new Thickness(4)
+        };
+        MakeResizable(grip, window);
+        return grip;
+    }
+
     // 小组件标题条:左侧标题,右侧关闭按钮;整条作为拖动把手。
     private static Grid TitleBar(Window window, string title, Action close)
     {
@@ -230,6 +269,7 @@ internal sealed class DesktopWidgets : IDisposable
         root.Children.Add(header);
         root.Children.Add(scroll);
         root.Children.Add(refresh);
+        root.Children.Add(ResizeGrip(window));
         window.Content = root;
         window.Closed += (_, _) =>
         {
@@ -260,7 +300,7 @@ internal sealed class DesktopWidgets : IDisposable
         var status = new TextBlock { Opacity = 0.65, TextWrapping = TextWrapping.Wrap };
         var list = new ListView { SelectionMode = ListViewSelectionMode.None };
         // 与日历页相同的色块视图;注入小组件自己的视图模型,视图切换独立于主窗口。
-        var week = new Controls.WeekView { ViewModelOverride = vm };
+        var week = new Controls.WeekView { ViewModelOverride = vm, CompressToViewport = true };
         var gridHost = new ScrollViewer
         {
             Content = week, MinZoomFactor = 1, MaxZoomFactor = 1,
@@ -324,6 +364,7 @@ internal sealed class DesktopWidgets : IDisposable
         root.Children.Add(gridHost);
         root.Children.Add(scroll);
         root.Children.Add(status);
+        root.Children.Add(ResizeGrip(window));
         window.Content = root;
         window.Closed += (_, _) =>
         {

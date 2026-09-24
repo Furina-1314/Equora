@@ -18,7 +18,12 @@ namespace Equora.App.Controls;
 /// </summary>
 public sealed partial class WeekView : UserControl
 {
-    private const double HourHeight = 56.0;
+    private const double DefaultHourHeight = 56.0;
+    private double _hourHeight = DefaultHourHeight;
+    private double HourHeight => _hourHeight;
+
+    /// <summary>压缩小时高度使 24 小时始终完整落入视口(桌面小组件用;主窗口保持固定高度)。</summary>
+    public bool CompressToViewport { get; set; }
     private static readonly TimeSpan WorkStart = new(9, 0, 0);
     private static readonly TimeSpan WorkEnd = new(18, 0, 0);
 
@@ -72,6 +77,15 @@ public sealed partial class WeekView : UserControl
             _nowTimer.Start();
         };
         Unloaded += (_, _) => { _nowTimer.Stop(); ViewModel.PropertyChanged -= OnViewModelChanged; ViewModel.Items.CollectionChanged -= OnItemsChanged; };
+        SizeChanged += (_, e) =>
+        {
+            if (!CompressToViewport) return;
+            var viewport = Scroller.ViewportHeight > 0 ? Scroller.ViewportHeight : e.NewSize.Height;
+            var desired = Math.Clamp(viewport / 24.0, 12.0, DefaultHourHeight);
+            if (Math.Abs(desired - _hourHeight) < 0.5) return;
+            _hourHeight = desired;
+            Rebuild();
+        };
     }
     private bool _rebuildPending;
     private void OnItemsChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)

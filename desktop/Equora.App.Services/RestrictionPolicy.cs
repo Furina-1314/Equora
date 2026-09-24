@@ -92,22 +92,29 @@ public sealed class RestrictionStore(string directory)
     public DateTimeOffset? BrowserSeen => Read<DateTimeOffset?>("browser-heartbeat.json");
     public void MarkBrowserSeen() => Write("browser-heartbeat.json", DateTimeOffset.Now);
 
+    // 临时允许按“天”配给:记录发放时间,当天视为已用;次日自动刷新出新机会。
     public (bool Used, DateTimeOffset? Until) AppAllowance(string target, DateTimeOffset now)
     {
         var data = Read<AppAllowances>("app-allowances.json");
-        if (data is not null && data.Until.TryGetValue(target, out var until)) return (true, until);
+        if (data is not null && data.GrantedAt.TryGetValue(target, out var granted))
+        {
+            if (granted.Date != now.Date) return (false, null);
+            var until = granted.AddMinutes(5);
+            return until > now ? (true, until) : (true, null);
+        }
         return (false, null);
     }
 
     public DateTimeOffset? GrantAppAllowance(string target, DateTimeOffset now)
     {
         var existing = Read<AppAllowances>("app-allowances.json");
-        var entries = existing?.Until ?? new Dictionary<string, DateTimeOffset>(StringComparer.OrdinalIgnoreCase);
+        var entries = existing?.GrantedAt ?? new Dictionary<string, DateTimeOffset>(StringComparer.OrdinalIgnoreCase);
+        foreach (var stale in entries.Where(kv => kv.Value.Date != now.Date).Select(kv => kv.Key).ToList())
+            entries.Remove(stale);
         if (entries.ContainsKey(target)) return null;
-        var until = now.AddMinutes(5);
-        entries[target] = until;
+        entries[target] = now;
         Write("app-allowances.json", new AppAllowances(entries));
-        return until;
+        return now.AddMinutes(5);
     }
 
     public Dictionary<string, double> Usage(string kind, DateTimeOffset now)
@@ -181,5 +188,5 @@ public sealed class RestrictionStore(string directory)
         try { File.Delete(path); } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
     }
     public sealed record DailyUsage(string Date, Dictionary<string, double> Seconds);
-    public sealed record AppAllowances(Dictionary<string, DateTimeOffset> Until);
+    public sealed record AppAllowances(Dictionary<string, DateTimeOffset> GrantedAt);
 }

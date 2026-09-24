@@ -42,6 +42,9 @@ test('Allowance is atomic, lasts five minutes, expires, and stays consumed after
   assert.equal((await h.send('allowTemp')).ok, false);
   const restarted = harness(h.storage); await restarted.ready(); restarted.advance(300001);
   assert.equal((await restarted.send('allowTemp')).ok, false);
+  // 次日(跨两个日界,与时区无关)机会自动刷新,可再次允许。
+  restarted.advance(2 * 24 * 3600 * 1000); restarted.state(); await restarted.ready();
+  assert.equal((await restarted.send('allowTemp')).ok, true);
 });
 test('Rule failures return an error without consuming the allowance; web pages cannot grant access', async () => {
   const h = harness(); await h.ready(); h.state(); await h.ready(); h.fail(true);

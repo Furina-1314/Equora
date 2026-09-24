@@ -2,8 +2,11 @@ importScripts('policy.js');
 let port, lastNonce = 0, previous = null, gate = { enabled: false }, allowances = {};
 let updating = Promise.resolve();
 let granting = Promise.resolve();
+function startOfToday() { const d = new Date(Date.now()); d.setHours(0, 0, 0, 0); return d.getTime(); }
+// 临时允许按“天”配给:只统计今天发放的记录,前一天及更早的机会随新一天自动刷新。
 function allowanceState(host) {
-  const entries = Object.entries(allowances).filter(([domain]) => matches(host, domain));
+  const today = startOfToday();
+  const entries = Object.entries(allowances).filter(([domain, until]) => matches(host, domain) && until >= today);
   return { until: Math.max(0, ...entries.map(([, until]) => until)), used: entries.length > 0 };
 }
 function quotaState(host) {
@@ -16,7 +19,7 @@ async function grantAllowance(host) {
   await ready;
   const domain = (gate.blockedDomains || []).filter(domain => matches(host, domain)).sort((a, b) => a.length - b.length)[0] || host;
   const existing = allowanceState(host);
-  if (existing.used) return { ok: existing.until > Date.now(), ...existing, error: '此网站的临时允许机会已使用。' };
+  if (existing.used) return { ok: existing.until > Date.now(), ...existing, error: '此网站的今日临时允许机会已使用，明天刷新。' };
   const until = Date.now() + 300000;
   allowances[domain] = until;
   try {
@@ -132,6 +135,9 @@ chrome.tabs.onActivated.addListener(() => query());
 chrome.tabs.onUpdated.addListener((_id, change) => { if (change.url) query(); });
 async function start() {
   allowances = { ...((await chrome.storage.session.get('allowances')).allowances || {}), ...((await chrome.storage.local.get('allowances')).allowances || {}) };
+  const today = startOfToday();
+  for (const [domain, until] of Object.entries(allowances)) if (until < today) delete allowances[domain];
+  await chrome.storage.local.set({ allowances }).catch(() => {});
   await chrome.storage.local.set({ allowances });
   await refreshRules();
   await chrome.alarms.create('equora-policy', { periodInMinutes: 0.5 });
